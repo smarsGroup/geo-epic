@@ -10,7 +10,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
 ### Steps
 
-1. **Download [https://github.com/smarsGroup/EPIC-utils/blob/master/setup.sh](link)**
+1. **Download [setup.sh](setup.sh) file**
 
 2. **Create a Virtual Environment**
 
