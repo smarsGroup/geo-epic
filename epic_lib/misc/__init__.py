@@ -1,1 +1,1 @@
-from config_parser import ConfigParser
+from .ymlparser import ConfigParser

@@ -8,25 +8,27 @@ import argparse
 parser = argparse.ArgumentParser(description="Process raster data and save results.")
 parser.add_argument("-o", "--out_dir", type=str, required=True, help="Output directory to save results.")
 parser.add_argument("-i", "--info_file", type=str, required=True, help="Path to the info file.")
+parser.add_argument("-ele", "--elevation", type=str, required=True, help="Path to the SRTM_1km_US_project.tif")
+parser.add_argument("-slope", "--slope_us", type=str, required=True, help="Path to the slope_us.tif")
 parser.add_argument("-sl", "--slope_len", type=str, required=True, help="Path to the slope_len.csv")
 args = parser.parse_args()
 
 info = pd.read_csv(args.info_file)
 coords = info[['x', 'y']].values
 
-prefix = f'{os.path.dirname(__file__)}/data'
+prefix = f'{os.path.dirname(__file__)}'
 
-info['ele'] = sample_raster_nearest(f'{prefix}/SRTM_1km_US_project.tif', coords)['band_1']
-info['slope'] = sample_raster_nearest(f'{prefix}/slope_us.tif', coords)['band_1']
+info['ele'] = sample_raster_nearest(args.elevation, coords)['band_1']
+info['slope'] = sample_raster_nearest(args.slope_us, coords)['band_1']
 
 info = info.fillna(0)
 info['ssu'] = info['ssu'].astype(int)
 info['slope_steep'] = round(info['slope'] / 100, 2)
 
-slope_len = pd.read_csv(args.slopelen)
+slope_len = pd.read_csv(args.slope_len)
 slope_len = slope_len[['mukey', 'slopelen_1']]
 slope_len['mukey'] = slope_len['mukey'].astype(int)
-slope_len['sl_length'] = slope_len['sl_length'].astype(float)
+slope_len['slopelen_1'] = slope_len['slopelen_1'].astype(float)
 info = pd.merge(info, slope_len, how='left', left_on='ssu', right_on='mukey')
 
 print("writing site files")

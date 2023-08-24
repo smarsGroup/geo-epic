@@ -5,6 +5,8 @@ import argparse
 def create_workspace(target_dir, template_dir):
     if not os.path.exists(target_dir):
         os.makedirs(target_dir, exist_ok = True)
+        
+    # os.chdir(target_dir)
     # Ensure the template directory exists
     if not os.path.exists(template_dir):
         print(f"Error: Template directory '{template_dir}' not found.")
@@ -28,7 +30,7 @@ def main():
     args = parser.parse_args()
 
     # Assuming your template directory is located at "./ws_template" relative to the script
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = os.path.dirname(os.path.dirname(__file__))
     template_directory = os.path.join(script_dir, "ws_template")
     
     create_workspace(args.working_dir, template_directory)

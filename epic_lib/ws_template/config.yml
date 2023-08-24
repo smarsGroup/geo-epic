@@ -10,7 +10,7 @@ start_year: 1995
 duration: 25
 output_types:
   - ACY  # Annual Crop Yield
-  - ACM  
+  - ACM
 output_dir: ./outputs
 log_dir: ./log
 
@@ -24,18 +24,21 @@ weather:
 # Soil details
 soil:
   gdb_path: ./soil/gSSURGO_OK.gdb
-  files_dir: 
+  files_dir: /gpfs/data1/cmongp/Bharath/TFP/soil/files
 
 # Site details
-site: 
+site:
   dir: ./site
   slope_len: ./soil/OK_slopelen_1.csv
-  elevation: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/SRTM_1km_US_project.tif
-  slope_us: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/slope_us.tif
-  ssurgo_map: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/SSURGO.tif
+  elevation: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/SRTM_1km_US_project.tif
+  slope_us: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/slope_us.tif
+  ssurgo_map: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/SSURGO.tif
 
 # OPC details
 opc_dir: ./opc
+opc_prefix: CropRot
 
 # Info.csv
-Processed_Info: 
+Processed_Info: /gpfs/data1/cmongp/Bharath/TFP/info.csv
+Range: [0, 0.00005]
+num_of_workers: 80 

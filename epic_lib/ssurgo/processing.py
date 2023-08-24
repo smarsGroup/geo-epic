@@ -4,7 +4,7 @@ import pandas as pd
 from tqdm import tqdm
 from osgeo import ogr
 import argparse
-from misc.utils import parallel_executor
+from misc.utils import parallel_executor, read_gdb_layer
 
 parser = argparse.ArgumentParser(description="soil file creation script")
 parser.add_argument("-r", "--region", default="OK", help="Region code")
@@ -12,12 +12,13 @@ parser.add_argument("-gdb", "--gdb_path", default="./gSSURGO_OK.gdb", help="gdb 
 args = parser.parse_args()
 
 # Change working dir
-working_dir = '/'.join(((args.gdb_path).split('/'))[:-1])
+working_dir = os.path.dirname(args.gdb_path) #'/'.join(((args.gdb_path).split('/'))[:-1])
 os.chdir(working_dir)
 
 # Open the GDB
 region = args.region
 driver = ogr.GetDriverByName("OpenFileGDB")
+print(args.gdb_path)
 gdb_data = driver.Open(args.gdb_path)
 
 print("Reading GDB (est time: 30 mins)")
@@ -87,18 +88,21 @@ soil_layer = pd.DataFrame({
 
 # Subset soil to only include mukeys present in SoilLayer
 mukeys_in_soil_layer = soil_layer['mukey'].unique()
+soil_orig = soil.copy()
 soil = soil[soil['mukey'].isin(mukeys_in_soil_layer)]
 soil = soil.sort_values(by = ['mukey'])
+
+invalid_mukeys = set(soil_orig['mukey']) - set(soil['mukey'])
+invalid_df = pd.DataFrame({"invalid_mukey": list(invalid_mukeys)})
+invalid_df.to_csv('invalid_mukeys.csv', index=False)
 
 print("\nwriting soil files")
 
 outdir = './files'
 os.makedirs(outdir, exist_ok=True)
 
-prefix = f'{os.path.dirname(__file__)}/data'
-
 # Read template file
-with open(f'{prefix}/template.sol', 'r') as file:
+with open(f'{os.path.dirname(__file__)}/template.sol', 'r') as file:
     template_orig = file.readlines()
 padding = ['{:8.3f}'.format(0) for _ in range(23)]
 

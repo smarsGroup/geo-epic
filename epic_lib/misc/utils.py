@@ -57,18 +57,18 @@ def read_gdb_layer(gdb_data, layer_name, columns = None, names = None):
     return pd.DataFrame(features)
 
 
-def writeDATFiles(new_dir, base_dir, fid, row):
+def writeDATFiles(new_dir, config, fid, row):
     with open(f'{new_dir}/EPICRUN.DAT', 'w') as ofile:
-        fmt = '%8d %8d %8d 0 1 %8d  %8d  %8d  0   0  25   1995   10.00   2.50  2.50  0.1/'
-        np.savetxt(ofile, [[int(fid)]*6], fmt=fmt)
+        fmt = '%8d %8d %8d 0 1 %8d  %8d  %8d  0   0  %2d   %4d   10.00   2.50  2.50  0.1/'
+        np.savetxt(ofile, [[int(fid)]*6 + [config["duration"], config["start_year"]]], fmt=fmt)
         
     with open(f'{new_dir}/ieSite.DAT', 'w') as ofile:
-        site_src = base_dir + '/site'
+        site_src = config["site"]["dir"]
         fmt = '%8d    "%s/%d.sit"\n'%(fid, site_src, fid)
         ofile.write(fmt)
 
     with open(f'{new_dir}/ieSllist.DAT', 'w') as ofile:
-        soil_src = base_dir + '/soil/files'
+        soil_src = config["soil"]["files_dir"]
         fmt = '%8d    "%s/%d.SOL"\n'%(fid, soil_src, row['ssu'])  
         ofile.write(fmt)
 
@@ -81,7 +81,7 @@ def writeDATFiles(new_dir, base_dir, fid, row):
         ofile.write(fmt)
     
     with open(f'{new_dir}/ieOplist.DAT', 'w') as ofile:
-        opc_src = base_dir + '/opc'
+        opc_src = config["opc_dir"]
         fmt = '%8d    "%s/%s.OPC"\n'%(fid, opc_src, row['opc'])
         ofile.write(fmt)
         

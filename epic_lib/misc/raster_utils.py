@@ -3,6 +3,7 @@ import pandas as pd
 import rasterio
 from osgeo import gdal, osr
 from pyproj import Transformer
+from sklearn.neighbors import BallTree
 
 def raster_to_dataframe(raster_file):
     """

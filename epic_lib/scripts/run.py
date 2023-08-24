@@ -1,33 +1,35 @@
 import os
-import sys
-EPICLib = os.environ.get('EPICLib')
-sys.path.insert(0, EPICLib)
-
-import json
+import yaml
+import argparse
 import shutil
 import subprocess
 from weather import DailyWeather
 import numpy as np
 import pandas as pd
+from misc import ConfigParser
 from misc.utils import parallel_executor, writeDATFiles
 
 # Fetch the base directory
-base_dir = os.getcwd()
-# Load the JSON data from a file
-with open('config.json') as config_file:
-    config = json.load(config_file)
+parser = argparse.ArgumentParser(description="ConfigParser CLI")
+parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
+args = parser.parse_args()
 
-start_date = config["weather"]["start_date"]
-end_date = config["weather"]["end_date"]
-weather_dir = config["weather"]["dir"].replace('./', base_dir + '/')
-model = config['EPICModel'].replace('./', base_dir + '/')
-output_dir = config['output_dir'].replace('./', base_dir + '/')
-log_dir = config["log_dir"].replace('./', base_dir + '/')
-model_dir = '/'.join(model.split('/')[:-1])
+curr_dir = os.getcwd()
+
+config = ConfigParser(curr_dir, args.config)
+
+base_dir = curr_dir
+
+weather = config["weather"]
+model = config['EPICModel']
+output_dir = config['output_dir']
+log_dir = config["log_dir"]
+model_dir = os.path.dirname(model)
+
+daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"])
+
+subprocess.Popen(f'chmod +x {model}', shell=True).wait()
 model = model.split('/')[-1]
-
-daily_weather = DailyWeather(weather_dir, start_date, end_date)
-
 def process_model(row):
     fid = row['FieldID']
     # Define paths using the config and base_dir
@@ -44,7 +46,7 @@ def process_model(row):
     dly = daily_weather.get(row['y'], row['x'])
     dly.save(fid)
     dly.to_monthly(fid)
-    writeDATFiles(new_dir, base_dir, fid, row)
+    writeDATFiles(new_dir, config, fid, row)
     
     # Run the model and collect outputs
     command = f'nohup ./{model} &> {os.path.join(log_dir, f"{fid}.out")}'
@@ -64,4 +66,8 @@ def process_model(row):
 
 info = pd.read_csv('info.csv')
 info_ls = info.to_dict('records')
-parallel_executor(process_model, info_ls, max_workers = 80)
+
+total = len(info_ls)
+min_ind, max_ind = config["Range"]
+min_ind, max_ind = int(min_ind*total), int(max_ind*total)
+parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"])

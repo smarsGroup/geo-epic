@@ -18,7 +18,7 @@ parser.add_argument("-w", "--working_dir", required=True, help="Working director
 args = parser.parse_args()
 
 # Access values using args.bbox
-lat_min, lat_max, lon_min, lon_max = args.bbox
+lat_min, lat_max, lon_min, lon_max = args.extent
 
 args = parser.parse_args()
 
