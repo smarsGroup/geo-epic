@@ -58,9 +58,9 @@ epic_pkg command_name -options
 - **create_ws**: Create a workspace with a template structure.
 - **prep**: Prepare the workspace with a provided configuration.
 - **run**: Execute the simulations.
-- **download_windspeed**: Download wind speed data.
 - **process_soils**: Process ssurgo gdb file.
-- **generate_site**: Generate site details.
+- **generate_site**: Generate site files.
+- **download_windspeed**: Download wind speed data.
 
 For more details on each command and its options, use:
 ```bash
