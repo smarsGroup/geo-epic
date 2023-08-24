@@ -1,18 +1,8 @@
 import os
-EPICLib = os.environ.get('EPICLib')
-from .daymet import *
-from misc.utils import LatLonLookup
-from epic_io.inputs import DLY
 import pandas as pd
-import subprocess
-
-def download_nldas(start_date="1981-01", end_date="2023-06", lat_min=39.8, lat_max=43.0, lon_min=-104, lon_max=-95.3, out_dir=None):
-    if not out_dir:
-        raise ValueError("Working directory must be provided!")
-    
-    command = f'python3 {EPICLib}/weather/nldas_ws.py -s {start_date} -e {end_date} \
-                -lat_min {lat_min} -lat_max {lat_max} -lon_min {lon_min} -lon_max {lon_max} -w {out_dir}'
-    message = subprocess.Popen(command, shell=True)
+from .daymet import *
+from epic_io import DLY
+from misc.raster_utils import LatLonLookup
     
 class DailyWeather:
     def __init__(self, path, start_date, end_date):

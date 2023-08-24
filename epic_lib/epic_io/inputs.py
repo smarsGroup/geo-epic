@@ -83,3 +83,19 @@ class OPC(pd.DataFrame):
             ofile.write('\n'.join(self.header) + '\n')
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
             np.savetxt(ofile, self.values[1:], fmt = fmt)
+    
+    def edit_plantation_info(self, month, day, fert):
+        # Modify the Mn and Dy columns for rows where CODE is 2
+        data.loc[data[data['CODE'] == 2].index[-1], ['Mn', 'Dy']] = [month, day]
+
+        # Modify the Mn and Dy columns for the penultimate row where CODE is 71
+        penultimate_index_71 = data[data['CODE'] == 71].index[-2]
+
+        data.loc[penultimate_index_71, ['Mn', 'Dy']] = [month, day]
+
+        data.loc[data[data['CODE'] == 71].index[-1], 'OPV1'] = r        
+        
+
+    def edit_nitrogen_rate(self, rate):
+        # Modify the OPV1 column for the penultimate row where CODE is 71
+        data.loc[penultimate_index_71, 'OPV1'] = 0.2 if rate == 0 else rate

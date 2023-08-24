@@ -1,0 +1,41 @@
+# Experiment details
+EXPName: Total Factor Productivity
+Region: Oklahoma
+code: OK
+Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
+
+# Model details
+EPICModel: ./model/EPIC2301dt20230820
+start_year: 1995
+duration: 25
+output_types:
+  - ACY  # Annual Crop Yield
+  - ACM  
+output_dir: ./outputs
+log_dir: ./log
+
+# Weather configuration
+weather:
+  dir: ./weather
+  offline: false  # Use online mode if set to false
+  start_date: '1981-01' # year and month
+  end_date: '2020-12'
+
+# Soil details
+soil:
+  gdb_path: ./soil/gSSURGO_OK.gdb
+  files_dir: 
+
+# Site details
+site: 
+  dir: ./site
+  slope_len: ./soil/OK_slopelen_1.csv
+  elevation: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/SRTM_1km_US_project.tif
+  slope_us: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/slope_us.tif
+  ssurgo_map: /gpfs/data1/cmongp/Bharath/epic_pkg/meta_data/SSURGO.tif
+
+# OPC details
+opc_dir: ./opc
+
+# Info.csv
+Processed_Info: 

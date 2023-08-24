@@ -1,14 +1,10 @@
 import os
-import sys
-EPICLib = os.environ.get('EPICLib')
-sys.path.insert(0, EPICLib)
-
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from osgeo import ogr
 import argparse
-from misc.utils import *
+from misc.utils import parallel_executor
 
 parser = argparse.ArgumentParser(description="soil file creation script")
 parser.add_argument("-r", "--region", default="OK", help="Region code")
@@ -99,8 +95,10 @@ print("\nwriting soil files")
 outdir = './files'
 os.makedirs(outdir, exist_ok=True)
 
+prefix = f'{os.path.dirname(__file__)}/data'
+
 # Read template file
-with open(f'{EPICLib}/ssurgo/data/S100000.sol', 'r') as file:
+with open(f'{prefix}/template.sol', 'r') as file:
     template_orig = file.readlines()
 padding = ['{:8.3f}'.format(0) for _ in range(23)]
 

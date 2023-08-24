@@ -1,8 +1,4 @@
 import os
-import sys
-EPICLib = os.environ.get('EPICLib')
-sys.path.insert(0, EPICLib)
-
 import numpy as np
 import xarray as xr
 import pandas as pd
@@ -16,22 +12,26 @@ import argparse
 parser = argparse.ArgumentParser(description="NLDAS Script with Arguments")
 parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
 parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
-parser.add_argument("-lat_min", default=39.8, type=float, help="Minimum latitude")
-parser.add_argument("-lat_max", default=43.0, type=float, help="Maximum latitude")
-parser.add_argument("-lon_min", default=-104, type=float, help="Minimum longitude")
-parser.add_argument("-lon_max", default=-95.3, type=float, help="Maximum longitude")
+parser.add_argument("-b", "--extent", type=float, nargs=4, metavar=('LAT_MIN', 'LAT_MAX', 'LON_MIN', 'LON_MAX'), 
+                        default = [39.8, 43.0, -104, -95.3], help = "Bounding box coordinates")
 parser.add_argument("-w", "--working_dir", required=True, help="Working directory")
 args = parser.parse_args()
 
+# Access values using args.bbox
+lat_min, lat_max, lon_min, lon_max = args.bbox
+
+args = parser.parse_args()
+
 # Change working dir
+os.makedirs(args.working_dir, exist_ok = True)
 os.chdir(args.working_dir)
 
 # Define date range from command-line arguments
 dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
 
 # Latitude and longitude ranges from command-line arguments
-lat_range = slice(args.lat_min, args.lat_max)
-lon_range = slice(args.lon_min, args.lon_max)
+lat_range = slice(lat_min, lat_max)
+lon_range = slice(lon_min, lon_max)
 
 username = 'bharathc'
 password = '@Ce1one$28'
