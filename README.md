@@ -31,12 +31,13 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
    ```
 
    Install GDAL
+   
    **Using conda:**
    ```bash
    conda install -c conda-forge gdal
    ```
    
-3. **Run the Setup Script**
+4. **Run the Setup Script**
 
     Once you have your virtual environment ready and activated, execute the setup.sh script:
 
@@ -54,12 +55,12 @@ epic_pkg command_name -options
 ```
 
 ### List of Commands:
-- create_ws: Create a workspace with a template structure.
-- prep: Prepare the workspace with a provided configuration.
-- run: Execute the simulations.
-- download_windspeed: Download wind speed data.
-- process_soils: Process ssurgo gdb file.
-- generate_site: Generate site details.
+- **create_ws**: Create a workspace with a template structure.
+- **prep**: Prepare the workspace with a provided configuration.
+- **run**: Execute the simulations.
+- **download_windspeed**: Download wind speed data.
+- **process_soils**: Process ssurgo gdb file.
+- **generate_site**: Generate site details.
 
 For more details on each command and its options, use:
 ```bash
