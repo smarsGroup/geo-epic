@@ -33,7 +33,8 @@ chmod +x "$script"
 
 
 wrapper_script="$(pwd)/epic_lib/scripts/epic_pkg"
-echo '#!/bin/bash \n '$script' "$@" ' > "$wrapper_script"
+echo '#!/bin/bash' > "$wrapper_script"
+echo $script' "$@" ' >> "$wrapper_script"
 chmod +x "$wrapper_script"
 
 # Install Python dependencies
