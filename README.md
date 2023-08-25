@@ -30,7 +30,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
    source epic_env/bin/activate
    ```
 
-   Install GDAL
+3. **Install GDAL**
    
    **Using conda:**
    ```bash
