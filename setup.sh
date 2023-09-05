@@ -28,6 +28,7 @@ if [ -z "$interpreter_path" ]; then
 fi
 
 # Update the shebang line of scripts in the scripts directory
+mv EPIC-pkg-master epic_pkg
 cd ./epic_pkg
 script="$(pwd)/epic_lib/dispatcher.py"
 echo "#!$interpreter_path" | cat - "$script" > temp && mv temp "$script"
