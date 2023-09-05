@@ -1,10 +1,12 @@
 #!/bin/bash
-if [ $# -eq 0 ]; then
-    wget "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-else
-    wget -P $1 "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-    cd $1
-fi
+# if [ $# -eq 0 ]; then
+#     wget "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
+# else
+#     wget -P $1 "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
+#     cd $1
+# fi
+
+wget -O epic_pkg.zip https://github.com/smarsGroup/EPIC-pkg/archive/master.zip
 
 if command -v unzip &>/dev/null; then
     unzip ./epic_pkg.zip
