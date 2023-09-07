@@ -8,9 +8,9 @@
 
 wget -O epic_pkg.zip https://github.com/smarsGroup/EPIC-pkg/archive/master.zip
 
-wget "https://smarslab-files.s3.amazonaws.com/epic-utils/GDAL-3.4.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl"
+wget "https://smarslab-files.s3.amazonaws.com/epic-utils/GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl"
 
-pip install GDAL-3.4.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl
+pip install GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl
 
 if command -v unzip &>/dev/null; then
     unzip ./epic_pkg.zip

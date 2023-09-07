@@ -16,11 +16,11 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
 2. **Create a Virtual Environment**(optional)
 
-   Python 3.8v is required for this package. So it's recommended to setup this package within a virtual environment. Here's how to create one:
+   Python 3.9v is required for this package. So it's recommended to setup this package within a virtual environment. Here's how to create one:
 
    **Using conda:**
    ```linux and windows
-   conda create --name epic_env python=3.8
+   conda create --name epic_env python=3.9
    conda activate epic_env
    ```
 
