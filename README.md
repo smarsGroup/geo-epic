@@ -14,36 +14,40 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
 1. **Download [setup.sh](setup.sh) file**
 
-2. **Create a Virtual Environment**
+2. **Create a Virtual Environment**(optional)
 
-   It's recommended to setup this package within a virtual environment. Here's how to create one:
+   Python 3.8v is required for this package. So it's recommended to setup this package within a virtual environment. Here's how to create one:
 
    **Using conda:**
-   ```bash
-   conda create --name epic_env python=3.10
+   ```linux and windows
+   conda create --name epic_env python=3.8
    conda activate epic_env
    ```
 
    **Using virtualenv:**
-   ```bash
+   ```bash(linux)
    virtualenv epic_env
    source epic_env/bin/activate
    ```
 
-3. **Install GDAL**
-   
-   **Using conda:**
-   ```bash
-   conda install -c conda-forge gdal
+   ```windows
+   cd my-project
+   virtualenv --python C:\Path\To\Python\python.exe venv
+   .\venv\Scripts\activate
    ```
    
 4. **Run the Setup Script**
 
     Once you have your virtual environment ready and activated, execute the setup.sh script:
 
-    ```bash
+    ```linux(bash)
     bash setup.sh
     ```
+
+    ```windows
+    setup.bat
+    ```
+
     This will set up everything needed to run the EPIC Python package within your virtual environment.
 
 ## Commands Available
