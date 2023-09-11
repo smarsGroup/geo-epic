@@ -40,5 +40,5 @@ opc_prefix: CropRot
 
 # Info.csv
 Processed_Info: /gpfs/data1/cmongp/Bharath/TFP/info.csv
-Range: [0, 0.00005]
+Range: [0, 0.25]
 num_of_workers: 80 
