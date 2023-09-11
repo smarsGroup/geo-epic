@@ -30,7 +30,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
    source epic_env/bin/activate
    ```
    
-  ***Windows:***
+   ***Windows:***
    ```windows
    cd my-project
    virtualenv --python C:\Path\To\Python\python.exe venv
@@ -66,7 +66,7 @@ epic_pkg module func -options
 - **weather**
   - **download_windspeed**: Download wind speed data.
   - **download_daily**: Download daily weather data. (TODO)
-  - **daily2monthly**: Download daily weather data.  (TODO)
+  - **daily2monthly**: Convert daily weather data to monthly.  (TODO)
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.
 - **site**
