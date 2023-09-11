@@ -29,7 +29,8 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
    virtualenv epic_env
    source epic_env/bin/activate
    ```
-  **Windows:**
+   
+  ***Windows:***
    ```windows
    cd my-project
    virtualenv --python C:\Path\To\Python\python.exe venv
@@ -39,11 +40,13 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 4. **Run the Setup Script**
 
     Once you have your virtual environment ready and activated, execute the setup.sh script:
-    **Linux:**
+
+    ***Linux:***
     ```linux(bash)
     bash setup.sh
     ```
-    **Windows:**
+    
+    ***Windows:***
     ```windows
     setup.bat
     ```
