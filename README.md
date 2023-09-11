@@ -63,6 +63,10 @@ epic_pkg module func -options
 
 ## List of Modules and Functions:
 
+- **exp**
+  - **new**: Create a workspace with a template structure.
+  - **prep**: Prepare the workspace with a provided configuration.
+  - **run**: Execute the simulations.
 - **weather**
   - **download_windspeed**: Download wind speed data.
   - **download_daily**: Download daily weather data. (TODO)
@@ -71,16 +75,16 @@ epic_pkg module func -options
   - **process_gdb**: Process ssurgo gdb file.
 - **site**
   - **generate**: Generate site files.
-- **exp**
-  - **prep**: Prepare the workspace with a provided configuration.
-  - **run**: Execute the simulations.
-  - **new**: Create a workspace with a template structure.
 
 For more details on each command and its options, use:
 ```bash
 epic_pkg module func --help
 ```
-   
+
+## Steps
+1. Create new workspace
+2. Edit config file
+3. Prepare the workspace and execute the simulations
 
 
 
