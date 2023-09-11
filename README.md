@@ -18,7 +18,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
    Python 3.9v is required for this package. So it's recommended to setup this package within a virtual environment. Here's how to create one:
 
-   **Using conda:**
+   **Using conda: (Recommended)**
    ```linux and windows
    conda create --name epic_env python=3.9
    conda activate epic_env
@@ -29,7 +29,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
    virtualenv epic_env
    source epic_env/bin/activate
    ```
-
+  **Windows:**
    ```windows
    cd my-project
    virtualenv --python C:\Path\To\Python\python.exe venv
@@ -39,11 +39,11 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 4. **Run the Setup Script**
 
     Once you have your virtual environment ready and activated, execute the setup.sh script:
-
+    **Linux:**
     ```linux(bash)
     bash setup.sh
     ```
-
+    **Windows:**
     ```windows
     setup.bat
     ```
