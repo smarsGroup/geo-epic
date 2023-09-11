@@ -1,8 +1,11 @@
+#!/usr/local/bin/python
 import argparse
 import subprocess
 import os
 
 def main():
+
+    
     parser = argparse.ArgumentParser(description="EPIC package CLI")
     parser.add_argument('module', help='Module: (exp, weather, soil, site)')
     parser.add_argument('func', help='Command to run')
