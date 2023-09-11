@@ -62,7 +62,8 @@ epic_pkg module func -options
 
 - **weather**
   - **download_windspeed**: Download wind speed data.
-  - **download_daily**: Download daily weather data.
+  - **download_daily**: Download daily weather data. (TODO)
+  - **daily2monthly**: Download daily weather data.  (TODO)
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.
 - **site**
