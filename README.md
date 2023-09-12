@@ -61,14 +61,14 @@ epic_pkg module func -options
   - **listfiles**: Create lst.DAT files using config file.
   - **run**: Execute the simulations.
 - **weather**
-  - **download_windspeed**: Download wind speed data.
   - **download_daily**: Download daily weather data. 
   - **daily2monthly**: Convert daily weather data to monthly. (TODO)
+  - **download_windspeed**: Download wind speed data.
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.
 - **sites**
-  - **process_aoi**: Process area of interest shp or geojson file.  (TODO)
-  - **process_foi**: Process fields of interest shp or geojson file.  (TODO)
+  - **process_aoi**: Process area of interest file.  (TODO)
+  - **process_foi**: Process fields of interest file.  (TODO)
   - **generate**: Generate site files from processed data.
 
 For more details on each command and its options, use:
