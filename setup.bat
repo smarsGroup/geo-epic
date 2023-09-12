@@ -1,11 +1,4 @@
 @echo off
-if "%~1"=="" (
-    curl -o epic_pkg.zip "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-) else (
-    mkdir "%~1" 2>nul
-    curl -o "%~1\epic_pkg.zip" "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-    cd "%~1"
-)
 
 curl -o epic_pkg.zip "https://github.com/smarsGroup/EPIC-pkg/archive/master.zip"
 
@@ -30,12 +23,10 @@ set "script=%cd%\epic_lib\dispatcher.py"
 echo #!%interpreter_path% > temp
 type "%script%" >> temp
 move /y temp "%script%"
-@REM chmod +x "%script%"
 
 set "wrapper_script=%cd%\epic_lib\scripts\epic_pkg.bat"
 echo @echo off > "%wrapper_script%"
 echo "%script%" %%* >> "%wrapper_script%"
-@REM chmod +x "%wrapper_script%"
 
 :: Install Python dependencies
 pip install -r requirements.txt
