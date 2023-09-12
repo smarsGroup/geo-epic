@@ -62,15 +62,14 @@ epic_pkg module func -options
   - **run**: Execute the simulations.
 - **weather**
   - **download_windspeed**: Download wind speed data.
-  - **download_daily**: Download daily weather data. (TODO)
+  - **download_daily**: Download daily weather data. 
   - **daily2monthly**: Convert daily weather data to monthly. (TODO)
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.
 - **sites**
-  - **process_AoI**: Process area of interest shp or geojson file.  (TODO)
-  - **process_FoI**: Process fields of interest shp or geojson file.  (TODO)
+  - **process_aoi**: Process area of interest shp or geojson file.  (TODO)
+  - **process_foi**: Process fields of interest shp or geojson file.  (TODO)
   - **generate**: Generate site files from processed data.
->>>>>>> Stashed changes
 
 For more details on each command and its options, use:
 ```bash
