@@ -58,7 +58,7 @@ epic_pkg module func -options
 - **exp**
   - **new**: Create a workspace with a template structure.
   - **prepare**: Prepare the input files using config file.
-  - **listfiles**: Create lst.DAT files using config file.
+  - **list_files**: Create lst.DAT files using config file.
   - **run**: Execute the simulations.
 - **weather**
   - **download_daily**: Download daily weather data. 
