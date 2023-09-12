@@ -17,6 +17,7 @@ def main():
     # Base command
     options_str = " ".join(args.options)
     command = f'python3 {{script_path}} {options_str}'
+<<<<<<< Updated upstream
 
     if args.cmd == "download_windspeed":
         script_path = os.path.join(root_path, "weather", "nldas_ws.py")
@@ -30,6 +31,31 @@ def main():
         script_path = os.path.join(root_path, "scripts", "run.py")
     elif args.cmd == "create_ws":
         script_path = os.path.join(root_path, "scripts", "create_ws.py")
+=======
+    
+    if args.module == "weather":
+        if args.func == "download_windspeed":
+            script_path = os.path.join(root_path, "weather", "nldas_ws.py")
+        elif args.func == "download_daily":
+            script_path = os.path.join(root_path, "weather", "download_daily.py")
+        elif args.func == "daily2monthly":
+            script_path = os.path.join(root_path, "weather", "daily2monthly.py")
+    elif args.module == "soil":
+        if args.func == "process_gdb":
+            script_path = os.path.join(root_path, "ssurgo", "processing.py")
+    elif args.module == "sites":
+        if args.func == "generate":
+            script_path = os.path.join(root_path, "sites", "generate.py")
+    elif args.module == "exp":
+        if args.func == "prepare":
+            script_path = os.path.join(root_path, "exp", "prep.py")
+        elif args.func == "run":
+            script_path = os.path.join(root_path, "exp", "run.py")
+        elif args.func == "listfiles":
+            script_path = os.path.join(root_path, "exp", "listfiles.py")
+        elif args.func == "new":
+            script_path = os.path.join(root_path, "exp", "create_ws.py")
+>>>>>>> Stashed changes
     else:
         print(f"Command '{args.cmd}' not found.")
         return

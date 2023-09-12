@@ -54,6 +54,7 @@ Epic_pkg allows you to run various commands. The structure is:
 epic_pkg command_name -options
 ```
 
+<<<<<<< Updated upstream
 ### List of Commands:
 - **create_ws**: Create a workspace with a template structure.
 - **prep**: Prepare the workspace with a provided configuration.
@@ -61,12 +62,39 @@ epic_pkg command_name -options
 - **process_soils**: Process ssurgo gdb file.
 - **generate_site**: Generate site files.
 - **download_windspeed**: Download wind speed data.
+=======
+## List of Modules and Functions:
+
+- **exp**
+  - **new**: Create a workspace with a template structure.
+  - **prepare**: Prepare the input files using config file.
+  - **listfiles**: Create lst.DAT files using config file.
+  - **run**: Execute the simulations.
+- **weather**
+  - **download_windspeed**: Download wind speed data.
+  - **download_daily**: Download daily weather data. (TODO)
+  - **daily2monthly**: Convert daily weather data to monthly. (TODO)
+- **soil**
+  - **process_gdb**: Process ssurgo gdb file.
+- **sites**
+  - **process_AoI**: Process area of interest shp or geojson file.  (TODO)
+  - **process_FoI**: Process fields of interest shp or geojson file.  (TODO)
+  - **generate**: Generate site files from processed data.
+>>>>>>> Stashed changes
 
 For more details on each command and its options, use:
 ```bash
 epic_pkg command_name --help
 ```
+<<<<<<< Updated upstream
    
+=======
+
+## Run an Experiment
+1. Create new workspace
+2. Edit config file
+3. Prepare the workspace and execute the simulations
+>>>>>>> Stashed changes
 
 
 

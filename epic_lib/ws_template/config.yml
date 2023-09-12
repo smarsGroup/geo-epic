@@ -3,6 +3,9 @@ EXPName: Total Factor Productivity
 Region: Oklahoma
 code: OK
 Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
+# Area_of_Interest: 
+# Grid_resoultion: #(in km)
+Processed_Info: /gpfs/data1/cmongp/Bharath/TFP/info.csv
 
 # Model details
 EPICModel: ./model/EPIC2301dt20230820
@@ -17,18 +20,18 @@ log_dir: ./log
 # Weather configuration
 weather:
   dir: ./weather
-  offline: false  # Use online mode if set to false
   start_date: '1981-01' # year and month
   end_date: '2020-12'
+  offline: false  # if true, the data is assumed to be already downloaded.
 
 # Soil details
 soil:
   gdb_path: ./soil/gSSURGO_OK.gdb
-  files_dir: /gpfs/data1/cmongp/Bharath/TFP/soil/files
+  files_dir:    #if not empty, processing gdb file is skipped
 
 # Site details
-site:
-  dir: ./site
+sites:
+  dir: ./sites
   slope_len: ./soil/OK_slopelen_1.csv
   elevation: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/SRTM_1km_US_project.tif
   slope_us: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/slope_us.tif
@@ -38,7 +41,12 @@ site:
 opc_dir: ./opc
 opc_prefix: CropRot
 
+<<<<<<< Updated upstream
 # Info.csv
 Processed_Info: /gpfs/data1/cmongp/Bharath/TFP/info.csv
 Range: [0, 0.00005]
+=======
+# Run params
+Range: [0, 0.25]
+>>>>>>> Stashed changes
 num_of_workers: 80 

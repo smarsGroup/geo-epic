@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shapefile Viewer</title>
+</head>
+<body>
+    <form action="/" method="post">
+        <input type="text" name="filepath" placeholder="Enter the shapefile path">
+        <input type="submit" value="Display">
+    </form>
+    <iframe id="mapframe" src="{{ url_for('map') }}" width="100%" height="500"></iframe>
+    <button id="saveButton">Save</button>
+
+    <script>
+        // Get the map object from the iframe
+        var mapframe = document.getElementById('mapframe');
+        var map = mapframe.contentWindow.map;
+
+        // Add event listener for draw:created event
+        map.on('draw:created', function (e) {
+            var type = e.layerType,
+                layer = e.layer;
+
+            if (type === 'marker') {
+                // Do marker specific actions
+                console.log("Lat, Lon : " + layer.getLatLng().lat + ", " + layer.getLatLng().lng);
+            }
+
+            // Do whatever else you need to. (save to db; add to map, etc)
+            drawnItems.addLayer(layer);
+        });
+
+        // Add event listener for save button
+        document.getElementById('saveButton').addEventListener('click', function() {
+            // Send the drawn GeoJSON data to the server
+            var data = drawnItems.toGeoJSON();
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+        });
+    </script>
+</body>
+</html>
