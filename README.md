@@ -51,18 +51,8 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 Epic_pkg allows you to run various commands. The structure is:
 
 ```bash
-epic_pkg command_name -options
+epic_pkg module func -options
 ```
-
-<<<<<<< Updated upstream
-### List of Commands:
-- **create_ws**: Create a workspace with a template structure.
-- **prep**: Prepare the workspace with a provided configuration.
-- **run**: Execute the simulations.
-- **process_soils**: Process ssurgo gdb file.
-- **generate_site**: Generate site files.
-- **download_windspeed**: Download wind speed data.
-=======
 ## List of Modules and Functions:
 
 - **exp**
@@ -84,17 +74,14 @@ epic_pkg command_name -options
 
 For more details on each command and its options, use:
 ```bash
-epic_pkg command_name --help
+epic_pkg module func --help
 ```
-<<<<<<< Updated upstream
-   
-=======
 
 ## Run an Experiment
 1. Create new workspace
 2. Edit config file
 3. Prepare the workspace and execute the simulations
->>>>>>> Stashed changes
+
 
 
 

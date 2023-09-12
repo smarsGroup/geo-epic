@@ -17,21 +17,6 @@ def main():
     # Base command
     options_str = " ".join(args.options)
     command = f'python3 {{script_path}} {options_str}'
-<<<<<<< Updated upstream
-
-    if args.cmd == "download_windspeed":
-        script_path = os.path.join(root_path, "weather", "nldas_ws.py")
-    elif args.cmd == "process_soils":
-        script_path = os.path.join(root_path, "ssurgo", "processing.py")
-    elif args.cmd == "generate_site":
-        script_path = os.path.join(root_path, "sit", "generate.py")
-    elif args.cmd == "prep":
-        script_path = os.path.join(root_path, "scripts", "prep.py")
-    elif args.cmd == "run":
-        script_path = os.path.join(root_path, "scripts", "run.py")
-    elif args.cmd == "create_ws":
-        script_path = os.path.join(root_path, "scripts", "create_ws.py")
-=======
     
     if args.module == "weather":
         if args.func == "download_windspeed":
@@ -55,7 +40,6 @@ def main():
             script_path = os.path.join(root_path, "exp", "listfiles.py")
         elif args.func == "new":
             script_path = os.path.join(root_path, "exp", "create_ws.py")
->>>>>>> Stashed changes
     else:
         print(f"Command '{args.cmd}' not found.")
         return
