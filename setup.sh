@@ -1,10 +1,9 @@
-#!/bin/bash
-if [ $# -eq 0 ]; then
-    wget "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-else
-    wget -P $1 "https://smarslab-files.s3.amazonaws.com/epic-utils/epic_pkg.zip"
-    cd $1
-fi
+
+wget -O epic_pkg.zip https://github.com/smarsGroup/EPIC-pkg/archive/master.zip
+
+wget "https://smarslab-files.s3.amazonaws.com/epic-utils/GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl"
+
+pip install GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl
 
 if command -v unzip &>/dev/null; then
     unzip ./epic_pkg.zip
@@ -26,6 +25,7 @@ if [ -z "$interpreter_path" ]; then
 fi
 
 # Update the shebang line of scripts in the scripts directory
+mv EPIC-pkg-master epic_pkg
 cd ./epic_pkg
 script="$(pwd)/epic_lib/dispatcher.py"
 echo "#!$interpreter_path" | cat - "$script" > temp && mv temp "$script"
