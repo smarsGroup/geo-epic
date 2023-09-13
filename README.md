@@ -57,8 +57,8 @@ epic_pkg module func -options
 ```
 ## List of Modules and Functions:
 
-- **exp**
-  - **new**: Create a workspace with a template structure.
+- **workspace**
+  - **new**: Create a new workspace with a template structure.
   - **prepare**: Prepare the input files using config file.
   - **list_files**: Create lst.DAT files using config file.
   - **run**: Execute the simulations.
