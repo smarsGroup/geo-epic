@@ -20,7 +20,7 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
    **Using conda:**
    ```bash
-   conda create --name epic_env python=3.10
+   conda create --name epic_env python=3.9
    conda activate epic_env
    ```
 
@@ -80,11 +80,3 @@ epic_pkg module func --help
 1. Create new workspace
 2. Edit config file
 3. Prepare the workspace and execute the simulations
-
-
-
-
-
-
-
-
