@@ -32,7 +32,7 @@ echo "#!$interpreter_path" | cat - "$script" > temp && mv temp "$script"
 chmod +x "$script"
 
 
-wrapper_script="$(pwd)/epic_lib/scripts/epic_pkg"
+wrapper_script="$(pwd)/epic_lib/epic_pkg"
 echo '#!/bin/bash' > "$wrapper_script"
 echo $script' "$@" ' >> "$wrapper_script"
 chmod +x "$wrapper_script"
@@ -42,10 +42,10 @@ pip install -r requirements.txt
 
 # Determine if the terminal is bash
 if [ "$SHELL" = "/bin/bash" ] || [ "$0" = "bash" ]; then
-    echo 'export PATH=$PATH:'$(pwd)/epic_lib/scripts >> ~/.bashrc
+    echo 'export PATH=$PATH:'$(pwd)/epic_lib >> ~/.bashrc
     echo "Setup for Bash complete!"
 else
-    echo "You are using shell: $SHELL. Please add the path $(pwd)/epic_lib/scripts to your PATH."
+    echo "You are using shell: $SHELL. Please add the path $(pwd)/epic_lib to your PATH."
 fi
 
 echo "Restart your terminal or source your profile for the changes to take effect!"
