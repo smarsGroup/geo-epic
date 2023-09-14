@@ -1,8 +1,13 @@
 import os
 import argparse
 import numpy as np
+import pandas as pd
 import rasterio
+import xarray as xr
 import geopandas as gpd
+from epic_io import DLY
+from .daymet import *
+from .main import DailyWeather
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="NLDAS Script with Arguments")
@@ -39,9 +44,17 @@ mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
 data_set = data_set.where(mask)
 # Save the DataArray as a GeoTIFF
 data_set = data_set.rio.write_crs("EPSG:4326")
-data_set.rio.to_raster("./ClimateGridMD.tif")
+data_set.rio.to_raster("./climate_grid.tif")
 
+daily_weather = DailyWeather(args.working_dir, args.start_date, args.end_date)
 
+def create_weather_files(row):
+    lon, lat, daymet_id = row.values()
+    file_path = os.path.join('./Daily/', f'{int(daymet_id)}.DLY')
+    if not os.path.isfile(file_path):
+        dly = daily_weather.get(lat, lon)
+        dly.save(f'./Daily/{int(daymet_id)}')
+        dly.to_monthly(f'./Monthly/{int(daymet_id)}')
 
 
 

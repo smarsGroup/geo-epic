@@ -92,10 +92,6 @@ soil_orig = soil.copy()
 soil = soil[soil['mukey'].isin(mukeys_in_soil_layer)]
 soil = soil.sort_values(by = ['mukey'])
 
-invalid_mukeys = set(soil_orig['mukey']) - set(soil['mukey'])
-invalid_df = pd.DataFrame({"invalid_mukey": list(invalid_mukeys)})
-invalid_df.to_csv('invalid_mukeys.csv', index=False)
-
 print("\nwriting soil files")
 
 outdir = './files'

@@ -64,7 +64,7 @@ epic_pkg module func -options
   - **run**: Execute the simulations.
 - **weather**
   - **download_daily**: Download daily weather data. 
-  - **daily2monthly**: Convert daily weather data to monthly. (TODO)
+  - **daily2monthly**: Convert daily weather data to monthly.
   - **download_windspeed**: Download wind speed data.
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.

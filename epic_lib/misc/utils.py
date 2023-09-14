@@ -85,6 +85,7 @@ def writeDATFiles(new_dir, config, fid, row):
         fmt = '%8d    "%s/%s.OPC"\n'%(fid, opc_src, row['opc'])
         ofile.write(fmt)
         
+        
 def calc_centroids(gdf):
     avg_lat = gdf['geometry'][0].bounds[1]
     avg_lon = gdf.total_bounds[::2].mean()

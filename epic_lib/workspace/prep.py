@@ -1,5 +1,4 @@
 import os
-import yaml
 import argparse
 import pandas as pd
 import subprocess
@@ -8,8 +7,8 @@ from misc import ConfigParser
 from misc.utils import calc_centroids#, find_column
 from ssurgo import get_soil_ids
 
-parser = argparse.ArgumentParser(description="ConfigParser CLI")
-parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
+parser = argparse.ArgumentParser(description="EPIC workspace")
+parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 args = parser.parse_args()
 
 curr_dir = os.getcwd()
@@ -68,10 +67,9 @@ info_df.drop(['geometry', 'centroid'], axis=1, inplace=True)
 
 coords = info_df[['x', 'y']].values
 soil_dir = os.path.dirname(soil["gdb_path"])
-invalid = soil_dir + '/invalid_mukeys.csv'
 site = config["site"]
 ssurgo_map = site["ssurgo_map"]
-info_df['ssu'] = get_soil_ids(coords, ssurgo_map, invalid) 
+info_df['ssu'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
