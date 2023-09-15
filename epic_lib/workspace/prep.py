@@ -53,7 +53,7 @@ if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
     start_date = weather["start_date"]
     end_date = weather["end_date"]
     command = f'python3 {root_path}/weather/nldas_ws.py -s {start_date} -e {end_date} \
-                  -w {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
+                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
     message = subprocess.Popen(command, shell=True, env=env)
 
 # create soil files 

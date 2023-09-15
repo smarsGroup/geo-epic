@@ -7,29 +7,37 @@ import xarray as xr
 import geopandas as gpd
 from epic_io import DLY
 from .daymet import *
+import subprocess
 from .main import DailyWeather
+from misc.utils import parallel_executor
+from misc.raster_utils import raster_to_dataframe, sample_raster_nearest
 
 # Parse command line arguments
-parser = argparse.ArgumentParser(description="NLDAS Script with Arguments")
+parser = argparse.ArgumentParser(description="Downloads daily weather data")
 parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
 parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
 parser.add_argument("-r", "--region", help="Path to the shapefile")
-parser.add_argument("-c", "--region_code", help="An integer, index starts with this code")
-parser.add_argument("-w", "--working_dir", required=True, help="Working directory")
+parser.add_argument("-c", "--region_code", help="An integer, climate_ID starts with this code")
+parser.add_argument("-o", "--working_dir", required=True, help="Path to Weather dir")
+parser.add_argument("-w", "--max_workers", default = 20, help = "No. of maximum workers")
 args = parser.parse_args()
+
+
 
 # Change working dir
 os.makedirs(args.working_dir, exist_ok = True)
 os.chdir(args.working_dir)
+
+print('Processing shape file')
 
 # Define date range from command-line arguments
 # dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
 gdf = gpd.read_file(args.region)
 
 res_value = 0.00901  # 1 km resolution in degree
-xmin, ymin, xmax, ymax = gdf.total_bounds
-lon = np.arange(xmin, xmax, res_value)
-lat = np.arange(ymin, ymax, res_value)
+lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
+lon = np.arange(lon_min, lon_max, res_value)
+lat = np.arange(lat_min, lat_max, res_value)
 lon, lat = np.meshgrid(lon, lat)
 
 # Create a DataArray from the grid
@@ -46,9 +54,15 @@ data_set = data_set.where(mask)
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
+message = subprocess.Popen(f'python3 nldas_ws.py -s {args.start_date} -e {args.end_date} \ 
+                           -b {lat_min} {lat_max} {lon_min} {lon_max} -o {args.working_dir}', shell=True).wait()
+
 daily_weather = DailyWeather(args.working_dir, args.start_date, args.end_date)
 
-def create_weather_files(row):
+os.makedirs('./Daily', exist_ok = True)
+os.makedirs('./Monthly', exist_ok = True)
+
+def create_dly(row):
     lon, lat, daymet_id = row.values()
     file_path = os.path.join('./Daily/', f'{int(daymet_id)}.DLY')
     if not os.path.isfile(file_path):
@@ -57,6 +71,13 @@ def create_weather_files(row):
         dly.to_monthly(f'./Monthly/{int(daymet_id)}')
 
 
+cmids = raster_to_dataframe("./climate_grid.tif")
+# nldas_id = sample_raster_nearest('./nldas_grid.tif', cmids[['x', 'y']].values)
+# cmids['nldas_id'] = nldas_id['band_1']
+cmids = cmids.rename(columns={'band_1': 'daymet_id'})
+
+cmids_ls = cmids.to_dict('records')
+parallel_executor(create_dly, cmids_ls, max_workers = args.max_workers)
 
 # # Determine the latitude and longitude range based on the provided arguments
 # if args.shapefile:
