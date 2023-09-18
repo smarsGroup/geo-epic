@@ -22,7 +22,7 @@ info['ele'] = sample_raster_nearest(args.elevation, coords)['band_1']
 info['slope'] = sample_raster_nearest(args.slope_us, coords)['band_1']
 
 info = info.fillna(0)
-info['ssu'] = info['ssu'].astype(int)
+info['ssu'] = info['soil_id'].astype(int)
 info['slope_steep'] = round(info['slope'] / 100, 2)
 
 slope_len = pd.read_csv(args.slope_len)

@@ -63,13 +63,13 @@ def writeDATFiles(new_dir, config, fid, row):
         np.savetxt(ofile, [[int(fid)]*6 + [config["duration"], config["start_year"]]], fmt=fmt)
         
     with open(f'{new_dir}/ieSite.DAT', 'w') as ofile:
-        site_src = config["site"]["dir"]
+        site_src = config["sites"]["dir"]
         fmt = '%8d    "%s/%d.sit"\n'%(fid, site_src, fid)
         ofile.write(fmt)
 
     with open(f'{new_dir}/ieSllist.DAT', 'w') as ofile:
         soil_src = config["soil"]["files_dir"]
-        fmt = '%8d    "%s/%d.SOL"\n'%(fid, soil_src, row['ssu'])  
+        fmt = '%8d    "%s/%d.SOL"\n'%(fid, soil_src, row['soil_id'])  
         ofile.write(fmt)
 
     with open(f'{new_dir}/ieWedlst.DAT', 'w') as ofile:
