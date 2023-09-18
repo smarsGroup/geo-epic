@@ -1,10 +1,12 @@
+#!/home/irigireddyb/.conda/envs/epic_env/bin/python
 import argparse
 import subprocess
 import os
 
 def main():
     parser = argparse.ArgumentParser(description="EPIC package CLI")
-    parser.add_argument('cmd', help='Command to run')
+    parser.add_argument('module', help='Module name')
+    parser.add_argument('func', help='Function name')
     parser.add_argument('options', nargs=argparse.REMAINDER, help='Other options for the cmd')
 
     args = parser.parse_args()

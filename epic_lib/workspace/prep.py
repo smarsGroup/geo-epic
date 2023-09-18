@@ -65,15 +65,17 @@ if soil['files_dir'] is None:
 info_df = calc_centroids(info_df)
 info_df.drop(['geometry', 'centroid'], axis=1, inplace=True)
 
+# info_df['dly'] = info_df['FieldID'].values /
+
 coords = info_df[['x', 'y']].values
 soil_dir = os.path.dirname(soil["gdb_path"])
-site = config["site"]
+site = config["sites"]
 ssurgo_map = site["ssurgo_map"]
-info_df['ssu'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
+info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
-command = f'python3 {root_path}/sit/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
+command = f'python3 {root_path}/sites/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}'
 message = subprocess.Popen(command, shell=True, env=env).wait()
 

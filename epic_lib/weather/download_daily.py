@@ -6,9 +6,9 @@ import rasterio
 import xarray as xr
 import geopandas as gpd
 from epic_io import DLY
-from .daymet import *
+from weather.daymet import *
 import subprocess
-from .main import DailyWeather
+from weather.main import DailyWeather
 from misc.utils import parallel_executor
 from misc.raster_utils import raster_to_dataframe, sample_raster_nearest
 
@@ -21,7 +21,6 @@ parser.add_argument("-c", "--region_code", help="An integer, climate_ID starts w
 parser.add_argument("-o", "--working_dir", required=True, help="Path to Weather dir")
 parser.add_argument("-w", "--max_workers", default = 20, help = "No. of maximum workers")
 args = parser.parse_args()
-
 
 
 # Change working dir
@@ -54,8 +53,7 @@ data_set = data_set.where(mask)
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
-message = subprocess.Popen(f'python3 nldas_ws.py -s {args.start_date} -e {args.end_date} \ 
-                           -b {lat_min} {lat_max} {lon_min} {lon_max} -o {args.working_dir}', shell=True).wait()
+message = subprocess.Popen(f'python3 nldas_ws.py -s {args.start_date} -e {args.end_date} -b {lat_min} {lat_max} {lon_min} {lon_max} -o {args.working_dir}', shell=True).wait()
 
 daily_weather = DailyWeather(args.working_dir, args.start_date, args.end_date)
 

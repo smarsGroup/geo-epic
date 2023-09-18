@@ -48,7 +48,7 @@ mapunit.to_csv(f'{region}_mapunit.csv', index = False)
 # component = pd.read_csv(f'{region}_component.csv')
 # mapunit = pd.read_csv(f'{region}_mapunit.csv')
 
-idx = component.groupby('mukey')['comppct_r'].transform(max) == component['comppct_r']
+idx = component.groupby('mukey')['comppct_r'].transform('max') == component['comppct_r']
 soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 

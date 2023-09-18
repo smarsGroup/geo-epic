@@ -5,7 +5,7 @@ code: OK
 Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
 # Area_of_Interest: 
 # Grid_resoultion: #(in km)
-Processed_Info: /gpfs/data1/cmongp/Bharath/TFP/info.csv
+Processed_Info: 
 
 # Model details
 EPICModel: ./model/EPIC2301dt20230820
