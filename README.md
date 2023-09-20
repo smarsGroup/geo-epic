@@ -6,8 +6,7 @@ EPIC Python package!
 
 ### Prerequisites
 
-Before starting the installation, ensure you have `wget`, `conda` or `virtualenv` installed.
-
+Before starting the installation, ensure you have `wget` and `conda` are installed.
 
 
 ### Steps
