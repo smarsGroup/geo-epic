@@ -1,3 +1,4 @@
+#!/bin/bash
 
 wget -O epic_pkg.zip https://github.com/smarsGroup/EPIC-pkg/archive/master.zip
 
@@ -27,6 +28,15 @@ fi
 # Update the shebang line of scripts in the scripts directory
 mv EPIC-pkg-master epic_pkg
 cd ./epic_pkg
+
+mkdir metadata
+cd ./metadata
+wget https://smarslab-files.s3.amazonaws.com/epic-utils/slope_us.tif
+wget https://smarslab-files.s3.amazonaws.com/epic-utils/SRTM_1km_US_project.tif
+wget https://smarslab-files.s3.amazonaws.com/epic-utils/SSURGO.tif
+cd ..
+
+
 script="$(pwd)/epic_lib/dispatcher.py"
 echo "#!$interpreter_path" | cat - "$script" > temp && mv temp "$script"
 chmod +x "$script"

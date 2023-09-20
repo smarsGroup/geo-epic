@@ -12,41 +12,13 @@ Before starting the installation, ensure you have `wget`, `conda` or `virtualenv
 
 ### Steps
 
-1. **Download [setup.sh](setup.sh) file (for linux)**
+1. Run this command for linux to install epic_pkg
+  ```
+  wget https://raw.githubusercontent.com/smarsGroup/EPIC-pkg/master/setup.sh ; chmod +x setup.sh; conda create --name epic_env python=3.9 ; conda activate epic_env ; sh setup.sh
+  ```
 
    **Download [setup.bat](setup.bat) file (for windows)**
 
-2. **Create a Virtual Environment**
-
-   It's recommended to setup this package within a virtual environment with python 3.9. Here's how to create one:
-
-   **Using conda:**
-   ```bash
-   conda create --name epic_env python=3.9
-   conda activate epic_env
-   ```
-
-   **Using virtualenv:**
-   ```bash
-   virtualenv epic_env
-   source epic_env/bin/activate
-   ```
-   
-3. **Run the Setup Script**
-
-    Once you have your virtual environment ready and activated, execute the setup.sh script:
-
-    For linux
-    ```bash
-    bash setup.sh
-    ```
-
-    For windows
-    ```
-    setup.bat
-    ```
-
-    This will set up everything needed to run the EPIC Python package within your virtual environment.
 
 ## Commands Available
 
