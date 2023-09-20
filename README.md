@@ -11,9 +11,15 @@ Before starting the installation, ensure you have `wget` and `conda` are install
 
 ### Steps
 
-1. Run this command for linux to install epic_pkg
+1. Setup a Virtual environment. (conda Recommended)
+   ```
+   conda create --name epic_env python=3.9
+   conda activate epic_env
+   ```
+2. Download setup.sh and run
   ```
-  wget https://raw.githubusercontent.com/smarsGroup/EPIC-pkg/master/setup.sh ; chmod +x setup.sh; conda create --name epic_env python=3.9 ; conda activate epic_env ; sh setup.sh
+  wget https://raw.githubusercontent.com/smarsGroup/EPIC-pkg/master/setup.sh
+  chmod +x setup.sh; ./setup.sh
   ```
 
    **Download [setup.bat](setup.bat) file (for windows)**
