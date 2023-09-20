@@ -16,11 +16,11 @@ Before starting the installation, ensure you have `wget` and `conda` are install
    conda create --name epic_env python=3.9
    conda activate epic_env
    ```
-2. Download setup.sh and run
-  ```
-  wget https://raw.githubusercontent.com/smarsGroup/EPIC-pkg/master/setup.sh
-  chmod +x setup.sh; ./setup.sh
-  ```
+2. **For Linux.** Download and run setup.sh
+   ```
+   wget https://raw.githubusercontent.com/smarsGroup/EPIC-pkg/master/setup.sh
+   chmod +x setup.sh; ./setup.sh
+   ```
 
    **Download [setup.bat](setup.bat) file (for windows)**
 
