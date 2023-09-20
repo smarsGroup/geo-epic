@@ -1,5 +1,4 @@
 import os
-import yaml
 import argparse
 import pandas as pd
 import subprocess
@@ -8,8 +7,8 @@ from misc import ConfigParser
 from misc.utils import calc_centroids#, find_column
 from ssurgo import get_soil_ids
 
-parser = argparse.ArgumentParser(description="ConfigParser CLI")
-parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
+parser = argparse.ArgumentParser(description="EPIC workspace")
+parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 args = parser.parse_args()
 
 curr_dir = os.getcwd()
@@ -54,7 +53,7 @@ if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
     start_date = weather["start_date"]
     end_date = weather["end_date"]
     command = f'python3 {root_path}/weather/nldas_ws.py -s {start_date} -e {end_date} \
-                  -w {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
+                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
     message = subprocess.Popen(command, shell=True, env=env)
 
 # create soil files 
@@ -66,16 +65,17 @@ if soil['files_dir'] is None:
 info_df = calc_centroids(info_df)
 info_df.drop(['geometry', 'centroid'], axis=1, inplace=True)
 
+# info_df['dly'] = info_df['FieldID'].values /
+
 coords = info_df[['x', 'y']].values
 soil_dir = os.path.dirname(soil["gdb_path"])
-invalid = soil_dir + '/invalid_mukeys.csv'
-site = config["site"]
+site = config["sites"]
 ssurgo_map = site["ssurgo_map"]
-info_df['ssu'] = get_soil_ids(coords, ssurgo_map, invalid) 
+info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
-command = f'python3 {root_path}/sit/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
+command = f'python3 {root_path}/sites/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}'
 message = subprocess.Popen(command, shell=True, env=env).wait()
 

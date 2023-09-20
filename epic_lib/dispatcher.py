@@ -1,10 +1,12 @@
+#!/home/irigireddyb/.conda/envs/epic_env/bin/python
 import argparse
 import subprocess
 import os
 
 def main():
     parser = argparse.ArgumentParser(description="EPIC package CLI")
-    parser.add_argument('cmd', help='Command to run')
+    parser.add_argument('module', help='Module name')
+    parser.add_argument('func', help='Function name')
     parser.add_argument('options', nargs=argparse.REMAINDER, help='Other options for the cmd')
 
     args = parser.parse_args()
@@ -31,15 +33,15 @@ def main():
     elif args.module == "sites":
         if args.func == "generate":
             script_path = os.path.join(root_path, "sites", "generate.py")
-    elif args.module == "exp":
+    elif args.module == "workspace":
         if args.func == "prepare":
-            script_path = os.path.join(root_path, "exp", "prep.py")
+            script_path = os.path.join(root_path, "workspace", "prep.py")
         elif args.func == "run":
-            script_path = os.path.join(root_path, "exp", "run.py")
+            script_path = os.path.join(root_path, "workspace", "run.py")
         elif args.func == "listfiles":
-            script_path = os.path.join(root_path, "exp", "listfiles.py")
+            script_path = os.path.join(root_path, "workspace", "listfiles.py")
         elif args.func == "new":
-            script_path = os.path.join(root_path, "exp", "create_ws.py")
+            script_path = os.path.join(root_path, "workspace", "create_ws.py")
     else:
         print(f"Command '{args.cmd}' not found.")
         return

@@ -29,14 +29,14 @@ epic_pkg module func -options
 ```
 ## List of Modules and Functions:
 
-- **exp**
-  - **new**: Create a workspace with a template structure.
+- **workspace**
+  - **new**: Create a new workspace with a template structure.
   - **prepare**: Prepare the input files using config file.
   - **list_files**: Create lst.DAT files using config file.
   - **run**: Execute the simulations.
 - **weather**
   - **download_daily**: Download daily weather data. 
-  - **daily2monthly**: Convert daily weather data to monthly. (TODO)
+  - **daily2monthly**: Convert daily weather data to monthly.
   - **download_windspeed**: Download wind speed data.
 - **soil**
   - **process_gdb**: Process ssurgo gdb file.

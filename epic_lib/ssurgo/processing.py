@@ -48,7 +48,7 @@ mapunit.to_csv(f'{region}_mapunit.csv', index = False)
 # component = pd.read_csv(f'{region}_component.csv')
 # mapunit = pd.read_csv(f'{region}_mapunit.csv')
 
-idx = component.groupby('mukey')['comppct_r'].transform(max) == component['comppct_r']
+idx = component.groupby('mukey')['comppct_r'].transform('max') == component['comppct_r']
 soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 
@@ -91,10 +91,6 @@ mukeys_in_soil_layer = soil_layer['mukey'].unique()
 soil_orig = soil.copy()
 soil = soil[soil['mukey'].isin(mukeys_in_soil_layer)]
 soil = soil.sort_values(by = ['mukey'])
-
-invalid_mukeys = set(soil_orig['mukey']) - set(soil['mukey'])
-invalid_df = pd.DataFrame({"invalid_mukey": list(invalid_mukeys)})
-invalid_df.to_csv('invalid_mukeys.csv', index=False)
 
 print("\nwriting soil files")
 

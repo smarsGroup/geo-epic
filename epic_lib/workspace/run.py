@@ -1,5 +1,4 @@
 import os
-import yaml
 import argparse
 import shutil
 import subprocess
@@ -10,8 +9,8 @@ from misc import ConfigParser
 from misc.utils import parallel_executor, writeDATFiles
 
 # Fetch the base directory
-parser = argparse.ArgumentParser(description="ConfigParser CLI")
-parser.add_argument("-c", "--config", required=True, help="Path to the configuration file")
+parser = argparse.ArgumentParser(description="EPIC workspace")
+parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 args = parser.parse_args()
 
 curr_dir = os.getcwd()
@@ -71,3 +70,4 @@ total = len(info_ls)
 min_ind, max_ind = config["Range"]
 min_ind, max_ind = int(min_ind*total), int(max_ind*total)
 parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"])
+shutil.rmtree(os.path.join(base_dir, 'sims'))

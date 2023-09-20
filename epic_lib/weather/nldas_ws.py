@@ -14,7 +14,7 @@ parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (Y
 parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
 parser.add_argument("-b", "--extent", type=float, nargs=4, metavar=('LAT_MIN', 'LAT_MAX', 'LON_MIN', 'LON_MAX'), 
                         default = [39.8, 43.0, -104, -95.3], help = "Bounding box coordinates")
-parser.add_argument("-w", "--working_dir", required=True, help="Working directory")
+parser.add_argument("-o", "--working_dir", required=True, help="Working directory")
 args = parser.parse_args()
 
 # Access values using args.bbox
