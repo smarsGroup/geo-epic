@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import xarray as xr
+import rioxarray as rio
 import pandas as pd
 from pydap.cas.urs import setup_session
 from misc.utils import parallel_executor
