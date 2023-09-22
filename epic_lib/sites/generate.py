@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
-from misc.utils import parallel_executor
-from misc.raster_utils import sample_raster_nearest
+from epic_lib.misc.utils import parallel_executor
+from epic_lib.misc.raster_utils import sample_raster_nearest
 import argparse
 
 parser = argparse.ArgumentParser(description="Process raster data and save results.")

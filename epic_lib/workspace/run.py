@@ -5,8 +5,8 @@ import subprocess
 from weather import DailyWeather
 import numpy as np
 import pandas as pd
-from misc import ConfigParser
-from misc.utils import parallel_executor, writeDATFiles
+from epic_lib.misc import ConfigParser
+from epic_lib.misc.utils import parallel_executor, writeDATFiles
 
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")

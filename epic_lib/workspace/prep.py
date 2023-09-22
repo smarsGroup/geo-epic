@@ -3,10 +3,11 @@ import argparse
 import pandas as pd
 import subprocess
 import geopandas as gpd
-from misc import ConfigParser
-from misc.utils import calc_centroids#, find_column
+from epic_lib.misc import ConfigParser
+from epic_lib.misc.utils import calc_centroids#, find_column
 from ssurgo import get_soil_ids
 import numpy as np
+
 parser = argparse.ArgumentParser(description="EPIC workspace")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 args = parser.parse_args()
@@ -33,7 +34,8 @@ if file_extension == 'csv':
 elif file_extension == 'shp':
     info_df = gpd.read_file(file_path)
     # Prepare Info for Run
-    info_df = info_df.to_crs(epsg=4326); lon_min, lat_min, lon_max, lat_max = info_df.total_bounds
+    info_df = info_df.to_crs(epsg=4326); 
+    lon_min, lat_min, lon_max, lat_max = info_df.total_bounds
     info_df = calc_centroids(info_df)
     info_df.drop(['geometry', 'centroid'], axis=1, inplace=True)
     

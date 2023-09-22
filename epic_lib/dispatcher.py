@@ -20,6 +20,7 @@ def main():
     options_str = " ".join(args.options)
     command = f'python3 {{script_path}} {options_str}'
     
+    script_path = None
     if args.module == "weather":
         if args.func == "download_windspeed":
             script_path = os.path.join(root_path, "weather", "nldas_ws.py")
@@ -42,7 +43,8 @@ def main():
             script_path = os.path.join(root_path, "workspace", "listfiles.py")
         elif args.func == "new":
             script_path = os.path.join(root_path, "workspace", "create_ws.py")
-    else:
+            
+    if script_path is None:
         print(f"Command '{args.cmd}' not found.")
         return
     

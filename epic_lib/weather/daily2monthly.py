@@ -1,7 +1,7 @@
 import os
 import argparse
 from epic_io import DLY
-from misc.utils import parallel_executor
+from epic_lib.misc.utils import parallel_executor
 from glob import glob
 
 parser = argparse.ArgumentParser(description="Daily to Monthly")

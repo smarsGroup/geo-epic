@@ -6,12 +6,12 @@ import rasterio
 import xarray as xr
 import rioxarray as rio
 import geopandas as gpd
-from epic_io import DLY
-from weather.daymet import *
+from epic_lib.epic_io import DLY
+from epic_lib.weather.daymet import *
 import subprocess
-from weather.main import DailyWeather
-from misc.utils import parallel_executor
-from misc.raster_utils import raster_to_dataframe, sample_raster_nearest
+from epic_lib.weather.main import DailyWeather
+from epic_lib.misc.utils import parallel_executor
+from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")

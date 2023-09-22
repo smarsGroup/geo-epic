@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 from .daymet import *
-from epic_io import DLY
-from misc.raster_utils import LatLonLookup
+from epic_lib.epic_io import DLY
+from epic_lib.misc.raster_utils import LatLonLookup
     
 class DailyWeather:
     def __init__(self, path, start_date, end_date):
