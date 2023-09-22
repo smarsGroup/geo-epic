@@ -18,7 +18,7 @@ Before starting the installation, ensure you have `wget` and `conda` are install
    ```
 2. Install the package
    ```
-   pip install git+https://github.com/john_doe/mypackage.git
+   pip install git+https://github.com/smarsGroup/EPIC-pkg.git
    ```
    
 ## Commands Available
