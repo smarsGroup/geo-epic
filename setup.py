@@ -8,7 +8,7 @@ def install_gdal(filename):
     # Download the wheel file
     url = "https://smarslab-files.s3.amazonaws.com/epic-utils/" + filename
     urllib.request.urlretrieve(url, filename)
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', filename])
+    subprocess.check_call(['pip', 'install', filename])
     os.remove(filename)
 
 # Check if the OS is Windows
@@ -38,7 +38,7 @@ for file_url in files_to_download:
     filename = os.path.join(metadata_dir, os.path.basename(file_url))
     urllib.request.urlretrieve(file_url, filename)
 
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
+subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
 
 from epic_lib.misc import ConfigParser
 config = ConfigParser('./', './epic_lib/ws_template/config.yml')
