@@ -61,7 +61,9 @@ setup(
     packages=find_packages(),
     install_requires=read_requirements(),
     package_data={
-        'epic_lib': ['ws_template/**/*'],
+        'epic_lib': ['ws_template/**/*',
+                    'ssurgo/template.sol',
+                    'sites/template.sit'],
     },
     entry_points={
         'console_scripts': [
