@@ -56,9 +56,9 @@ data_set = data_set.where(mask)
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
-message = subprocess.Popen(f'epic_pkg weather download_windspeed -s {args.start_date} -e {args.end_date} -b {lat_min} {lat_max} {lon_min} {lon_max} -o {args.working_dir}', shell=True).wait()
+message = subprocess.Popen(f'epic_pkg weather download_windspeed -s {args.start_date} -e {args.end_date} -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', shell=True).wait()
 
-daily_weather = DailyWeather(args.working_dir, args.start_date, args.end_date)
+daily_weather = DailyWeather('.', args.start_date, args.end_date)
 
 os.makedirs('./Daily', exist_ok = True)
 os.makedirs('./Monthly', exist_ok = True)
