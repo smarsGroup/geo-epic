@@ -5,7 +5,7 @@ import subprocess
 import geopandas as gpd
 from epic_lib.misc import ConfigParser
 from epic_lib.misc.utils import calc_centroids#, find_column
-from ssurgo import get_soil_ids
+from epic_lib.ssurgo import get_soil_ids
 import numpy as np
 
 parser = argparse.ArgumentParser(description="EPIC workspace")
@@ -63,18 +63,18 @@ soil = config["soil"]
 weather = config["weather"]
 region_code = config["code"]
 
-# # Download Nldas data 
-# if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
-#     start_date = weather["start_date"]
-#     end_date = weather["end_date"]
-#     command = f'python3 {root_path}/weather/nldas_ws.py -s {start_date} -e {end_date} \
-#                   -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
-#     message = subprocess.Popen(command, shell=True, env=env)
+# Download Nldas data 
+if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
+    start_date = weather["start_date"]
+    end_date = weather["end_date"]
+    command = f'python3 {root_path}/weather/nldas_ws.py -s {start_date} -e {end_date} \
+                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
+    message = subprocess.Popen(command, shell=True)
 
 # create soil files 
 if soil['files_dir'] is None:
     command = f'python3 {root_path}/ssurgo/processing.py -r {region_code} -gdb {soil["gdb_path"]}'
-    message = subprocess.Popen(command, shell=True, env=env).wait()
+    message = subprocess.Popen(command, shell=True).wait()
 
 # info_df['dly'] = info_df['FieldID'].values /
 
@@ -89,7 +89,7 @@ info_df.to_csv(curr_dir + '/info.csv', index = False)
 # create site files
 command = f'python3 {root_path}/sites/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}'
-message = subprocess.Popen(command, shell=True, env=env).wait()
+message = subprocess.Popen(command, shell=True).wait()
 
 config.update_config({
     'soil': {

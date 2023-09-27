@@ -2,7 +2,7 @@ import os
 import argparse
 import shutil
 import subprocess
-from weather import DailyWeather
+from epic_lib.weather import DailyWeather
 import numpy as np
 import pandas as pd
 from epic_lib.misc import ConfigParser
