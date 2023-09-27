@@ -28,6 +28,8 @@ print('Processing shape file')
 
 # Define date range from command-line arguments
 # dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
+
+print('curr', os.getcwd())
 gdf = gpd.read_file(args.region)
 
 # Change working dir
@@ -64,7 +66,7 @@ os.makedirs('./Daily', exist_ok = True)
 os.makedirs('./Monthly', exist_ok = True)
 
 def create_dly(row):
-    lon, lat, daymet_id = row.values()
+    _, lon, lat, daymet_id = row.values()
     file_path = os.path.join('./Daily/', f'{int(daymet_id)}.DLY')
     if not os.path.isfile(file_path):
         dly = daily_weather.get(lat, lon)

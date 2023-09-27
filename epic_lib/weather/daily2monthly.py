@@ -1,6 +1,6 @@
 import os
 import argparse
-from epic_io import DLY
+from epic_lib.epic_io import DLY
 from epic_lib.misc.utils import parallel_executor
 from glob import glob
 

@@ -60,6 +60,7 @@ setup(
     version='0.1',
     packages=find_packages(),
     install_requires=read_requirements(),
+    include_package_data=True,
     package_data={
         'epic_lib': ['ws_template/**/*',
                     'ssurgo/template.sol',
