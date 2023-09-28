@@ -62,7 +62,7 @@ setup(
     install_requires=read_requirements(),
     include_package_data=True,
     package_data={
-        'epic_lib': ['ws_template/**/*',
+        'epic_lib': ['ws_template/**/**/*',
                     'ssurgo/template.sol',
                     'sites/template.sit'],
     },

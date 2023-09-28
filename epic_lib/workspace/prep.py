@@ -6,6 +6,7 @@ import geopandas as gpd
 from epic_lib.misc import ConfigParser
 from epic_lib.misc.utils import calc_centroids#, find_column
 from epic_lib.ssurgo import get_soil_ids
+from epic_lib.dispatcher import dispatch
 import numpy as np
 
 parser = argparse.ArgumentParser(description="EPIC workspace")
@@ -67,19 +68,15 @@ region_code = config["code"]
 if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
     start_date = weather["start_date"]
     end_date = weather["end_date"]
-    command = f'epic_pkg weather download_windspeed -s {start_date} -e {end_date} \
-                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
-    message = subprocess.Popen(command, shell=True)
+    dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
+                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}')
 
 # create soil files 
 if soil['files_dir'] is None:
-    command = f'epic_pkg soil process_gdb -r {region_code} -gdb {soil["gdb_path"]}'
-    message = subprocess.Popen(command, shell=True).wait()
+    dispatch('soil', 'process_gdb', '-r {region_code} -gdb {soil["gdb_path"]}')
 
-# info_df['dly'] = info_df['FieldID'].values /
 
 coords = info_df[['x', 'y']].values
-# print(coords)
 soil_dir = os.path.dirname(soil["gdb_path"])
 site = config["sites"]
 ssurgo_map = site["ssurgo_map"]
@@ -87,9 +84,8 @@ info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files")
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
-command = f'epic_pkg sites generate -o {site["dir"]} -i {curr_dir + "/info.csv"}\
-    -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}'
-message = subprocess.Popen(command, shell=True).wait()
+dispatch('sites', 'generate', '-o {site["dir"]} -i {curr_dir + "/info.csv"}\
+    -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}')
 
 config.update_config({
     'soil': {
