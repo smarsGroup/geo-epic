@@ -44,9 +44,9 @@ from epic_lib.misc import ConfigParser
 config = ConfigParser('./', './epic_lib/ws_template/config.yml')
 
 config.update_config({'sites': {
-        'elevation': f'{home_dir}/SRTM_1km_US_project.tif',
-        'slope_us': f'{home_dir}/slope_us.tif',
-        'ssurgo_map': f'{home_dir}/SSURGO.tif',
+        'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
+        'slope_us': f'{home_dir}/epic_pkg_metadata/slope_us.tif',
+        'ssurgo_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',
     } })
 
 # Function to read the requirements.txt file
