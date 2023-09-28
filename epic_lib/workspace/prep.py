@@ -67,13 +67,13 @@ region_code = config["code"]
 if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
     start_date = weather["start_date"]
     end_date = weather["end_date"]
-    command = f'python3 {root_path}/weather/nldas_ws.py -s {start_date} -e {end_date} \
+    command = f'epic_pkg weather download_windspeed -s {start_date} -e {end_date} \
                   -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}'
     message = subprocess.Popen(command, shell=True)
 
 # create soil files 
 if soil['files_dir'] is None:
-    command = f'python3 {root_path}/ssurgo/processing.py -r {region_code} -gdb {soil["gdb_path"]}'
+    command = f'epic_pkg soil process_gdb -r {region_code} -gdb {soil["gdb_path"]}'
     message = subprocess.Popen(command, shell=True).wait()
 
 # info_df['dly'] = info_df['FieldID'].values /
@@ -87,7 +87,7 @@ info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files")
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
-command = f'python3 {root_path}/sites/generate.py -o {site["dir"]} -i {curr_dir + "/info.csv"}\
+command = f'epic_pkg sites generate -o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}'
 message = subprocess.Popen(command, shell=True).wait()
 
