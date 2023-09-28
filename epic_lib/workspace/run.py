@@ -55,7 +55,7 @@ def process_model(row):
     subprocess.Popen(command, shell=True).wait()
     
     for out_type in config['output_types']:
-        out_file_loc = os.path.join(new_dir, f'{fid}.{out_type}')
+        out_file_loc = f'{fid}.{out_type}'
         print(os.getcwd())
         print(out_file_loc)
         print(os.path.exists(out_file_loc))
@@ -77,6 +77,6 @@ total = len(info_ls)
 min_ind, max_ind = config["Range"]
 min_ind, max_ind = int(min_ind*total), int(max_ind*total)
 print('Total Field Sites:', max_ind-min_ind)
-process_model(info_ls[0])
+process_model(info_ls[min_ind])
 parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"])
 #shutil.rmtree(os.path.join(base_dir, 'sims'))
