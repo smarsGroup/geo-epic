@@ -56,10 +56,6 @@ def process_model(row):
     
     for out_type in config['output_types']:
         out_file_loc = f'{fid}.{out_type}'
-        print(os.getcwd())
-        print(out_file_loc)
-        print(os.path.exists(out_file_loc))
-        print(os.path.getsize(out_file_loc))
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
             shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         # else:
