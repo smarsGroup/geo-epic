@@ -43,5 +43,5 @@ opc_prefix: CropRot
 
 
 # Run params
-Range: [0, 0.25]
-num_of_workers: 80
+Range: [0, 0.25] # The portion of fields to run simulations. 0 to 1 is for all of them.
+num_of_workers: 80 # No. of parellel processes. Should be less than number of cpu cores.
