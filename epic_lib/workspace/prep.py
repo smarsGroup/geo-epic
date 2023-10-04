@@ -72,7 +72,7 @@ if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
 
 # create soil files 
 if soil['files_dir'] is None:
-    dispatch('soil', 'process_gdb', '-r {region_code} -gdb {soil["gdb_path"]}', True)
+    dispatch('soil', 'process_gdb', f'-r {region_code} -gdb {soil["gdb_path"]}', True)
 
 
 coords = info_df[['x', 'y']].values
@@ -83,7 +83,7 @@ info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files")
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
-dispatch('sites', 'generate', '-o {site["dir"]} -i {curr_dir + "/info.csv"}\
+dispatch('sites', 'generate', f'-o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}', False)
 
 config.update_config({

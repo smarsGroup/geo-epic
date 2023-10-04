@@ -28,7 +28,7 @@ model_dir = os.path.dirname(model)
 os.makedirs(output_dir, exist_ok = True)
 os.makedirs(log_dir, exist_ok = True)
 
-daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"])
+daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"], weather['offline'])
 
 subprocess.Popen(f'chmod +x {model}', shell=True).wait()
 model = model.split('/')[-1]
