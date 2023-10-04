@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from epic_lib.misc import ConfigParser
 from epic_lib.misc.utils import parallel_executor, writeDATFiles
-
+from glob import glob
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -51,11 +51,12 @@ def process_model(row):
     writeDATFiles(new_dir, config, fid, row)
     
     # Run the model and collect outputs
-    command = f'nohup ./{model} &> {os.path.join(log_dir, f"{fid}.out")}'
+    command = f'nohup ./{model} > {os.path.join(log_dir, f"{fid}.out")} 2>&1'
     subprocess.Popen(command, shell=True).wait()
     
     for out_type in config['output_types']:
         out_file_loc = f'{fid}.{out_type}'
+        print(glob('./*'))
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
             shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         else:
