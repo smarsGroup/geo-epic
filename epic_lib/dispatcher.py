@@ -2,7 +2,7 @@ import argparse
 import subprocess
 import os
 
-def dispatch(module, func, options_str):
+def dispatch(module, func, options_str, wait = True):
     root_path = os.path.dirname(__file__)
     # Base command
     command = f'python3 {{script_path}} {options_str}'
@@ -35,7 +35,10 @@ def dispatch(module, func, options_str):
         return
     
     command = command.format(script_path = script_path)
-    message = subprocess.Popen(command, shell=True).wait()
+    if wait:
+        message = subprocess.Popen(command, shell=True).wait()
+    else:
+        message = subprocess.Popen(command, shell=True)
 
 def main():
     parser = argparse.ArgumentParser(description="EPIC package CLI")

@@ -12,7 +12,7 @@ import subprocess
 from epic_lib.weather.main import DailyWeather
 from epic_lib.misc.utils import parallel_executor
 from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
-
+from epic_lib.dispatcher import dispatch
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")
 parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
@@ -58,7 +58,8 @@ data_set = data_set.where(mask)
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
-message = subprocess.Popen(f'epic_pkg weather download_windspeed -s {args.start_date} -e {args.end_date} -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', shell=True).wait()
+dispatch('weather', 'download_windspeed', f'-s {args.start_date} -e {args.end_date} \
+                  -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
 
 daily_weather = DailyWeather('.', args.start_date, args.end_date)
 

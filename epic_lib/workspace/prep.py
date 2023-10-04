@@ -39,7 +39,6 @@ elif file_extension == 'shp':
     lon_min, lat_min, lon_max, lat_max = info_df.total_bounds
     info_df = calc_centroids(info_df)
     info_df.drop(['geometry', 'centroid'], axis=1, inplace=True)
-    
 else:
     raise ValueError("Unsupported file format. Only CSV and shapefile formats are supported.")
 
@@ -69,11 +68,11 @@ if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
     start_date = weather["start_date"]
     end_date = weather["end_date"]
     dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
-                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}')
+                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}', False)
 
 # create soil files 
 if soil['files_dir'] is None:
-    dispatch('soil', 'process_gdb', '-r {region_code} -gdb {soil["gdb_path"]}')
+    dispatch('soil', 'process_gdb', '-r {region_code} -gdb {soil["gdb_path"]}', True)
 
 
 coords = info_df[['x', 'y']].values
@@ -85,7 +84,7 @@ info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
 dispatch('sites', 'generate', '-o {site["dir"]} -i {curr_dir + "/info.csv"}\
-    -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}')
+    -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}', False)
 
 config.update_config({
     'soil': {
