@@ -6,7 +6,7 @@ import rasterio
 import xarray as xr
 import rioxarray as rio
 import geopandas as gpd
-from epic_lib.epic_io import DLY
+from epic_lib.io import DLY
 from epic_lib.weather.daymet import *
 import subprocess
 from epic_lib.weather.main import DailyWeather
