@@ -20,7 +20,7 @@ def get_daymet_data(lat: float, lon: float, start: str, end: str):
 
     # Read and format the data
     data = pd.read_csv(data_content, skiprows=8, names=['year','yday','dayl','prcp','srad','swe','tmax','tmin','vp'])
-    data.drop(columns=['dayl', 'swe'], inplace=True)
+    # data.drop(columns=['swe'], inplace=True)
 
     # get leap year between start and end years and add a column for 60th day
     start_year = int(start.split('-')[0])
@@ -46,7 +46,7 @@ def get_daymet_data(lat: float, lon: float, start: str, end: str):
     # Drop the 'date' and 'yday' columns
     data.drop(['date', 'yday'], axis = 1, inplace=True)
 
-    data['srad'] = data['srad'] * 0.0864  # Convert MJ/m2/day to W/m2
+    data['srad'] =  (data['srad'] * data['dayl']) / 1e6  # Convert W/m2 to MJ/m2/day
     data['rh'] = rh_vappr(data['vp'], data['tmax'], data['tmin'])
     data = data[['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh']]
 
