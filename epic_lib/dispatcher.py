@@ -6,7 +6,7 @@ import sys
 def dispatch(module, func, options_str, wait = True):
     root_path = os.path.dirname(__file__)
     # python_path = '/home/chandrab/anaconda3/envs/epic_env/bin/python'
-    command = f'python {{script_path}} {options_str}'
+    command = f'{sys.executable} {{script_path}} {options_str}'
     script_path = None
     if module == "weather":
         if func == "download_windspeed":
