@@ -49,7 +49,8 @@ ID = next(iter(IDs), None)
 if ID is None:
     raise Exception("FieldID column not Found")
 info_df['FieldID'] = info_df[ID]
-info_df.drop(list(IDs), axis=1, inplace=True)
+# if ID != 'FieldID':
+# info_df.drop(list(IDs), axis=1, inplace=True)
 
 rot_names = set(['RotID', 'rotID'])
 rots = rot_names & columns
