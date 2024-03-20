@@ -1,11 +1,12 @@
 import argparse
 import subprocess
 import os
+import sys
 
 def dispatch(module, func, options_str, wait = True):
     root_path = os.path.dirname(__file__)
-    python_path = '/home/chandrab/anaconda3/envs/epic_env/bin/python'
-    command = f'python3 {{script_path}} {options_str}'
+    # python_path = '/home/chandrab/anaconda3/envs/epic_env/bin/python'
+    command = f'{sys.executable} {{script_path}} {options_str}'
     script_path = None
     if module == "weather":
         if func == "download_windspeed":
@@ -34,16 +35,16 @@ def dispatch(module, func, options_str, wait = True):
         print(f"Command '{module} {func}' not found.")
         return
 
-     env = os.environ.copy()
+    env = os.environ.copy()
     # Update the PATH to include the bin directory of your conda environment
     # Make sure to replace '/path/to/your/conda/env/bin' with the actual path
-    env['PATH'] = '/home/chandrab/anaconda3/envs/epic_env/bin:' + env['PATH']
+    # env['PATH'] = '/home/chandrab/anaconda3/envs/epic_env/bin:' + env['PATH']
 
     command = command.format(script_path = script_path)
     if wait:
         message = subprocess.Popen(command, shell=True, env = env).wait()
     else:
-        message = subprocess.Popen(command, shell=Trueenv = env)
+        message = subprocess.Popen(command, shell=True, env = env)
 
 def main():
     parser = argparse.ArgumentParser(description="EPIC package CLI")
