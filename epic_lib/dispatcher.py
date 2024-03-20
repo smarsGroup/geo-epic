@@ -4,8 +4,8 @@ import os
 
 def dispatch(module, func, options_str, wait = True):
     root_path = os.path.dirname(__file__)
-    # Base command
-    command = f'python3 {{script_path}} {options_str}'
+    python_path = '/home/chandrab/anaconda3/envs/epic_env/bin/python'
+    command = f'{python_path} {{script_path}} {options_str}'
     script_path = None
     if module == "weather":
         if func == "download_windspeed":
