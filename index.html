@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python Utility function to run EPIC model" /><link rel="canonical" href="https://smarsGroup.github.io/EPIC-pkg/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python Utility function to run EPIC model" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/" />
       <link rel="shortcut icon" href="img/favicon.ico" />
     <title>EPIC package</title>
     <link rel="stylesheet" href="css/theme.css" />
@@ -42,31 +42,19 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#setup-instructions-and-available-scripts">Setup Instructions and Available Scripts</a>
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#instructions-to-set-up-the-website-in-your-local-environment">Instructions to set up the website in your local environment:</a>
+    <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#instructions-to-set-up-the-website-on-the-geog-cluster-and-access-the-website-on-your-local-machine">Instructions to set up the website on the GEOG cluster and access the website on your local machine:</a>
+    <li class="toctree-l3"><a class="reference internal" href="#steps">Steps</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#instructions-to-deploy-the-website-on-aws-s3">Instructions to deploy the website on AWS S3:</a>
+    <li class="toctree-l2"><a class="reference internal" href="#commands-available">Commands Available</a>
     </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#license">License</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#contributors">Contributors</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#questions">Questions</a>
+    <li class="toctree-l2"><a class="reference internal" href="#run-an-experiment">Run an Experiment</a>
     </li>
     </ul>
                 </li>
@@ -95,69 +83,52 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="nitrogen-recommendation-tool">Nitrogen Recommendation Tool</h1>
-<p>Nitrogen Recommendation Tool for Wheat in Kansas and Oklahoma.</p>
-<p>This repository contains the code for a tool that provides nitrogen recommendations for wheat farmers in Kansas and Oklahoma. The tool uses data on fertilizer amount, weather conditions, and crop management practices to make accurate and specific recommendations for nitrogen application.</p>
-<h2 id="getting-started">Getting Started</h2>
-<p>These instructions will help you get the project up and running on your local machine and on the GEOG cluster for development and testing purposes.</p>
-<h2 id="prerequisites">Prerequisites</h2>
-<p>Node.js Latest LTS Version: 18.15.0 (includes npm 9.5.0)</p>
-<h2 id="setup-instructions-and-available-scripts">Setup Instructions and Available Scripts</h2>
-<h3 id="instructions-to-set-up-the-website-in-your-local-environment">Instructions to set up the website in your local environment:</h3>
-<p>Navigate to the project directory and run the following commands:\
-Install dependencies using node package manager:\
-   <code>npm install</code>\
-   To run the app in development mode, in your project directory: \
-   <code>npm start</code></p>
-<p>Open <a href="http://localhost:3000">http://localhost:3000</a> to view it in the browser.</p>
-<p>The page will reload if you make edits.\
-You will also see any lint errors in the console.</p>
-<p>To launch the test runner in the interactive watch mode: \
-<code>npm test</code></p>
-<p>See the section about <a href="https://facebook.github.io/create-react-app/docs/running-tests">running tests</a> for more information.</p>
-<h3 id="instructions-to-set-up-the-website-on-the-geog-cluster-and-access-the-website-on-your-local-machine">Instructions to set up the website on the GEOG cluster and access the website on your local machine:</h3>
+                <h1 id="epic-python-package">EPIC Python Package</h1>
+<p>EPIC Python package! </p>
+<p>Documentation site - https://smarsgroup.github.io/EPIC-pkg/</p>
+<p>To update document site, use this command - "mkdocs gh-deploy --force"</p>
+<h2 id="installation">Installation</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Before starting the installation, ensure you have <code>wget</code> and <code>conda</code> are installed.</p>
+<h3 id="steps">Steps</h3>
 <ol>
-<li>Clone the repository to your folder on the cluster.</li>
-<li>Install PuTTY on your local machine.</li>
-<li>Open PuTTY and in the Session's window enter the cluster's hostname or IP address and the port number of the destination SSH server. Make sure the connection type is set to SSH.</li>
-<li>In the left sidebar under the Category options. Navigate to the Connection &gt;&gt; SSH &gt;&gt; Tunnels.</li>
-<li>Select Local to define the type of SSH port forward.</li>
-<li>In the Source port field, enter the port number on which the frontend application in running. (Example - Source port: 3000).</li>
-<li>In the Destination field, enter the destination address followed by the port number. (Example - Destination: localhost:3000).</li>
-<li>Click Add to add the port forward.</li>
-<li>Similarly, add another port forward for the backend application. (Example - Source port: 4000, Destination: localhost:4000).</li>
-<li>Click Open to establish the connection. The tunnel will work until the SSH session is active.</li>
-<li>Run the following commands:\
-<code>module load node</code>\
-<code>export NODE_OPTIONS=--max_old_space_size=4096</code>\
-<code>fuser -n tcp -k 3000</code>\
-<code>fuser -n tcp -k 5000</code></li>
-<li>Navigate to the "react_leaflet" and "socket_server" project directories in separate terminals and run the following commands:\
-<code>npm install</code>\
-<code>npm start</code></li>
-<li>Open <a href="http://localhost:3000">http://localhost:3000</a> to view the website in the browser.</li>
+<li>Setup a Virtual environment. (conda Recommended)
+   <code>conda create --name epic_env python=3.9
+   conda activate epic_env</code></li>
+<li>Install the package
+   <code>pip install git+https://github.com/smarsGroup/EPIC-pkg.git</code></li>
 </ol>
-<h2 id="deployment">Deployment</h2>
-<p>The <a href="http://nitrogen-recommendation-tool.s3-website-us-east-1.amazonaws.com">website</a> is deployed on AWS using Simple Storage Service (S3).</p>
-<h3 id="instructions-to-deploy-the-website-on-aws-s3">Instructions to deploy the website on AWS S3:</h3>
+<h2 id="commands-available">Commands Available</h2>
+<p>Epic_pkg allows you to run various commands. The structure is:</p>
+<pre><code class="language-bash">epic_pkg module func -options
+</code></pre>
+<h2 id="list-of-modules-and-functions">List of Modules and Functions:</h2>
+<ul>
+<li><strong>workspace</strong></li>
+<li><strong>new</strong>: Create a new workspace with a template structure.</li>
+<li><strong>prepare</strong>: Prepare the input files using config file.</li>
+<li><strong>list_files</strong>: Create lst.DAT files using config file.</li>
+<li><strong>run</strong>: Execute the simulations.</li>
+<li><strong>weather</strong></li>
+<li><strong>download_daily</strong>: Download daily weather data. </li>
+<li><strong>daily2monthly</strong>: Convert daily weather data to monthly.</li>
+<li><strong>download_windspeed</strong>: Download wind speed data.</li>
+<li><strong>soil</strong></li>
+<li><strong>process_gdb</strong>: Process ssurgo gdb file.</li>
+<li><strong>sites</strong></li>
+<li><strong>process_aoi</strong>: Process area of interest file.  (TODO)</li>
+<li><strong>process_foi</strong>: Process fields of interest file.  (TODO)</li>
+<li><strong>generate</strong>: Generate site files from processed data.</li>
+</ul>
+<p>For more details on each command and its options, use:</p>
+<pre><code class="language-bash">epic_pkg module func --help
+</code></pre>
+<h2 id="run-an-experiment">Run an Experiment</h2>
 <ol>
-<li>Run the following command: <code>npm run build</code></li>
-<li>Navigate to the <a href="https://s3.console.aws.amazon.com/s3/buckets/nitrogen-recommendation-tool?region=us-east-1&amp;tab=objects">nitrogen-recommendation-tool</a> S3 bucket.</li>
-<li>Empty the bucket. Delete all the contents of the bucket.</li>
-<li>Upload the contents of the "build" folder in the project directory to the S3 bucket.</li>
+<li>Create new workspace</li>
+<li>Edit config file</li>
+<li>Prepare the workspace and execute the simulations</li>
 </ol>
-<p>Cloudfront distribution <a href="ddpa7b9k8neah.cloudfront.net">link</a> of the website.</p>
-<h2 id="contributing">Contributing</h2>
-<p>If you want to contribute to the project, please open an issue or submit a pull request.
-Please take a look at the future tasks for the project <a href="https://docs.google.com/document/d/1sk-xRCABPU3FGIs1ClKA7-HYQKUd2Y2Ky3uUMOL6Tjs/edit">here</a>.</p>
-<h2 id="license">License</h2>
-<p>This project is licensed under the MIT License - see the LICENSE.md file for details.</p>
-<h2 id="contributors">Contributors</h2>
-<p><a href="https://github.com/keerthanmahesh">Keerthan Mahesh</a>, MS Software Engineering, University of Maryland, College Park \
-<a href="https://github.com/Disha-94">Disha Radhakrishna</a>, MS Software Engineering, University of Maryland, College Park \
-<a href="https://github.com/mrlancelot">Pridhvi Krishna Venkata Meduri</a>, MS Cybersecurity, University of Maryland, College Park</p>
-<h2 id="questions">Questions</h2>
-<p>If you have any questions, please feel free to contact us at <a href="">kmahesh7@umd.edu</a>, <a href="">dradhakr@umd.edu</a>.</p>
               
             </div>
           </div><footer>
@@ -205,5 +176,5 @@ Please take a look at the future tasks for the project <a href="https://docs.goo
 
 <!--
 MkDocs version : 1.5.3
-Build Date UTC : 2024-03-28 01:08:18.591541+00:00
+Build Date UTC : 2024-03-28 02:39:32.671410+00:00
 -->
