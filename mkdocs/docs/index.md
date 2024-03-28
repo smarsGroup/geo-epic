@@ -1,3 +1,4 @@
+
 # EPIC Python Package
 
 EPIC Python package! 
@@ -54,8 +55,3 @@ For more details on each command and its options, use:
 ```bash
 epic_pkg module func --help
 ```
-
-## Run an Experiment
-1. Create new workspace
-2. Edit config file
-3. Prepare the workspace and execute the simulations
