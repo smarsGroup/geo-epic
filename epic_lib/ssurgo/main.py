@@ -1,7 +1,7 @@
 import os
 import subprocess
-from misc.utils import find_nearest
-from misc.raster_utils import raster_to_dataframe
+from epic_lib.misc.utils import find_nearest
+from epic_lib.misc.raster_utils import raster_to_dataframe
     
 def get_soil_ids(coords, ssurgo_map, files_dir):
     ssurgo = raster_to_dataframe(ssurgo_map)

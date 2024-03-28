@@ -4,14 +4,15 @@ import numpy as np
 import pandas as pd
 import rasterio
 import xarray as xr
+import rioxarray as rio
 import geopandas as gpd
-from epic_io import DLY
-from weather.daymet import *
+from epic_lib.io import DLY
+from epic_lib.weather.daymet import *
 import subprocess
-from weather.main import DailyWeather
-from misc.utils import parallel_executor
-from misc.raster_utils import raster_to_dataframe, sample_raster_nearest
-
+from epic_lib.weather.main import DailyWeather
+from epic_lib.misc.utils import parallel_executor
+from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
+from epic_lib.dispatcher import dispatch
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")
 parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
@@ -27,6 +28,8 @@ print('Processing shape file')
 
 # Define date range from command-line arguments
 # dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
+
+print('curr', os.getcwd())
 gdf = gpd.read_file(args.region)
 
 # Change working dir
@@ -46,42 +49,38 @@ grid = int(args.region_code)*1e7 + grid
 
 data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
 
-mask = np.ones(data_set.shape, dtype=np.uint8)
-
-# Iterate over the geometries and set the corresponding pixels in the mask to zero
-for geom in gdf.geometry:
-    # Convert the geometry's coordinates to pixel coordinates
-    col, row = data_set.rio.index(*geom.xy)
-    mask[row, col] = 0
-    
-# # Mask the DataArray using Nebraska's shape
-# mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
-#                                   transform=data_set.rio.transform(),
-#                                   invert=True, out_shape=data_set.shape)
-data_set = data_set.where(mask == 0)
+# Mask the DataArray using Nebraska's shape
+mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
+                                  transform=data_set.rio.transform(),
+                                  invert=True, out_shape=data_set.shape)
+data_set = data_set.where(mask)
 # Save the DataArray as a GeoTIFF
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
-message = subprocess.Popen(f'python3 nldas_ws.py -s {args.start_date} -e {args.end_date} -b {lat_min} {lat_max} {lon_min} {lon_max} -o {args.working_dir}', shell=True).wait()
+if not os.path.exists('./NLDAS_csv'):
+    dispatch('weather', 'download_windspeed', f'-s {args.start_date} -e {args.end_date} \
+                    -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
 
-daily_weather = DailyWeather(args.working_dir, args.start_date, args.end_date)
+daily_weather = DailyWeather('.', args.start_date, args.end_date)
 
 os.makedirs('./Daily', exist_ok = True)
 os.makedirs('./Monthly', exist_ok = True)
 
 def create_dly(row):
-    lon, lat, daymet_id = row.values()
+    _, lon, lat, daymet_id = row.values()
     file_path = os.path.join('./Daily/', f'{int(daymet_id)}.DLY')
     if not os.path.isfile(file_path):
         dly = daily_weather.get(lat, lon)
         dly.save(f'./Daily/{int(daymet_id)}')
         dly.to_monthly(f'./Monthly/{int(daymet_id)}')
 
-
 cmids = raster_to_dataframe("./climate_grid.tif")
 # nldas_id = sample_raster_nearest('./nldas_grid.tif', cmids[['x', 'y']].values)
 # cmids['nldas_id'] = nldas_id['band_1']
+cmids = cmids.fillna(-1)
+cmids = cmids[cmids['band_1'] != -1]
+cmids.reset_index(inplace = True)
 cmids = cmids.rename(columns={'band_1': 'daymet_id'})
 
 cmids_ls = cmids.to_dict('records')

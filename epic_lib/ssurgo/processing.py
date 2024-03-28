@@ -4,21 +4,17 @@ import pandas as pd
 from tqdm import tqdm
 from osgeo import ogr
 import argparse
-from misc.utils import parallel_executor, read_gdb_layer
+from epic_lib.misc.utils import parallel_executor, read_gdb_layer
 
 parser = argparse.ArgumentParser(description="soil file creation script")
 parser.add_argument("-r", "--region", default="OK", help="Region code")
 parser.add_argument("-gdb", "--gdb_path", default="./gSSURGO_OK.gdb", help="gdb file path")
+parser.add_argument("-o", "--output_path", default = None, help="outpath path for soil files. If not mentioned, files dir is created in location of gdb")
 args = parser.parse_args()
-
-# Change working dir
-working_dir = os.path.dirname(args.gdb_path) #'/'.join(((args.gdb_path).split('/'))[:-1])
-os.chdir(working_dir)
 
 # Open the GDB
 region = args.region
 driver = ogr.GetDriverByName("OpenFileGDB")
-print(args.gdb_path)
 gdb_data = driver.Open(args.gdb_path)
 
 print("Reading GDB (est time: 30 mins)")
@@ -28,21 +24,21 @@ columns = [4, 9, 72, 94, 91, 33, 51, 135, 85, 132, 66, 114, 126, 24, 15, 18, 78,
 names = ['desgnvert','hzdepb_r','dbthirdb_1','wfifteen_1','wthirdbar1','sandtotal1','silttotal1','ph1to1h2o1','awc_r','sumbases_r','om_r','caco3_r','cec7_r','sieveno101','fraggt10_r','frag3to101','dbovendry1','ksat_r','cokey']
 chorizon = read_gdb_layer(gdb_data, 'chorizon', columns, names)
 chorizon = chorizon.fillna(0)
-chorizon.to_csv(f'{region}_chorizon.csv', index = False)
+chorizon.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_chorizon.csv', index = False)
 
 #component
 columns = [3, 79, 107, 108, 32, 1, 9, 12]
 names = ['compname','hydgrp','mukey','cokey','albedodry1','comppct_r','slope_r','slopelen_1']
 component = read_gdb_layer(gdb_data, 'component', columns, names)
 component = component.fillna(0)
-component.to_csv(f'{region}_component.csv', index = False)
+component.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_component.csv', index = False)
 
 #mapunit
 columns = [0, 23]
 names = ['MapUnitsym', 'mukey']
 mapunit = read_gdb_layer(gdb_data, 'mapunit', columns, names)
 mapunit = mapunit.fillna(0)
-mapunit.to_csv(f'{region}_mapunit.csv', index = False)
+mapunit.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_mapunit.csv', index = False)
 
 # chorizon = pd.read_csv(f'{region}_chorizon.csv')
 # component = pd.read_csv(f'{region}_component.csv')
@@ -53,7 +49,7 @@ soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 
 slopelen_1 = soil[['mukey', 'slopelen_1']]
-slopelen_1.to_csv(f'{region}_slopelen_1.csv', index = False)
+slopelen_1.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_slopelen_1.csv', index = False)
 
 soil = soil[['mukey', 'compname', 'hydgrp', 'cokey', 'albedo', 'comppct_r', 'MapUnitsym']]
 soil['mukey'] = soil['mukey'].astype(int)
@@ -94,7 +90,11 @@ soil = soil.sort_values(by = ['mukey'])
 
 print("\nwriting soil files")
 
-outdir = './files'
+if args.output_path is None:
+    outdir = os.path.dirname(args.gdb_path) + '/files'
+else:
+    outdir = args.output_path
+    
 os.makedirs(outdir, exist_ok=True)
 
 # Read template file

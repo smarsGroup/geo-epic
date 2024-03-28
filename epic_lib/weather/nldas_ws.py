@@ -1,10 +1,11 @@
 import os
 import numpy as np
 import xarray as xr
+import rioxarray as rio
 import pandas as pd
 from pydap.cas.urs import setup_session
-from misc.utils import parallel_executor
-from misc.formule import windspd
+from epic_lib.misc.utils import parallel_executor
+from epic_lib.misc.formule import windspd
 from tqdm import tqdm
 import argparse
 

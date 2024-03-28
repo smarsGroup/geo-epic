@@ -2,12 +2,12 @@ import os
 import argparse
 import shutil
 import subprocess
-from weather import DailyWeather
+from epic_lib.weather import DailyWeather
 import numpy as np
 import pandas as pd
-from misc import ConfigParser
-from misc.utils import parallel_executor, writeDATFiles
-
+from epic_lib.misc import ConfigParser
+from epic_lib.misc.utils import parallel_executor, writeDATFiles
+from glob import glob
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -25,7 +25,10 @@ output_dir = config['output_dir']
 log_dir = config["log_dir"]
 model_dir = os.path.dirname(model)
 
-daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"])
+os.makedirs(output_dir, exist_ok = True)
+os.makedirs(log_dir, exist_ok = True)
+
+daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"], weather['offline'])
 
 subprocess.Popen(f'chmod +x {model}', shell=True).wait()
 model = model.split('/')[-1]
@@ -48,15 +51,16 @@ def process_model(row):
     writeDATFiles(new_dir, config, fid, row)
     
     # Run the model and collect outputs
-    command = f'nohup ./{model} &> {os.path.join(log_dir, f"{fid}.out")}'
+    command = f'nohup ./{model} > {os.path.join(log_dir, f"{fid}.out")} 2>&1'
     subprocess.Popen(command, shell=True).wait()
     
     for out_type in config['output_types']:
-        out_file_loc = os.path.join(new_dir, f'{fid}.{out_type}')
+        out_file_loc = f'{fid}.{out_type}'
+        glob('./*')
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
             shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         else:
-            raise Exception("Simulation Failed")
+            raise Exception("Output files not Found")
     else: os.remove(os.path.join(log_dir, f"{fid}.out"))
 
     # Return to the root directory and delete the simulation directory
@@ -69,5 +73,7 @@ info_ls = info.to_dict('records')
 total = len(info_ls)
 min_ind, max_ind = config["Range"]
 min_ind, max_ind = int(min_ind*total), int(max_ind*total)
+print('Total Field Sites:', max_ind-min_ind)
+process_model(info_ls[min_ind])
 parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"])
-shutil.rmtree(os.path.join(base_dir, 'sims'))
+#shutil.rmtree(os.path.join(base_dir, 'sims'))

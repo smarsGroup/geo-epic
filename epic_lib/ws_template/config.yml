@@ -5,7 +5,7 @@ code: OK
 Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
 # Area_of_Interest: 
 # Grid_resoultion: #(in km)
-Processed_Info: 
+Processed_Info:
 
 # Model details
 EPICModel: ./model/EPIC2301dt20230820
@@ -33,9 +33,9 @@ soil:
 sites:
   dir: ./sites
   slope_len: ./soil/OK_slopelen_1.csv
-  elevation: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/SRTM_1km_US_project.tif
-  slope_us: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/slope_us.tif
-  ssurgo_map: /gpfs/data1/cmongp/Bharath/epic_tools/meta_data/SSURGO.tif
+  elevation: /home/bharath20/SRTM_1km_US_project.tif
+  slope_us: /home/bharath20/slope_us.tif
+  ssurgo_map: /home/bharath20/SSURGO.tif
 
 # OPC details
 opc_dir: ./opc
@@ -43,5 +43,5 @@ opc_prefix: CropRot
 
 
 # Run params
-Range: [0, 0.25]
-num_of_workers: 80 
+Range: [0, 0.25] # The portion of fields to run simulations. 0 to 1 is for all of them.
+num_of_workers: 80 # No. of parellel processes. Should be less than number of cpu cores.
