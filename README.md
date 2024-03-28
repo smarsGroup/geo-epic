@@ -2,7 +2,9 @@
 
 EPIC Python package! 
 
-Doc site - 
+Documentation site - https://smarsgroup.github.io/EPIC-pkg/
+
+To update document site, use this command - "mkdocs gh-deploy --force"
 
 ## Installation
 
