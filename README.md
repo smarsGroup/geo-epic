@@ -2,6 +2,8 @@
 
 EPIC Python package! 
 
+Doc site - 
+
 ## Installation
 
 ### Prerequisites
