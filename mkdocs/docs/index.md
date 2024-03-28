@@ -1,62 +1,61 @@
-# Nitrogen Recommendation Tool
 
-Nitrogen Recommendation Tool for Wheat in Kansas and Oklahoma.
+# EPIC Python Package
 
-This repository contains the code for a tool that provides nitrogen recommendations for wheat farmers in Kansas and Oklahoma. The tool uses data on fertilizer amount, weather conditions, and crop management practices to make accurate and specific recommendations for nitrogen application.
+EPIC Python package! 
 
-## Getting Started
-These instructions will help you get the project up and running on your local machine and on the GEOG cluster for development and testing purposes.
+Doc site - 
 
-## Prerequisites
-Node.js Latest LTS Version: 18.15.0 (includes npm 9.5.0)
+## Installation
 
-## Setup Instructions and Available Scripts
-### Instructions to set up the website in your local environment: ###
-Navigate to the project directory and run the following commands:\
-Install dependencies using node package manager:\
-   `npm install`\
-   To run the app in development mode, in your project directory: \
-   `npm start`
+### Prerequisites
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Before starting the installation, ensure you have `wget` and `conda` are installed.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-To launch the test runner in the interactive watch mode: \
-`npm test`
+### Steps
 
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Setup a Virtual environment. (conda Recommended)
+   ```
+   conda create --name epic_env python=3.9
+   conda activate epic_env
+   ```
+2. Install the package
+   ```
+   pip install git+https://github.com/smarsGroup/EPIC-pkg.git
+   ```
+   
+## Commands Available
 
-### Instructions to set up the website on the GEOG cluster and access the website on your local machine: ###
+Epic_pkg allows you to run various commands. The structure is:
 
-1. Clone the repository to your folder on the cluster.
-2. Install PuTTY on your local machine.
-3. Open PuTTY and in the Session's window enter the cluster's hostname or IP address and the port number of the destination SSH server. Make sure the connection type is set to SSH.
-4. In the left sidebar under the Category options. Navigate to the Connection >> SSH >> Tunnels.
-5. Select Local to define the type of SSH port forward.
-6. In the Source port field, enter the port number on which the frontend application in running. (Example - Source port: 3000).
-7. In the Destination field, enter the destination address followed by the port number. (Example - Destination: localhost:3000).
-8. Click Add to add the port forward.
-9. Similarly, add another port forward for the backend application. (Example - Source port: 4000, Destination: localhost:4000).
-10. Click Open to establish the connection. The tunnel will work until the SSH session is active.
-11. Run the following commands:\
-`module load node`\
-`export NODE_OPTIONS=--max_old_space_size=4096`\
-`fuser -n tcp -k 3000`\
-`fuser -n tcp -k 5000`
-12. Navigate to the "react_leaflet" and "socket_server" project directories in separate terminals and run the following commands:\
-`npm install`\
-`npm start`
-13. Open [http://localhost:3000](http://localhost:3000) to view the website in the browser.
+```bash
+epic_pkg module func -options
+```
+## List of Modules and Functions:
 
-[//]: # (Usage)
+- **workspace**
+  - **new**: Create a new workspace with a template structure.
+  - **prepare**: Prepare the input files using config file.
+  - **list_files**: Create lst.DAT files using config file.
+  - **run**: Execute the simulations.
+- **weather**
+  - **download_daily**: Download daily weather data. 
+  - **daily2monthly**: Convert daily weather data to monthly.
+  - **download_windspeed**: Download wind speed data.
+- **soil**
+  - **process_gdb**: Process ssurgo gdb file.
+- **sites**
+  - **process_aoi**: Process area of interest file.  (TODO)
+  - **process_foi**: Process fields of interest file.  (TODO)
+  - **generate**: Generate site files from processed data.
 
-[//]: # (The tool will prompt you to enter data on soil type, weather conditions, and crop management practices.)
+For more details on each command and its options, use:
+```bash
+epic_pkg module func --help
+```
 
-[//]: # (Based on the information provided, the tool will make a recommendation for nitrogen application in pounds per acre.)
 
-[//]: # (Data)
+ # (Data)
 
 [//]: # (The tool uses data on soil type, weather conditions, and crop management practices to make accurate and specific recommendations for nitrogen application. The data used to train the model is not included in this repository, if you want to test the tool you will need to provide your own data.)
 
