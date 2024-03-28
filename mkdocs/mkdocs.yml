@@ -2,7 +2,7 @@
 
 site_name: EPIC package
 site_description: Python Utility function to run EPIC model
-site_url: https://smarsGroup.github.io/EPIC-pkg/
+site_url: https://smarsgroup.github.io/EPIC-pkg/
 
 repo_url: https://github.com/smarsGroup/EPIC-pkg
 

@@ -22,15 +22,15 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('docs/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('mkdocs/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
 
       - name: Install dependencies 🔧
-        working-directory: docs
+        working-directory: mkdocs
         run: make install
 
       - name: Build and deploy to GitHub Pages 🏗️ 🚀
-        working-directory: docs
+        working-directory: mkdocs
         run: make deploy
