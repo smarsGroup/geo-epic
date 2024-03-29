@@ -57,5 +57,16 @@ epic_pkg module func --help
 
 ## Run an Experiment
 1. Create new workspace
-2. Edit config file
-3. Prepare the workspace and execute the simulations
+```bash
+epic_pkg workspace new -w Test
+cd Test
+```
+2. Edit config file as needed
+3. Prepare the workspace
+```bash
+epic_pkg workspace prepare
+```
+4. And execute the simulations
+```bash
+epic_pkg workspace run
+```
