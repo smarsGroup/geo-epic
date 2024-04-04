@@ -15,10 +15,10 @@ def install_gdal(filename):
 is_windows = sys.platform.startswith('win')
 
 # Download and install the appropriate GDAL wheel file based on the OS
-if is_windows:
-    install_gdal("GDAL-3.4.1-cp39-cp39-win_amd64.whl")
-else:
-    install_gdal("GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl")
+# if is_windows:
+#     install_gdal("GDAL-3.4.1-cp39-cp39-win_amd64.whl")
+# else:
+#     install_gdal("GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl")
     
 # Define metadata directory in the user's home folder and create it if it doesn't exist
 home_dir = os.path.expanduser("~")
