@@ -26,17 +26,17 @@ metadata_dir = os.path.join(home_dir, 'epic_pkg_metadata')
 if not os.path.exists(metadata_dir):
     os.makedirs(metadata_dir)
 
-# List of files to download
-files_to_download = [
-    "https://smarslab-files.s3.amazonaws.com/epic-utils/slope_us.tif",
-    "https://smarslab-files.s3.amazonaws.com/epic-utils/SRTM_1km_US_project.tif",
-    "https://smarslab-files.s3.amazonaws.com/epic-utils/SSURGO.tif"
-]
+# # List of files to download
+# files_to_download = [
+#     "https://smarslab-files.s3.amazonaws.com/epic-utils/slope_us.tif",
+#     "https://smarslab-files.s3.amazonaws.com/epic-utils/SRTM_1km_US_project.tif",
+#     "https://smarslab-files.s3.amazonaws.com/epic-utils/SSURGO.tif"
+# ]
 
-# Download the files to the metadata directory
-for file_url in files_to_download:
-    filename = os.path.join(metadata_dir, os.path.basename(file_url))
-    urllib.request.urlretrieve(file_url, filename)
+# # Download the files to the metadata directory
+# for file_url in files_to_download:
+#     filename = os.path.join(metadata_dir, os.path.basename(file_url))
+#     urllib.request.urlretrieve(file_url, filename)
 
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
 
