@@ -99,7 +99,7 @@ def calc_centroids(gdf):
     return gdf
 
 
-def parallel_executor(func, args, method = 'Process', max_workers = 20, return_value = False, bar = True):
+def parallel_executor(func, args, method='Process', max_workers=20, return_value=False, bar=True):
     """
     Executes a function across multiple processes and collects the results.
 
@@ -117,10 +117,12 @@ def parallel_executor(func, args, method = 'Process', max_workers = 20, return_v
     """
     failed_indices = []
     results = [None] * len(args) if return_value else []
-    PoolExecutor = {'Process': ProcessPoolExecutor, 'Thread':  ThreadPoolExecutor}[method]
-    with PoolExecutor(max_workers = max_workers) as executor:
-        if bar: pbar = tqdm(total = len(args))
+    PoolExecutor = {'Process': ProcessPoolExecutor, 'Thread': ThreadPoolExecutor}[method]
+    
+    with PoolExecutor(max_workers=max_workers) as executor:
+        if bar: pbar = tqdm(total=len(args))
         futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
+        
         try:
             for future in as_completed(futures):
                 ind = futures[future]
@@ -129,10 +131,13 @@ def parallel_executor(func, args, method = 'Process', max_workers = 20, return_v
                     print(f'Exception: {future.exception()}.\n')
                     failed_indices.append(ind)
                 elif return_value:
-                        results[ind] = future.result()
+                    results[ind] = future.result()
                 if bar: pbar.update(1)
-        except:
-            return results, failed_indices
-        if bar: pbar.close()
+        except KeyboardInterrupt:
+            print("\nKeyboardInterrupt caught, canceling remaining operations...")
+            for future in futures.keys():
+                future.cancel()
+        finally:
+            if bar: pbar.close()
+    
     return results, failed_indices
-
