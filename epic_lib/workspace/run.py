@@ -68,6 +68,11 @@ def process_model(row):
     shutil.rmtree(new_dir)
 
 info = pd.read_csv('info.csv')
+
+opc_files = glob(f'{config["opc_dir"]}/*.OPC')
+present = [(os.path.basename(f).split('.'))[0] for f in opc_files]
+info = info.loc[(info['opc'].astype(str)).isin(present)]
+
 info_ls = info.to_dict('records')
 
 total = len(info_ls)
