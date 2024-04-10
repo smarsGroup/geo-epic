@@ -16,7 +16,7 @@ class ACY:
         """
         Private method to read ACY data.
         """
-        data = pd.read_csv(file_path, delim_whitespace = True, skiprows = 10)
+        data = pd.read_csv(file_path, sep="\s+", skiprows = 10)
         if data.empty: raise ValueError('Data is Empty')
         return data
 
@@ -43,7 +43,7 @@ class DWC:
         """
         Private method to read DWC data.
         """
-        data = pd.read_csv(file_path, delim_whitespace = True, skiprows = 10)
+        data = pd.read_csv(file_path, sep="\s+", skiprows = 10)
         if data.empty: raise ValueError('Data is Empty')
         data['Date'] = pd.to_datetime(data[['Y', 'M', 'D']].astype(str).agg('-'.join, axis=1))
         return data
@@ -68,7 +68,7 @@ class DGN:
         """
         Private method to read DGN data.
         """
-        data = pd.read_csv(file_path, delim_whitespace = True, skiprows = 10)
+        data = pd.read_csv(file_path, sep="\s+", skiprows = 10)
         if data.empty: raise ValueError('Data is Empty')
         data['Date'] = pd.to_datetime(data[['Y', 'M', 'D']].astype(str).agg('-'.join, axis=1))
         return data
@@ -100,7 +100,7 @@ class DTP:
         """
         Private method to read DTP data.
         """
-        data = pd.read_csv(file_path, delim_whitespace = True, skiprows = 12)
+        data = pd.read_csv(file_path, sep="\s+", skiprows = 12)
         if data.empty: raise ValueError('Data is Empty')
         data['Date'] = pd.to_datetime(data[['Y', 'M', 'D']].astype(str).agg('-'.join, axis=1))
         return data
@@ -125,7 +125,7 @@ class DCS:
         """
         Private method to read DCS data.
         """
-        data = pd.read_csv(file_path, delim_whitespace = True, skiprows = 12)
+        data = pd.read_csv(file_path, sep="\s+", skiprows = 12)
         if data.empty: raise ValueError('Data is Empty')
         data['Date'] = pd.to_datetime(data[['Y', 'M', 'D']].astype(str).agg('-'.join, axis=1))
         return data
