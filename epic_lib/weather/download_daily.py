@@ -38,6 +38,7 @@ print('Processing shape file')
 
 print('curr', os.getcwd())
 gdf = gpd.read_file(aoi)
+gdf = gdf.to_crs(epsg=4326)
 
 # Change working dir
 os.makedirs(working_dir, exist_ok = True)
