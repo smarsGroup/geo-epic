@@ -17,7 +17,7 @@ class DailyWeather:
 
     def get(self, lat, lon):
         if not self.offline:
-            nldas_id = self.lookup.get(lat, lon)
+            nldas_id = int(self.lookup.get(lat, lon))
             data = get_daymet_data(lat, lon, self.start_date, self.end_date)
             ws = pd.read_csv(self.path + f'/NLDAS_csv/{nldas_id}.csv')
             ws.columns = ['date', 'vals']
@@ -27,5 +27,5 @@ class DailyWeather:
             data['ws'] = ws['vals']
             return DLY(data)
         else:
-            daymet_id = self.lookup.get(lat, lon)
+            daymet_id = int(self.lookup.get(lat, lon))
             return DLY.load(self.path + f'/Daily/{daymet_id}')
