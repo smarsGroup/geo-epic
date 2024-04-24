@@ -80,5 +80,5 @@ min_ind, max_ind = config["Range"]
 min_ind, max_ind = int(min_ind*total), int(max_ind*total)
 print('Total Field Sites:', max_ind-min_ind)
 process_model(info_ls[min_ind])
-parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"])
+parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"], timeout = config["timeout"])
 #shutil.rmtree(os.path.join(base_dir, 'sims'))
