@@ -98,8 +98,41 @@ def calc_centroids(gdf):
     gdf['y'] = gdf['centroid'].y
     return gdf
 
+import signal
+import time
 
-def parallel_executor(func, args, method='Process', max_workers=20, return_value=False, bar=True):
+def with_timeout(func, timeout, *args, **kwargs):
+    """
+    Executes a function with a timeout using signals (not recommended).
+
+    Args:
+      func: The function to execute.
+      timeout: The maximum execution time in seconds.
+      *args: Arguments to pass to the function.
+      **kwargs: Keyword arguments to pass to the function.
+
+    Returns:
+      The result of the function if it finishes within the timeout.
+
+    Raises:
+      TimeoutError: If the function execution exceeds the timeout.
+    """
+    def handler(signum, frame):
+        raise TimeoutError("Execution timed out")
+
+    original_signal = signal.signal(signal.SIGALRM, handler)
+    signal.alarm(timeout)
+
+    try:
+        result = func(*args, **kwargs)
+    finally:
+        signal.signal(signal.SIGALRM, original_signal)
+        signal.alarm(0)  # Cancel any pending alarms
+
+    return result
+    
+
+def parallel_executor(func, args, method='Process', max_workers=10, return_value=False, bar=True, timeout=None):
     """
     Executes a function across multiple processes and collects the results.
 
@@ -109,19 +142,25 @@ def parallel_executor(func, args, method='Process', max_workers=20, return_value
         args: An iterable of arguments to pass to the function.
         max_workers: The maximum number of processes to use.
         return_value: A boolean indicating whether the function returns a value.
+        timeout: Number of seconds to wait for a process to complete
 
     Returns:
         results: If return_value is True, a list of results from the function executions sorted according to 
                  If return_value is False, an empty list is returned.
         failed_indices: A list of indices of arguments for which the function execution failed.
     """
+
     failed_indices = []
     results = [None] * len(args) if return_value else []
     PoolExecutor = {'Process': ProcessPoolExecutor, 'Thread': ThreadPoolExecutor}[method]
     
     with PoolExecutor(max_workers=max_workers) as executor:
         if bar: pbar = tqdm(total=len(args))
-        futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
+        
+        if timeout is None:
+            futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
+        else:
+            futures = {executor.submit(with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}
         
         try:
             for future in as_completed(futures):
