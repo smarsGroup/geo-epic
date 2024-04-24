@@ -52,6 +52,7 @@ def sample_raster_nearest(raster_file, coords, crs = "EPSG:4326"):
 class LatLonLookup:
     def __init__(self, raster_file):
         df = raster_to_dataframe(raster_file)
+        df = df.dropna() 
         self.tree = BallTree(df[['x', 'y']].values)
         self.ids = df['band_1'].values
         
