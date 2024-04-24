@@ -15,26 +15,32 @@ from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_neares
 from epic_lib.dispatcher import dispatch
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")
-parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
-parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
-parser.add_argument("-r", "--region", help="Path to the shapefile")
-parser.add_argument("-c", "--region_code", default = 20, help="An integer, climate_ID starts with this code")
-parser.add_argument("-o", "--working_dir", required=True, help="Path to Weather dir")
+parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 parser.add_argument("-w", "--max_workers", default = 20, help = "No. of maximum workers")
 args = parser.parse_args()
 
+curr_dir = os.getcwd()
+
+config = ConfigParser(curr_dir, args.config)
+
+weather = config["weather"]
+aoi = config["Fields_of_Interest"]
+working_dir = weather["dir"]
+region_code = config["code"]
+start_date = weather["start_date"]
+end_date = weather["end_date"]
 
 print('Processing shape file')
 
 # Define date range from command-line arguments
-# dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
+# dates = pd.date_range(start = start_date, end = end_date, freq = 'M')
 
 print('curr', os.getcwd())
-gdf = gpd.read_file(args.region)
+gdf = gpd.read_file(aoi)
 
 # Change working dir
-os.makedirs(args.working_dir, exist_ok = True)
-os.chdir(args.working_dir)
+os.makedirs(working_dir, exist_ok = True)
+os.chdir(working_dir)
 
 
 res_value = 0.00901  # 1 km resolution in degree
@@ -45,7 +51,7 @@ lon, lat = np.meshgrid(lon, lat)
 
 # Create a DataArray from the grid
 grid = np.arange(lat.size).reshape(lat.shape)
-grid = int(args.region_code)*1e7 + grid
+grid = int(region_code)*1e7 + grid
 
 data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
 
@@ -62,7 +68,7 @@ if not os.path.exists('./NLDAS_csv'):
     dispatch('weather', 'download_windspeed', f'-s {args.start_date} -e {args.end_date} \
                     -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
 
-daily_weather = DailyWeather('.', args.start_date, args.end_date)
+daily_weather = DailyWeather('.', start_date, end_date)
 
 os.makedirs('./Daily', exist_ok = True)
 os.makedirs('./Monthly', exist_ok = True)
