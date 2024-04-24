@@ -11,6 +11,7 @@ from epic_lib.weather.daymet import *
 import subprocess
 from epic_lib.weather.main import DailyWeather
 from epic_lib.misc.utils import parallel_executor
+from epic_lib.misc import ConfigParser
 from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
 from epic_lib.dispatcher import dispatch
 # Parse command line arguments
