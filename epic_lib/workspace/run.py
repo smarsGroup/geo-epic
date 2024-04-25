@@ -9,6 +9,7 @@ from epic_lib.misc import ConfigParser
 from epic_lib.misc.utils import parallel_executor, writeDATFiles
 from glob import glob
 import importlib.util
+import sys
 
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")
