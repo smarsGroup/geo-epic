@@ -85,7 +85,7 @@ def process_model(row):
         glob('./*')
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
             if process_outputs is not None:
-                process_outputs()
+                process_outputs(fid, base_dir)
             else:
                 shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         else:
