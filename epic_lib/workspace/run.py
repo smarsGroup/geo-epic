@@ -36,7 +36,6 @@ if config["Process_outputs"] is not None:
 
     if spec is None:
         print(f"Cannot find module {path}")
-        return
 
     # Load the module
     module = importlib.util.module_from_spec(spec)
@@ -123,7 +122,6 @@ if config['visualise'] is not None:
 
     if spec is None:
         print(f"Cannot find module {path}")
-        return
 
     # Load the module
     module = importlib.util.module_from_spec(spec)
