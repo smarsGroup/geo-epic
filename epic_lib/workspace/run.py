@@ -8,6 +8,8 @@ import pandas as pd
 from epic_lib.misc import ConfigParser
 from epic_lib.misc.utils import parallel_executor, writeDATFiles
 from glob import glob
+import importlib.util
+
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -24,6 +26,30 @@ model = config['EPICModel']
 output_dir = config['output_dir']
 log_dir = config["log_dir"]
 model_dir = os.path.dirname(model)
+
+if config["Process_outputs"] is not None:
+    path, function_name = config["Process_outputs"].split()
+
+    # Ensure the path is in the right format and loadable
+    module_name = os.path.splitext(os.path.basename(path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, path)
+
+    if spec is None:
+        print(f"Cannot find module {path}")
+        return
+
+    # Load the module
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    # Get the function and run it
+    if hasattr(module, function_name):
+        process_outputs = getattr(module, function_name)
+    else:
+        process_outputs = None
+        print(f"Function {function_name} not found in {path}")
+        
 
 os.makedirs(output_dir, exist_ok = True)
 os.makedirs(log_dir, exist_ok = True)
@@ -58,7 +84,10 @@ def process_model(row):
         out_file_loc = f'{fid}.{out_type}'
         glob('./*')
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
-            shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
+            if process_outputs is not None:
+                process_outputs()
+            else:
+                shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         else:
             raise Exception("Output files not Found")
     else: os.remove(os.path.join(log_dir, f"{fid}.out"))
@@ -82,3 +111,27 @@ print('Total Field Sites:', max_ind-min_ind)
 process_model(info_ls[min_ind])
 parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"], timeout = config["timeout"])
 #shutil.rmtree(os.path.join(base_dir, 'sims'))
+
+
+
+if config['visualise'] is not None:
+    path, function_name = config['visualise'].split()
+
+    # Ensure the path is in the right format and loadable
+    module_name = os.path.splitext(os.path.basename(path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, path)
+
+    if spec is None:
+        print(f"Cannot find module {path}")
+        return
+
+    # Load the module
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    # Get the function and run it
+    if hasattr(module, function_name):
+        plot = getattr(module, function_name)
+        plot()
+        
