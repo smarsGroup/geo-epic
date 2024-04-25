@@ -20,17 +20,14 @@ def reduce_outputs(run_id, base_dir):
 def plot():
     fp = './CropRotations/MDRotFilt1.shp'
     shp = gpd.read_file(fp)
+  
+    final = pd.read_csv('./yield.csv', header = None)
+    final.colums = ['FieldID', 'yld']
     merged_df = shp.merge(final, on='FieldID', how='outer')
     info_df = merged_df.to_crs(epsg=3857)
-    
-    # states_us = gpd.read_file("../cb_2022_24_cousub_500k.shp")
-    # states_us = states_us.to_crs(epsg=3857)
-    
+
     fig, ax = plt.subplots(1, 1, figsize=(20, 20))
-    
-    # states_us.plot(ax=ax, color='k', linewidth=0.5, alpha = 0.9) 
-    info_df.plot(ax=ax, column='Yield', legend=True, legend_kwds={'shrink':0.4, 'aspect':100}, cmap = 'rainbow') 
-    # ctx.add_basemap(ax, source=ctx.providers.Esri.WorldImagery, alpha = 0.9)
+    info_df.plot(ax=ax, column='yld', legend=True, legend_kwds={'shrink':0.4, 'aspect':100}, cmap = 'rainbow') 
     
     # Remove x and y axis visible ticks
     ax.set_xticks([])
