@@ -56,13 +56,15 @@ rot_names = set(['RotID', 'rotID'])
 rots = rot_names & columns
 rot = next(iter(rots), None)
 if rot is None:
-    raise Exception("RotID column not Found")
+    print("Using FieldID for opc files")
+    rot = 'FieldID'
 info_df['opc'] = info_df[rot].apply(lambda x: f'{config["opc_prefix"]}_{int(x)}')
 
 # Read from config file
 soil = config["soil"]
 weather = config["weather"]
 region_code = config["code"]
+site = config["sites"]
 
 # Download Nldas data 
 if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
@@ -74,11 +76,21 @@ if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
 # create soil files 
 if soil['files_dir'] is None:
     dispatch('soil', 'process_gdb', f'-r {region_code} -gdb {soil["gdb_path"]}', True)
+    soil_dir = os.path.dirname(soil["gdb_path"])
+    config.update_config({
+    'soil': {
+        'files_dir': f'{soil_dir}/files'
+    },
+    'sites': {
+        'slope_len': f'./{soil_dir}/{region_code}_slopelen_1.csv'
+    }
+    })
+else:
+    soil_dir = soil['files_dir']
 
 
 coords = info_df[['x', 'y']].values
-soil_dir = os.path.dirname(soil["gdb_path"])
-site = config["sites"]
+
 ssurgo_map = site["ssurgo_map"]
 info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
@@ -87,9 +99,4 @@ info_df.to_csv(curr_dir + '/info.csv', index = False)
 dispatch('sites', 'generate', f'-o {site["dir"]} -i {curr_dir + "/info.csv"}\
     -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}', False)
 
-config.update_config({
-    'soil': {
-        'files_dir': f'{soil_dir}/files'
-    },
-    'Processed_Info': f'{curr_dir}/info.csv'
-})
+config.update_config({'Processed_Info': f'{curr_dir}/info.csv'})

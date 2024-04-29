@@ -53,7 +53,7 @@ lon, lat = np.meshgrid(lon, lat)
 
 # Create a DataArray from the grid
 grid = np.arange(lat.size).reshape(lat.shape)
-grid = int(region_code)*1e7 + grid
+# grid = int(region_code)*1e7 + grid
 
 data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
 

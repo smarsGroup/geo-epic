@@ -50,4 +50,4 @@ timeout: 5 # No. of seconds to let a simulation run. Execution is terminated aft
 
 # Post Process
 Process_outputs: ./post_process.py reduce_outputs 
-visualise: ./post_process.py plot
+visualize: ./post_process.py spatial_plot

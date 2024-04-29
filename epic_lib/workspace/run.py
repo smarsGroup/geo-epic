@@ -6,10 +6,10 @@ from epic_lib.weather import DailyWeather
 import numpy as np
 import pandas as pd
 from epic_lib.misc import ConfigParser
-from epic_lib.misc.utils import parallel_executor, writeDATFiles
+from epic_lib.misc.utils import parallel_executor, writeDATFiles, import_function
 from glob import glob
-import importlib.util
-import sys
+# import importlib.util
+# import sys
 
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")
@@ -28,27 +28,8 @@ output_dir = config['output_dir']
 log_dir = config["log_dir"]
 model_dir = os.path.dirname(model)
 
-if config["Process_outputs"] is not None:
-    path, function_name = config["Process_outputs"].split()
 
-    # Ensure the path is in the right format and loadable
-    module_name = os.path.splitext(os.path.basename(path))[0]
-    spec = importlib.util.spec_from_file_location(module_name, path)
-
-    if spec is None:
-        print(f"Cannot find module {path}")
-
-    # Load the module
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-
-    # Get the function and run it
-    if hasattr(module, function_name):
-        process_outputs = getattr(module, function_name)
-    else:
-        process_outputs = None
-        print(f"Function {function_name} not found in {path}")
+process_outputs = import_function(config["Process_outputs"])
         
 
 os.makedirs(output_dir, exist_ok = True)
@@ -113,24 +94,17 @@ parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config
 #shutil.rmtree(os.path.join(base_dir, 'sims'))
 
 
+plot = import_function(config['visualize'])
+if plot is not None: 
+    import geopandas as gpd    
+    file_path = config["Fields_of_Interest"]
+    exp_name = config["EXPName"]
+    file_extension = (file_path.split('.'))[-1]
+    if file_extension == 'shp':
+        shp = gpd.read_file(file_path)
+        shp['FieldID'] = shp['FieldID'].astype('int')
+        plot(shp, exp_name)
+    else:
+        print('AOI has to be a shape file')
 
-if config['visualise'] is not None:
-    path, function_name = config['visualise'].split()
-
-    # Ensure the path is in the right format and loadable
-    module_name = os.path.splitext(os.path.basename(path))[0]
-    spec = importlib.util.spec_from_file_location(module_name, path)
-
-    if spec is None:
-        print(f"Cannot find module {path}")
-
-    # Load the module
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
-
-    # Get the function and run it
-    if hasattr(module, function_name):
-        plot = getattr(module, function_name)
-        plot()
         

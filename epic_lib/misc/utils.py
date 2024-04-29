@@ -100,6 +100,9 @@ def calc_centroids(gdf):
 
 import signal
 import time
+import os
+import sys
+import importlib.util
 
 def with_timeout(func, timeout, *args, **kwargs):
     """
@@ -180,3 +183,42 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
             if bar: pbar.close()
     
     return results, failed_indices
+
+
+def import_function(cmd = None):
+    """
+    Loads a function from a module based on a path and function name specified in the config.
+    
+    Args:
+        cmd (str): "/path/to/module.py function_name".
+
+    Returns:
+        function: The loaded function, or None if not found.
+    """
+    if cmd is None: return None
+
+    path, function_name = cmd.split()
+
+    # Ensure the path is in the right format and loadable
+    module_name = os.path.splitext(os.path.basename(path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, path)
+
+    if spec is None:
+        print(f"Cannot find module {path}")
+        return None
+
+    # Load the module
+    try:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+    except Exception as e:
+        print(f"Error loading module: {e}")
+        return None
+
+    # Get the function and return it
+    if hasattr(module, function_name):
+        return getattr(module, function_name)
+    else:
+        print(f"Function {function_name} not found in {path}")
+        return None

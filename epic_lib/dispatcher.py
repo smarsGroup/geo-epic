@@ -30,6 +30,10 @@ def dispatch(module, func, options_str, wait = True):
             script_path = os.path.join(root_path, "workspace", "listfiles.py")
         elif func == "new":
             script_path = os.path.join(root_path, "workspace", "create_ws.py")
+        elif func == "post_process":
+            script_path = os.path.join(root_path, "workspace", "post_process.py")
+        elif func == "visualize":
+            script_path = os.path.join(root_path, "workspace", "visualize.py")
             
     if script_path is None:
         print(f"Command '{module} {func}' not found.")
