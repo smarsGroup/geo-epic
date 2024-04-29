@@ -14,7 +14,6 @@ duration: 25
 output_types:
   - ACY  # Annual Crop Yield
   - ACM
-output_dir: ./output
 log_dir: ./log
 
 # Weather configuration
@@ -46,7 +45,7 @@ opc_prefix: CropRot
 Range: [0, 0.25] # The portion of fields to run simulations. 0 to 1 is for all of them.
 num_of_workers: 80 # No. of parellel processes. Should be less than number of cpu cores.
 timeout: 5 # No. of seconds to let a simulation run. Execution is terminated after timeout.
-
+output_dir: ./output # if not empty, Output files from epic runs are saved into this folder.
 
 # Post Process
 Process_outputs: ./post_process.py reduce_outputs 
