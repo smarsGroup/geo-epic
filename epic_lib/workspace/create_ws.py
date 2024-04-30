@@ -20,8 +20,8 @@ def create_workspace(target_dir, template_dir):
         if os.path.isdir(source_item):
             shutil.copytree(source_item, target_item)
         else:
-            if source_item.split('.')[-1] != 'py':
-                shutil.copy2(source_item, target_item)
+            # if source_item.split('.')[-1] != 'py':
+            shutil.copy2(source_item, target_item)
 
     print(f"Workspace set up at: {target_dir}")
 

@@ -67,7 +67,7 @@ def process_model(row):
         if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
             if process_outputs is not None:
                 process_outputs(fid, base_dir)
-            else:
+            if output_dir is not None:
                 shutil.move(out_file_loc, os.path.join(output_dir, f'{fid}.{out_type}'))
         else:
             raise Exception("Output files not Found")
