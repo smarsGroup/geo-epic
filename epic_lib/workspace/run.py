@@ -83,11 +83,16 @@ opc_files = glob(f'{config["opc_dir"]}/*.OPC')
 present = [(os.path.basename(f).split('.'))[0] for f in opc_files]
 info = info.loc[(info['opc'].astype(str)).isin(present)]
 
+select = config["Select"]
+if select is not None:
+    info = info.query(select)
+
 info_ls = info.to_dict('records')
 
 total = len(info_ls)
 min_ind, max_ind = config["Range"]
-min_ind, max_ind = int(min_ind*total), int(max_ind*total)
+min_ind = np.floor(min_ind * total).astype(int)
+max_ind = np.ceil(max_ind * total).astype(int)
 print('Total Field Sites:', max_ind-min_ind)
 process_model(info_ls[min_ind])
 parallel_executor(process_model, info_ls[min_ind: max_ind], max_workers = config["num_of_workers"], timeout = config["timeout"])

@@ -3,30 +3,30 @@ EXPName: Total Factor Productivity
 Region: Oklahoma
 code: OK
 Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
-# Area_of_Interest: 
-# Grid_resoultion: #(in km)
-Processed_Info:
+Processed_Info:     # leave empty
+
 
 # Model details
 EPICModel: ./model/EPIC2301dt20230820
 start_year: 1995
 duration: 25
 output_types:
-  - ACY  # Annual Crop Yield
-  - ACM
+  - ACY  # Annual Crop data file
+  - DGN  # Daily general output file
 log_dir: ./log
+output_dir: ./output # if empty, Output files from epic runs are not saved (To save space use post_process options).
 
 # Weather configuration
 weather:
   dir: ./weather
-  start_date: '1981-01' # year and month
+  start_date: '1981-01' 
   end_date: '2020-12'
-  offline: false  # if true, the data is assumed to be already downloaded.
+  offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
 
 # Soil details
 soil:
   gdb_path: ./soil/gSSURGO_OK.gdb
-  files_dir:    #if not empty, processing gdb file is skipped
+  files_dir:    #if soil files directory is specified, processing gdb file is skipped.
 
 # Site details
 sites:
@@ -42,11 +42,11 @@ opc_prefix: CropRot
 
 
 # Run params
-Range: [0, 0.25] # The portion of fields to run simulations. 0 to 1 is for all of them.
-num_of_workers: 80 # No. of parellel processes. Should be less than number of cpu cores.
+Select:  # boolean expression to select fields with specific property. ex: group == 1, area < 6
+Range: [0, 0.25] # The portion of selected fields to run simulations on. 0 to 1 is for all of them.
+num_of_workers: 40 # No. of parellel processes. Should be less than number of cpu cores.
 timeout: 5 # No. of seconds to let a simulation run. Execution is terminated after timeout.
-output_dir: ./output # if not empty, Output files from epic runs are saved into this folder.
 
 # Post Process
-Process_outputs: ./post_process.py reduce_outputs 
-visualize: ./post_process.py spatial_plot
+Process_outputs: ./post_process.py reduce_outputs # if not empty during runs, output processing is also carried out.
+visualize: ./post_process.py spatial_plot # specify function to visualize the required results
