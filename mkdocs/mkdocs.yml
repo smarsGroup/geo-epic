@@ -12,10 +12,10 @@ theme: readthedocs
 
 nav:
   - Home: index.md
-  - Crop Sequence Boundaries: csb.md
   - EPIC model: epic.md
-  - Weather: Weather.md
-  - Soil: Soil.md
+  - Crop Sequence Boundaries: csb.md
+  - Weather module: Weather.md
+  - SSURGO Soil: Soil.md
   - Crop Management Info: OPC.md
   - Quick Start Guide: runexp.md
   - API: api.md
