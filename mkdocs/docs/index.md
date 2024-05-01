@@ -1,68 +1,48 @@
 
 # EPIC Python Package
+A toolkit for geospatial crop simulations using EPIC model
 
-EPIC Python package! 
+!['Maryland_Yield'](./Yield_MD.png)
 
 ## Installation
 
-### Prerequisites
+Before starting the setup, ensure you have `wget` and `conda` installed.
 
-Before starting the installation, ensure you have `wget` and `conda` are installed.
-
-#### for wget
+Setup a Virtual environment. (conda Recommended)
+```bash
+conda create --name epic_env python=3.9
+conda activate epic_env
 ```
-apt-get install wget
-dpkg -l | grep wget
+Install the EPIC Python Package
+```bash
+pip install git+https://github.com/smarsGroup/EPIC-pkg.git
 ```
-#### for conda
-1. Download the installer:
-  Miniconda installer for Linux.
-  Anaconda Distribution installer for Linux.
-  Miniforge installer for Linux.
-2. Verify your installer hashes.
-3. In your terminal window, run:
-```
-bash <conda-installer-name>-latest-Linux-x86_64.sh
-```
-
-### Installing Package
-
-1. Setup a Virtual environment. (conda Recommended)
-   ```
-   conda create --name epic_env python=3.9
-   conda activate epic_env
-   ```
-2. Install the EPIC Python Package
-   ```
-   pip install git+https://github.com/smarsGroup/EPIC-pkg.git
-   ```
    
 
 ## Commands Available
 
-Epic_pkg allows you to run various commands. The structure is:
+Epic_pkg allows you to run various commands. The structure is as show below:
 
 ```bash
 epic_pkg {module} {func} -options
 ```
-## List of Modules and Functions:
+example usage:
+```bash
+epic_pkg workspace new -w Test
+```
+### List of Modules and Functions:
 
-- ### **workspace**
+#### **workspace**
   - **new**: Create a new workspace with a template structure.
   - **prepare**: Prepare the input files using config file.
-  - **list_files**: Create lst.DAT files using config file.
   - **run**: Execute the simulations.
-
-- ### **weather**
+  - **post_process**: Process Output files from simulation runs.
+#### **weather**
   - **download_daily**: Download daily weather data. 
   - **daily2monthly**: Convert daily weather data to monthly.
-  - **download_windspeed**: Download wind speed data.
-
-- ### **soil**
+#### **soil**
   - **process_gdb**: Process ssurgo gdb file.
-
-- ### **sites**
-  - **process_aoi**: Process area of interest file.  (TODO)
+#### **sites**
   - **process_foi**: Process fields of interest file.  (TODO)
   - **generate**: Generate site files from processed data.
 

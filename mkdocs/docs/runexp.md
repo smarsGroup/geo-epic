@@ -77,5 +77,5 @@ epic_pkg workspace visualize
 ```
 It will simply plot the 'YLDG' variable corresponding to the site ids and crate a map for study region. 
 
-### Your example plot will look like this:
+### Your plot will look like this:
 !['Maryland_Yield'](./Yield_MD.png)

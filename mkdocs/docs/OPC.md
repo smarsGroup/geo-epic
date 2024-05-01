@@ -1,6 +1,6 @@
 
 # PhenoCrop
 
-OPC refers to the agricultural management practice files which is yet to automated. For now, you need to prpare management files and keep it in a new folder named 'OPC' inside the 'Test' directory.
+OPC refers to the agricultural management practice files. Creating these files is not yet implemented in the pkg. For now, you need to prepare the management files manually and store them in a new folder named 'opc' inside your workspace.
 
 

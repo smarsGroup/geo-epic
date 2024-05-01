@@ -1,7 +1,14 @@
-## ENVIRONMENTAL POLICY INTEGRATED CLIMATE (EPIC) MODEL
+## ENVIRONMENTAL POLICY INTEGRATED CLIMATE MODEL
 
-EPIC model is a cropping systems simulation tool designed to assess the impact of erosion on soil productivity. Its development stemmed from the critical need for improved technology, identified in the 1980 Soil and Water Resources Conservation Act analysis, to evaluate the consequences of soil erosion on agricultural output. EPIC employs a single crop growth model with unique parameter sets for approximately eighty different crops. This enables the model to simulate the effects of various management practices on soil, water, nutrients, and pesticide dynamics.  EPIC can further integrate these effects to predict long-term consequences for homogeneous soil and management areas, including soil loss, water quality, and crop yields.
+The Environmental Policy Integrated Climate (EPIC) model, originally known as the Erosion/Productivity Impact Calculator, is designed to simulate a field, farm or small watershed, that is homogenous in terms of climate, soil, land use, and topography. EPIC helps in analyzing the effects of management strategies on soil erosion and extends to other aspects of agricultural sustainability like water quality, plant competition, and pest control. 
+
+Initially developed in the early 1980s, (J. R. Williams,
+Jones, & Dyke, 1984). EPIC integrated components from previous models such as CREAMS (Knisel, 1980) and SWRRB (J. R. Williams, Nicks, & Arnold, 1985). The model was later enhanced with a pesticide component from GLEAMS (Leonard, 1987) to assess pesticide fate, further developed by Sabbagh, Geleta, Elliott, Williams, & Griggs (1991). EPIC’s capabilities include evaluating management strategies like irrigation, fertilization, crop rotation, and pesticide application. EPIC has evolved to address broader issues such as global climate change impacts, biomass production for energy, and landfill design, making it a versatile tool in environmental and agricultural management.
+
+For more details on EPIC model, visit [Texas A&M AgriLife site](https://epicapex.tamu.edu/about/epic/). 
+
 ![EPIC Introduction](./EPIC_1.jpg)
-The EPIC model offers high temporal resolution, simulating agricultural systems on a daily basis for extended periods.  Continuously refined since its development, EPIC incorporates algorithms to model water quality, nutrient cycling, climate change impacts, and atmospheric CO2 effects.  This comprehensive model allows configuration for diverse cropping systems, management practices, and assesses erosion costs to aid in optimizing agricultural strategies.
 
-For more details, read this: [https://epicapex.tamu.edu/media/rckfgmxs/epic1102-user-manual-2024-01-24.pdf](https://epicapex.tamu.edu/media/rckfgmxs/epic1102-user-manual-2024-01-24.pdf)
+The EPIC model offers high temporal resolution, simulating agricultural systems on a daily basis over long periods. It features refined algorithms for water quality, nutrient cycling, climate impacts, and atmospheric CO2 effects. This adaptable model evaluates various cropping and management practices to optimize agricultural strategies and calculate erosion costs.
+
+For detailed guidance on using EPIC, refer to the user manual: [https://epicapex.tamu.edu/media/rckfgmxs/epic1102-user-manual-2024-01-24.pdf](https://epicapex.tamu.edu/media/rckfgmxs/epic1102-user-manual-2024-01-24.pdf)
