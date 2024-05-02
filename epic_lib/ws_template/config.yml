@@ -16,6 +16,7 @@ output_types:
 log_dir: ./log
 output_dir: ./output # if empty, Output files from epic runs are not saved (To save space use post_process options).
 
+
 # Weather configuration
 weather:
   dir: ./weather
