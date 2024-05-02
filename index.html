@@ -43,30 +43,20 @@
                 <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#for-wget">for wget</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#for-conda">for conda</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#installing-package">Installing Package</a>
-    </li>
-        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#commands-available">Commands Available</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#workspace">workspace</a>
+    <li class="toctree-l3"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#workspace">workspace</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#weather">weather</a>
+    <li class="toctree-l4"><a class="reference internal" href="#weather">weather</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#soil">soil</a>
+    <li class="toctree-l4"><a class="reference internal" href="#soil">soil</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#sites">sites</a>
+    <li class="toctree-l4"><a class="reference internal" href="#sites">sites</a>
+    </li>
+        </ul>
     </li>
         </ul>
     </li>
@@ -74,19 +64,19 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="csb/">Crop Sequence Boundaries</a>
-                </li>
-              </ul>
-              <ul>
                 <li class="toctree-l1"><a class="reference internal" href="epic/">EPIC model</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="Weather/">Weather</a>
+                <li class="toctree-l1"><a class="reference internal" href="csb/">Crop Sequence Boundaries</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="Soil/">Soil</a>
+                <li class="toctree-l1"><a class="reference internal" href="Weather/">Weather module</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="Soil/">SSURGO Soil</a>
                 </li>
               </ul>
               <ul>
@@ -126,66 +116,43 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="epic-python-package">EPIC Python Package</h1>
-<p>EPIC Python package! </p>
+<p>A toolkit for geospatial crop simulations using EPIC model</p>
+<p><img alt="'Maryland_Yield'" src="Yield_MD.png" /></p>
 <h2 id="installation">Installation</h2>
-<h3 id="prerequisites">Prerequisites</h3>
-<p>Before starting the installation, ensure you have <code>wget</code> and <code>conda</code> are installed.</p>
-<h4 id="for-wget">for wget</h4>
-<pre><code>apt-get install wget
-dpkg -l | grep wget
+<p>Before starting the setup, ensure you have <code>wget</code> and <code>conda</code> installed.</p>
+<p>Setup a Virtual environment. (conda Recommended)</p>
+<pre><code class="language-bash">conda create --name epic_env python=3.9
+conda activate epic_env
 </code></pre>
-<h4 id="for-conda">for conda</h4>
-<ol>
-<li>Download the installer:
-  Miniconda installer for Linux.
-  Anaconda Distribution installer for Linux.
-  Miniforge installer for Linux.</li>
-<li>Verify your installer hashes.</li>
-<li>In your terminal window, run:</li>
-</ol>
-<pre><code>bash &lt;conda-installer-name&gt;-latest-Linux-x86_64.sh
+<p>Install the EPIC Python Package</p>
+<pre><code class="language-bash">pip install git+https://github.com/smarsGroup/EPIC-pkg.git
 </code></pre>
-<h3 id="installing-package">Installing Package</h3>
-<ol>
-<li>Setup a Virtual environment. (conda Recommended)
-   <code>conda create --name epic_env python=3.9
-   conda activate epic_env</code></li>
-<li>Install the EPIC Python Package
-   <code>pip install git+https://github.com/smarsGroup/EPIC-pkg.git</code></li>
-</ol>
 <h2 id="commands-available">Commands Available</h2>
-<p>Epic_pkg allows you to run various commands. The structure is:</p>
+<p>Epic_pkg allows you to run various commands. The structure is as show below:</p>
 <pre><code class="language-bash">epic_pkg {module} {func} -options
 </code></pre>
-<h2 id="list-of-modules-and-functions">List of Modules and Functions:</h2>
+<p>example usage:</p>
+<pre><code class="language-bash">epic_pkg workspace new -w Test
+</code></pre>
+<h3 id="list-of-modules-and-functions">List of Modules and Functions:</h3>
+<h4 id="workspace"><strong>workspace</strong></h4>
 <ul>
-<li>
-<h3 id="workspace"><strong>workspace</strong></h3>
-</li>
 <li><strong>new</strong>: Create a new workspace with a template structure.</li>
 <li><strong>prepare</strong>: Prepare the input files using config file.</li>
-<li><strong>list_files</strong>: Create lst.DAT files using config file.</li>
-<li>
-<p><strong>run</strong>: Execute the simulations.</p>
-</li>
-<li>
-<h3 id="weather"><strong>weather</strong></h3>
-</li>
+<li><strong>run</strong>: Execute the simulations.</li>
+<li><strong>post_process</strong>: Process Output files from simulation runs.</li>
+</ul>
+<h4 id="weather"><strong>weather</strong></h4>
+<ul>
 <li><strong>download_daily</strong>: Download daily weather data. </li>
 <li><strong>daily2monthly</strong>: Convert daily weather data to monthly.</li>
-<li>
-<p><strong>download_windspeed</strong>: Download wind speed data.</p>
-</li>
-<li>
-<h3 id="soil"><strong>soil</strong></h3>
-</li>
-<li>
-<p><strong>process_gdb</strong>: Process ssurgo gdb file.</p>
-</li>
-<li>
-<h3 id="sites"><strong>sites</strong></h3>
-</li>
-<li><strong>process_aoi</strong>: Process area of interest file.  (TODO)</li>
+</ul>
+<h4 id="soil"><strong>soil</strong></h4>
+<ul>
+<li><strong>process_gdb</strong>: Process ssurgo gdb file.</li>
+</ul>
+<h4 id="sites"><strong>sites</strong></h4>
+<ul>
 <li><strong>process_foi</strong>: Process fields of interest file.  (TODO)</li>
 <li><strong>generate</strong>: Generate site files from processed data.</li>
 </ul>
@@ -196,7 +163,7 @@ dpkg -l | grep wget
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="csb/" class="btn btn-neutral float-right" title="Crop Sequence Boundaries">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="epic/" class="btn btn-neutral float-right" title="EPIC model">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -224,7 +191,7 @@ dpkg -l | grep wget
     
     
     
-      <span><a href="csb/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="epic/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
@@ -244,5 +211,5 @@ dpkg -l | grep wget
 
 <!--
 MkDocs version : 1.5.3
-Build Date UTC : 2024-05-01 17:06:17.871281+00:00
+Build Date UTC : 2024-05-02 00:04:44.757449+00:00
 -->
