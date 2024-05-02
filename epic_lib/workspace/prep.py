@@ -66,12 +66,17 @@ weather = config["weather"]
 region_code = config["code"]
 site = config["sites"]
 
-# Download Nldas data 
-if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
-    start_date = weather["start_date"]
-    end_date = weather["end_date"]
-    dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
-                  -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}', False)
+if (not weather['offline']) and (not os.path.exists(weather["dir"] + '/climate_grid.tif'):
+    dispatch('weather', 'download_daily', '', False)
+else:
+    # Download Nldas data 
+    if not os.path.exists(weather["dir"] + '/NLDAS_csv'):
+        start_date = weather["start_date"]
+        end_date = weather["end_date"]
+        dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
+                      -o {weather["dir"]} -b {lat_min} {lat_max} {lon_min} {lon_max}', False)
+
+
 
 # create soil files 
 if soil['files_dir'] is None:
