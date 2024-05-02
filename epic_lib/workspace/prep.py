@@ -90,6 +90,7 @@ if soil['files_dir'] is None:
         'slope_len': f'./{soil_dir}/{region_code}_slopelen_1.csv'
     }
     })
+    soil_dir += "/files"
 else:
     soil_dir = soil['files_dir']
 
@@ -97,7 +98,7 @@ else:
 coords = info_df[['x', 'y']].values
 
 ssurgo_map = site["ssurgo_map"]
-info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir + "/files") 
+info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir) 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
