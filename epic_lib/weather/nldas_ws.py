@@ -59,7 +59,7 @@ unique_values_da = xr.DataArray(grid, coords=[data_set.lat, data_set.lon], dims=
 unique_values_da = unique_values_da.rio.write_crs("EPSG:4326")
 unique_values_da.rio.to_raster('nldas_grid.tif')
 
-print('Downloading Wind speed data...')
+print('Downloading Wind speed data from NLDAS')
 os.makedirs('NLDAS_data', exist_ok = True)
 
 def download_func(date):
