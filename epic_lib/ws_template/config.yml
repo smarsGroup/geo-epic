@@ -26,7 +26,7 @@ weather:
 # Soil details
 soil:
   gdb_path: ./soil/gSSURGO_OK.gdb
-  files_dir:    #if soil files directory is specified, processing gdb file is skipped.
+  files_dir:  #if soil files directory is specified, processing gdb file is skipped.
 
 # Site details
 sites:
