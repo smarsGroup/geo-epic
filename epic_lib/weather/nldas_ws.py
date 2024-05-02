@@ -28,7 +28,7 @@ os.makedirs(args.working_dir, exist_ok = True)
 os.chdir(args.working_dir)
 
 # Define date range from command-line arguments
-dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'M')
+dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'ME')
 
 # Latitude and longitude ranges from command-line arguments
 lat_range = slice(lat_min, lat_max)
