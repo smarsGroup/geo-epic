@@ -11,4 +11,5 @@ pyproj>=3.6.0
 requests>=2.25.1
 lxml
 rioxarray
+matplotlib
 mkdocs>=1.5
