@@ -66,7 +66,7 @@ weather = config["weather"]
 region_code = config["code"]
 site = config["sites"]
 
-if (not weather['offline']) and (not os.path.exists(weather["dir"] + '/climate_grid.tif'):
+if (not weather['offline']) and (not os.path.exists(weather["dir"] + '/climate_grid.tif')):
     dispatch('weather', 'download_daily', '', False)
 else:
     # Download Nldas data 
