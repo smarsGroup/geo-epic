@@ -52,7 +52,7 @@ info_df['FieldID'] = info_df[ID]
 # if ID != 'FieldID':
 # info_df.drop(list(IDs), axis=1, inplace=True)
 
-rot_names = set(['RotID', 'rotID'])
+rot_names = set(['OPC', 'opc', 'RotID', 'rotID'])
 rots = rot_names & columns
 rot = next(iter(rots), None)
 if rot is None:
@@ -64,7 +64,7 @@ info_df['opc'] = info_df[rot].apply(lambda x: f'{config["opc_prefix"]}_{int(x)}'
 soil = config["soil"]
 weather = config["weather"]
 region_code = config["code"]
-site = config["sites"]
+site = config["site"]
 
 if (not weather['offline']) and (not os.path.exists(weather["dir"] + '/climate_grid.tif')):
     dispatch('weather', 'download_daily', '', False)
@@ -86,8 +86,8 @@ if soil['files_dir'] is None:
     'soil': {
         'files_dir': f'{soil_dir}/files'
     },
-    'sites': {
-        'slope_len': f'./{soil_dir}/{region_code}_slopelen_1.csv'
+    'site': {
+        'slope_length': f'./{soil_dir}/{region_code}_slopelen_1.csv'
     }
     })
     soil_dir += "/files"
@@ -97,12 +97,12 @@ else:
 
 coords = info_df[['x', 'y']].values
 
-ssurgo_map = site["ssurgo_map"]
+ssurgo_map = soil["soil_map"]
 info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir) 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files
 dispatch('sites', 'generate', f'-o {site["dir"]} -i {curr_dir + "/info.csv"}\
-    -ele {site["elevation"]} -slope {site["slope_us"]} -sl {site["slope_len"]}', False)
+    -ele {site["elevation"]} -slope {site["slope"]} -sl {site["slope_length"]}', False)
 
 config.update_config({'Processed_Info': f'{curr_dir}/info.csv'})

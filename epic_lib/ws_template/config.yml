@@ -27,15 +27,17 @@ weather:
 # Soil details
 soil:
   gdb_path: ./soil/gSSURGO_OK.gdb
+  soil_map: /home/bharath20/SSURGO.tif 
   files_dir:  #if soil files directory is specified, processing gdb file is skipped.
+  
 
-# Site details
-sites:
+# Info for Sit files
+site:
   dir: ./sites
-  slope_len: ./soil/OK_slopelen_1.csv
+  slope: /home/bharath20/slope_us.tif
   elevation: /home/bharath20/SRTM_1km_US_project.tif
-  slope_us: /home/bharath20/slope_us.tif
-  ssurgo_map: /home/bharath20/SSURGO.tif
+  slope_length: ./soil/OK_slopelen_1.csv
+  
 
 # OPC details
 opc_dir: ./opc
@@ -43,8 +45,7 @@ opc_prefix: CropRot
 
 
 # Run params
-Select:  # boolean expression to select fields with specific property. ex: group == 1, area < 6
-Range: [0, 0.25] # The portion of selected fields to run simulations on. 0 to 1 is for all of them.
+select: Random(0.1) # Range(0.35, 0.8), Random(0.1) or a boolean expression to select fields with specific property. ex: group == 1, area < 6
 num_of_workers: 40 # No. of parellel processes. Should be less than number of cpu cores.
 timeout: 5 # No. of seconds to let a simulation run. Execution is terminated after timeout.
 

@@ -63,7 +63,7 @@ def writeDATFiles(new_dir, config, fid, row):
         np.savetxt(ofile, [[int(fid)]*6 + [config["duration"], config["start_year"]]], fmt=fmt)
         
     with open(f'{new_dir}/ieSite.DAT', 'w') as ofile:
-        site_src = config["sites"]["dir"]
+        site_src = config["site"]["dir"]
         fmt = '%8d    "%s/%d.sit"\n'%(fid, site_src, fid)
         ofile.write(fmt)
 
@@ -222,3 +222,60 @@ def import_function(cmd = None):
     else:
         print(f"Function {function_name} not found in {path}")
         return None
+    
+# import pandas as pd
+
+def filter_dataframe(df, expression):
+    # Handle expressions that are ranges (e.g., "Range(0.35, 0.8)")
+    if expression.startswith("Range(") and expression.endswith(")"):
+        values = expression[6:-1].split(',')
+        low_fraction, high_fraction = float(values[0]), float(values[1])
+        
+        # Calculate the index range
+        total_length = len(df)
+        low_idx = np.floor(low_fraction * total_length).astype(int)
+        high_idx = np.ceil(high_fraction * total_length).astype(int)
+        
+        # Ensure indices are within bounds
+        low_idx = max(0, low_idx)
+        high_idx = min(total_length, high_idx)
+        
+        return df.iloc[low_idx:high_idx]
+
+    # Handle expressions that are random (e.g., "Random(0.1)")
+    elif expression.startswith("Random(") and expression.endswith(")"):
+        frac = float(expression[7:-1])
+        return df.sample(frac=frac)
+
+    # Handle boolean expressions (e.g., "group == 1")
+    else:
+        return df.query(expression)
+    
+import shutil
+
+def check_disk_space(output_dir, est, safety_margin=0.1):
+    """
+    Checks whether there is sufficient disk space available for saving output files.
+
+    Args:
+        output_dir (str): Directory where files will be saved.
+        config (dict): Configuration dictionary with an "output_types" key.
+        safety_margin (float): The safety margin to add to the estimated disk usage (default is 10%).
+
+    Raises:
+        Exception: If the free disk space is lower than the estimated required space.
+    """
+    # Retrieve disk space details for the specified output directory
+    total_bytes, used_bytes, free_bytes = shutil.disk_usage(output_dir)
+    
+    # Convert free bytes to GiB for easy reading
+    free_gib = free_bytes // (1024**3)
+
+    # Adjust for the safety margin
+    estimated_required_gib = int(est * (1 + safety_margin))
+
+    # Check if there is sufficient free disk space
+    if free_gib < estimated_required_gib:
+        message = (f"Insufficient disk space in '{output_dir}'. Estimated required: {est} GiB, "
+                   f"Available: {free_gib} GiB. Consider using the 'Process Outputs' option.")
+        raise Exception(message)
