@@ -23,7 +23,7 @@ weather:
   start_date: 1981-01
   end_date: 2020-12
   offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
-  primary_source: daymet # daymet, gridmet, NLDAS, FLDAS2, ERA5 (Only daymet works for now.)
+  primary_source: daymet # daymet, gridmet, NLDAS, ERA5 (Only daymet works for now.)
 
 # Soil details
 soil:
