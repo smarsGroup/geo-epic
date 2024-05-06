@@ -12,15 +12,12 @@ def reduce_outputs(run_id, base_dir):
         run_id (str): The identifier for the run (mostly FieldID), used to locate the corresponding output file.
         base_dir (str): The base path of the workspace.
   '''
-  
-  # dgn = DGN(f'{run_id}.DGN')  
-  # nee = dgn.get_var('NEE')
-  
-  # open ACY file an get Yield Column
+
+  # open ACY file and get Yield Column
   acy = ACY(f'{run_id}.ACY')  
   yld = acy.get_var('YLDG')
   
-  #get the last year yield value
+  #get the last year yield value and save in yield.csv
   last_year = np.round(yld.iloc[-1]['YLDG'], 2)
   with CSVWriter(f'{base_dir}/yield.csv', 'a') as writer:
     writer.write_row(run_id, last_year)
@@ -36,6 +33,7 @@ def spatial_plot(aoi, exp_name):
         exp_name (str): The experiment name mentioned in the config file.
     '''
     
+    # open saved yield.csv and visualize it.
     final = pd.read_csv('./yield.csv', header = None)
     final.columns = ['FieldID', 'yld']
     final = final.apply(pd.to_numeric, errors='coerce')

@@ -49,7 +49,7 @@ soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 
 slopelen_1 = soil[['mukey', 'slopelen_1']]
-slopelen_1.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_slopelen_1.csv', index = False)
+slopelen_1.to_csv(os.path.dirname(args.gdb_path) + f'/{region}_slopelen.csv', index = False)
 
 soil = soil[['mukey', 'compname', 'hydgrp', 'cokey', 'albedo', 'comppct_r', 'MapUnitsym']]
 soil['mukey'] = soil['mukey'].astype(int)

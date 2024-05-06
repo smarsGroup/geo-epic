@@ -20,13 +20,14 @@ output_dir: ./output # if empty, Output files from epic runs are not saved (To s
 # Weather configuration
 weather:
   dir: ./weather
-  start_date: '1981-01' 
-  end_date: '2020-12'
+  start_date: 1981-01
+  end_date: 2020-12
   offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
+  primary_source: daymet # daymet, gridmet, NLDAS, ERA5 (Only daymet works for now.)
 
 # Soil details
 soil:
-  gdb_path: ./soil/gSSURGO_OK.gdb
+  ssurgo_gdb: ./soil/gSSURGO_OK.gdb
   soil_map: /home/bharath20/SSURGO.tif 
   files_dir:  #if soil files directory is specified, processing gdb file is skipped.
   
@@ -36,7 +37,7 @@ site:
   dir: ./sites
   slope: /home/bharath20/slope_us.tif
   elevation: /home/bharath20/SRTM_1km_US_project.tif
-  slope_length: ./soil/OK_slopelen_1.csv
+  slope_length: ./soil/OK_slopelen.csv
   
 
 # OPC details
@@ -50,5 +51,5 @@ num_of_workers: 40 # No. of parellel processes. Should be less than number of cp
 timeout: 5 # No. of seconds to let a simulation run. Execution is terminated after timeout.
 
 # Post Process
-Process_outputs: ./post_process.py reduce_outputs # if not empty during runs, output processing is also carried out.
-visualize: ./post_process.py spatial_plot # specify function to visualize the required results
+process_outputs: ./utils.py reduce_outputs # if not empty during runs, output processing is also carried out.
+visualize: ./utils.py spatial_plot # specify function to visualize the required results

@@ -80,8 +80,8 @@ else:
 
 # create soil files 
 if soil['files_dir'] is None:
-    dispatch('soil', 'process_gdb', f'-r {region_code} -gdb {soil["gdb_path"]}', True)
-    soil_dir = os.path.dirname(soil["gdb_path"])
+    dispatch('soil', 'process_gdb', f'-r {region_code} -gdb {soil["ssurgo_gdb"]}', True)
+    soil_dir = os.path.dirname(soil["ssurgo_gdb"])
     config.update_config({
     'soil': {
         'files_dir': f'{soil_dir}/files'
