@@ -2,33 +2,23 @@ import os
 import shutil
 import argparse
 
-def create(template_dir):
-    # if not os.path.exists(target_dir):
-    #     os.makedirs(target_dir, exist_ok = True)
+def copy_item(source_item):
     target_dir = os.getcwd()
-    # os.chdir(target_dir)
-    # Ensure the template directory exists
-    if not os.path.exists(template_dir):
-        print(f"Error:'{template_dir}' not found.")
-        return
     
-    if os.path.isdir(template_dir):
-        # Copy the content of the template directory to the target directory
-        for item in os.listdir(template_dir):
-            source_item = os.path.join(template_dir, item)
-            target_item = os.path.join(target_dir, item)
-
-            if os.path.isdir(source_item):
-                shutil.copytree(source_item, target_item, dirs_exist_ok=True)
-            else:
-                # if source_item.split('.')[-1] != 'py':
-                shutil.copy2(source_item, target_item)
+    # Ensure the source_item exists
+    if not os.path.exists(source_item):
+        print(f"Error:'{source_item not found.")
+        return
+        
+    item = (source_item.split('/'))[-1]
+    target_item = os.path.join(target_dir, item)
+    
+    if os.path.isdir(source_item):
+        shutil.copytree(source_item, target_item, dirs_exist_ok=True)
     else:
-        item = (template_dir.split('/'))[-1]
-        target_item = os.path.join(target_dir, item)
-        shutil.copytree(template_dir, target_item)
+        shutil.copy2(source_item, target_item)
 
-    print(f"{target_dir} copied to workspace ")
+    print(f"{source_item} copied to workspace ")
 
 def main():
     parser = argparse.ArgumentParser(description="Create Workspace for EPIC package")
@@ -42,7 +32,7 @@ def main():
     else: 
         template_path = os.path.join(script_dir, "templates/calibration")
     
-    create(template_path)
+    copy_item(template_path)
 
 if __name__ == '__main__':
     main()
