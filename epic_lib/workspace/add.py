@@ -21,18 +21,20 @@ def copy_item(source_item):
     print(f"{item} copied to workspace ")
 
 def main():
-    parser = argparse.ArgumentParser(description="Create Workspace for EPIC package")
+    parser = argparse.ArgumentParser(description="Add Utilities to EPIC Workspace")
     parser.add_argument('-f', '--files', required=True, help='Files to add to this workspace (calibration, epic_editor)')
     args = parser.parse_args()
 
-    # Assuming your template directory is located at "./ws_template" relative to the script
     script_dir = os.path.dirname(os.path.dirname(__file__))
     if args.files == 'epic_editor':
         template_path = os.path.join(script_dir, "templates/EPICeditor.xlsm")
+        copy_item(template_path)
     else: 
-        template_path = os.path.join(script_dir, "templates/calibration")
+        # template_path = os.path.join(script_dir, "templates/calibration")
+        copy_item(os.path.join(script_dir, "templates/calibration/calibration.py"))
+        copy_item(os.path.join(script_dir, "templates/calibration/Parms_Info"))
     
-    copy_item(template_path)
+    
 
 if __name__ == '__main__':
     main()
