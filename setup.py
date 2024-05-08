@@ -43,7 +43,7 @@ else:
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
 
 from epic_lib.misc import ConfigParser
-config = ConfigParser('./', './epic_lib/ws_template/config.yml')
+config = ConfigParser('./', './epic_lib/templates/ws_template/config.yml')
 
 config.update_config({'sites': {
         'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
