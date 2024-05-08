@@ -32,7 +32,7 @@ def main():
 
     # Assuming your template directory is located at "./ws_template" relative to the script
     script_dir = os.path.dirname(os.path.dirname(__file__))
-    template_directory = os.path.join(script_dir, "ws_template")
+    template_directory = os.path.join(script_dir, "templates/ws_template")
     
     create_workspace(args.working_dir, template_directory)
 

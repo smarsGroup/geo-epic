@@ -3,46 +3,45 @@ import subprocess
 import os
 import sys
 
+
+# Mapping of modules and functions to their respective relative paths
+script_paths = {
+    "weather": {
+        "download_windspeed": "weather/nldas_ws.py",
+        "download_daily": "weather/download_daily.py",
+        "daily2monthly": "weather/daily2monthly.py"
+    },
+    "soil": {
+        "process_gdb": "ssurgo/processing.py",
+        "fetch": "ssurgo/fetch.py"
+    },
+    "sites": {
+        "generate": "sites/generate.py"
+    },
+    "workspace": {
+        "prepare": "workspace/prep.py",
+        "run": "workspace/run.py",
+        "listfiles": "workspace/listfiles.py",
+        "new": "workspace/create_ws.py",
+        "add": "workspace/add.py",
+        "post_process": "workspace/post_process.py",
+        "visualize": "workspace/visualize.py"
+    }
+}
+
+
 def dispatch(module, func, options_str, wait = True):
     root_path = os.path.dirname(__file__)
-    # python_path = '/home/chandrab/anaconda3/envs/epic_env/bin/python'
     command = f'{sys.executable} {{script_path}} {options_str}'
-    script_path = None
-    if module == "weather":
-        if func == "download_windspeed":
-            script_path = os.path.join(root_path, "weather", "nldas_ws.py")
-        elif func == "download_daily":
-            script_path = os.path.join(root_path, "weather", "download_daily.py")
-        elif func == "daily2monthly":
-            script_path = os.path.join(root_path, "weather", "daily2monthly.py")
-    elif module == "soil":
-        if func == "process_gdb":
-            script_path = os.path.join(root_path, "ssurgo", "processing.py")
-    elif module == "sites":
-        if func == "generate":
-            script_path = os.path.join(root_path, "sites", "generate.py")
-    elif module == "workspace":
-        if func == "prepare":
-            script_path = os.path.join(root_path, "workspace", "prep.py")
-        elif func == "run":
-            script_path = os.path.join(root_path, "workspace", "run.py")
-        elif func == "listfiles":
-            script_path = os.path.join(root_path, "workspace", "listfiles.py")
-        elif func == "new":
-            script_path = os.path.join(root_path, "workspace", "create_ws.py")
-        elif func == "post_process":
-            script_path = os.path.join(root_path, "workspace", "post_process.py")
-        elif func == "visualize":
-            script_path = os.path.join(root_path, "workspace", "visualize.py")
+    relative_path = script_paths.get(module, {}).get(func)
             
-    if script_path is None:
+    if relative_path:
+        script_path = os.path.join(root_path, relative_path)
+    else:
         print(f"Command '{module} {func}' not found.")
         return
 
     env = os.environ.copy()
-    # Update the PATH to include the bin directory of your conda environment
-    # Make sure to replace '/path/to/your/conda/env/bin' with the actual path
-    # env['PATH'] = '/home/chandrab/anaconda3/envs/epic_env/bin:' + env['PATH']
 
     command = command.format(script_path = script_path)
     if wait:

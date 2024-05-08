@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python Utility function to run EPIC model" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>EPIC package</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Home";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = "/EPIC-pkg/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> EPIC package
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#for-wget">for wget</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#for-conda">for conda</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#installing-package">Installing Package</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#commands-available">Commands Available</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#workspace">workspace</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#weather">weather</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#soil">soil</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sites">sites</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="csb/">Crop Sequence Boundaries</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="epic/">EPIC model</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="Weather/">Weather</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="Soil/">Soil</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="OPC/">Crop Management Info</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="runexp/">Quick Start Guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="api/">API</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">EPIC package</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Home</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/index.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="epic-python-package">EPIC Python Package</h1>
+<p>EPIC Python package! </p>
+<h2 id="installation">Installation</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Before starting the installation, ensure you have <code>wget</code> and <code>conda</code> are installed.</p>
+<h4 id="for-wget">for wget</h4>
+<pre><code>apt-get install wget
+dpkg -l | grep wget
+</code></pre>
+<h4 id="for-conda">for conda</h4>
+<ol>
+<li>Download the installer:
+  Miniconda installer for Linux.
+  Anaconda Distribution installer for Linux.
+  Miniforge installer for Linux.</li>
+<li>Verify your installer hashes.</li>
+<li>In your terminal window, run:</li>
+</ol>
+<pre><code>bash &lt;conda-installer-name&gt;-latest-Linux-x86_64.sh
+</code></pre>
+<h3 id="installing-package">Installing Package</h3>
+<ol>
+<li>Setup a Virtual environment. (conda Recommended)
+   <code>conda create --name epic_env python=3.9
+   conda activate epic_env</code></li>
+<li>Install the EPIC Python Package
+   <code>pip install git+https://github.com/smarsGroup/EPIC-pkg.git</code></li>
+</ol>
+<h2 id="commands-available">Commands Available</h2>
+<p>Epic_pkg allows you to run various commands. The structure is:</p>
+<pre><code class="language-bash">epic_pkg {module} {func} -options
+</code></pre>
+<h2 id="list-of-modules-and-functions">List of Modules and Functions:</h2>
+<ul>
+<li>
+<h3 id="workspace"><strong>workspace</strong></h3>
+</li>
+<li><strong>new</strong>: Create a new workspace with a template structure.</li>
+<li><strong>prepare</strong>: Prepare the input files using config file.</li>
+<li><strong>list_files</strong>: Create lst.DAT files using config file.</li>
+<li>
+<p><strong>run</strong>: Execute the simulations.</p>
+</li>
+<li>
+<h3 id="weather"><strong>weather</strong></h3>
+</li>
+<li><strong>download_daily</strong>: Download daily weather data. </li>
+<li><strong>daily2monthly</strong>: Convert daily weather data to monthly.</li>
+<li>
+<p><strong>download_windspeed</strong>: Download wind speed data.</p>
+</li>
+<li>
+<h3 id="soil"><strong>soil</strong></h3>
+</li>
+<li>
+<p><strong>process_gdb</strong>: Process ssurgo gdb file.</p>
+</li>
+<li>
+<h3 id="sites"><strong>sites</strong></h3>
+</li>
+<li><strong>process_aoi</strong>: Process area of interest file.  (TODO)</li>
+<li><strong>process_foi</strong>: Process fields of interest file.  (TODO)</li>
+<li><strong>generate</strong>: Generate site files from processed data.</li>
+</ul>
+<p>For more details on each command and its options, use:</p>
+<pre><code class="language-bash">epic_pkg {module} {func} --help
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="csb/" class="btn btn-neutral float-right" title="Crop Sequence Boundaries">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/smarsGroup/EPIC-pkg" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+    
+      <span><a href="csb/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.6.0
+Build Date UTC : 2024-04-30 03:27:29.040748+00:00
+-->
