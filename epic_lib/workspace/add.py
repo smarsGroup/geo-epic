@@ -32,7 +32,9 @@ def main():
     else: 
         # template_path = os.path.join(script_dir, "templates/calibration")
         copy_item(os.path.join(script_dir, "templates/calibration/calibration.py"))
-        copy_item(os.path.join(script_dir, "templates/calibration/Parms_Info"))
+        copy_item(os.path.join(script_dir, "templates/calibration/Sensitivity"))
+        copy_item(os.path.join(script_dir, "templates/calibration/DefaultParm"))
+        
     
     
 
