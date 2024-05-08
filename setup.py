@@ -66,7 +66,8 @@ setup(
     package_data={
         'epic_lib': ['templates/**/**/*',
                     'ssurgo/template.sol',
-                    'sites/template.sit'],
+                    'sites/template.sit',
+                    'templates/EPICeditor.xlsm'],
     },
     entry_points={
         'console_scripts': [
