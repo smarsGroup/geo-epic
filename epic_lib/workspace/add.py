@@ -18,7 +18,7 @@ def copy_item(source_item):
     else:
         shutil.copy2(source_item, target_item)
 
-    print(f"{source_item} copied to workspace ")
+    print(f"{item} copied to workspace ")
 
 def main():
     parser = argparse.ArgumentParser(description="Create Workspace for EPIC package")
