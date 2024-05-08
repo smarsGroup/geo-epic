@@ -7,7 +7,7 @@ def copy_item(source_item):
     
     # Ensure the source_item exists
     if not os.path.exists(source_item):
-        print(f"Error:'{source_item not found.")
+        print(f"Error:'{source_item} not found.")
         return
         
     item = (source_item.split('/'))[-1]
