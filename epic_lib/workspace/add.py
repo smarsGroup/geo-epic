@@ -19,7 +19,7 @@ def create(template_dir):
             target_item = os.path.join(target_dir, item)
 
             if os.path.isdir(source_item):
-                shutil.copytree(source_item, target_item)
+                shutil.copytree(source_item, target_item, dirs_exist_ok=True)
             else:
                 # if source_item.split('.')[-1] != 'py':
                 shutil.copy2(source_item, target_item)
