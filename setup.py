@@ -45,11 +45,10 @@ subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0
 from epic_lib.misc import ConfigParser
 config = ConfigParser('./', './epic_lib/ws_template/config.yml')
 
-config.update_config({'sites': {
-        'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
-        'slope_us': f'{home_dir}/epic_pkg_metadata/slope_us.tif',
-        'ssurgo_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',
-    } })
+config.update_config({'soil' : {'soil_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',},
+                      'sites': {'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
+                                'slope': f'{home_dir}/epic_pkg_metadata/slope_us.tif',
+    }, })
 
 # Function to read the requirements.txt file
 def read_requirements():
