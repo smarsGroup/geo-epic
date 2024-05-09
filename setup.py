@@ -43,7 +43,7 @@ else:
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
 
 from epic_lib.misc import ConfigParser
-config = ConfigParser('./', './epic_lib/ws_template/config.yml')
+config = ConfigParser('./', './epic_lib/templates/ws_template/config.yml')
 
 config.update_config({'soil' : {'soil_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',},
                       'sites': {'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
@@ -65,7 +65,8 @@ setup(
     package_data={
         'epic_lib': ['templates/**/**/*',
                     'ssurgo/template.sol',
-                    'sites/template.sit'],
+                    'sites/template.sit',
+                    'templates/EPICeditor.xlsm'],
     },
     entry_points={
         'console_scripts': [
