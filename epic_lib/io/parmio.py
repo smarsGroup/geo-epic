@@ -2,7 +2,11 @@ import pandas as pd
 import numpy as np
 from rpy2.robjects import r, pandas2ri
 pandas2ri.activate()
-r.source('ParmIO.R')
+import os
+
+root_path = os.path.dirname(__file__)
+script_path = os.path.join(root_path, 'ParmIO.R')
+r.source(script_path)
 
 class CropCom(pd.DataFrame):
 

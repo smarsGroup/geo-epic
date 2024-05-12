@@ -46,7 +46,7 @@ from epic_lib.misc import ConfigParser
 config = ConfigParser('./', './epic_lib/templates/ws_template/config.yml')
 
 config.update_config({'soil' : {'soil_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',},
-                      'sites': {'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
+                      'site': {'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
                                 'slope': f'{home_dir}/epic_pkg_metadata/slope_us.tif',
     }, })
 
