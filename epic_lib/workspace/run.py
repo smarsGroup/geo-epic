@@ -96,7 +96,7 @@ total = len(info_ls)
 
 # Check the available disk space for a given folder
 est = int(len(config['output_types'])*total/200)
-check_disk_space(output_dir, est)
+if not process_outputs: check_disk_space(output_dir, est)
 
 print('Total Field Sites:', total)
 process_model(info_ls[0])

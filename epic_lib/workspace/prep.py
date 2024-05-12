@@ -58,7 +58,10 @@ rot = next(iter(rots), None)
 if rot is None:
     print("Using FieldID for opc files")
     rot = 'FieldID'
-info_df['opc'] = info_df[rot].apply(lambda x: f'{config["opc_prefix"]}_{int(x)}')
+if config["opc_prefix"] is None: 
+    info_df['opc'] = info_df[rot].apply(lambda x: x)
+else:
+    info_df['opc'] = info_df[rot].apply(lambda x: f'{config["opc_prefix"]}_{x}')
 
 # Read from config file
 soil = config["soil"]
