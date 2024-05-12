@@ -59,31 +59,35 @@ class DLY(pd.DataFrame):
             
         return ss
 
+
 class OPC(pd.DataFrame):
+    _metadata = ['header', 'name', 'prms']
     @classmethod
     def load(cls, path):
         """
         Load data from an OPC file into DataFrame.
         """
         widths = [3, 3, 3, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8]
-        data = pd.read_fwf(path, widths=widths, skiprows=2)
+        data = pd.read_fwf(path, widths=widths, skiprows=2, header = None)
         data = data.dropna().astype(float)
-        data = data[np.all(np.isfinite(data).all(axis = 1))]
+        # data = data[np.all(np.isfinite(data).all(axis = 1))]
         data.columns = ['Yid', 'Mn', 'Dy', 'CODE', 'TRAC', 'CRP', 'XMTU', 'OPV1', 'OPV2', 'OPV3', 
                         'OPV4', 'OPV5', 'OPV6', 'OPV7', 'OPV8']
         inst = cls(data)
         with open(path, 'r') as file:
-            inst.header = [file.readline().strip() for _ in range(2)]
+            inst.header = [file.readline() for _ in range(2)]
+        inst.name = path.split('/')[-1]#'OPC'
         return inst
 
     def save(self, path):
         """
         Save DataFrame into an OPC file.
         """
-        with open(f'{path}.OPC', 'w') as ofile:
-            ofile.write('\n'.join(self.header) + '\n')
+        with open(f'{path}/{self.name}', 'w') as ofile:
+            ofile.write(''.join(self.header))
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
-            np.savetxt(ofile, self.values[1:], fmt = fmt)
+            np.savetxt(ofile, self.values, fmt = fmt)
+
     
     def edit_plantation_info(self, month, day, fert):
         # Modify the Mn and Dy columns for rows where CODE is 2
@@ -91,12 +95,15 @@ class OPC(pd.DataFrame):
 
         # Modify the Mn and Dy columns for the penultimate row where CODE is 71
         penultimate_index_71 = data[data['CODE'] == 71].index[-2]
-
         data.loc[penultimate_index_71, ['Mn', 'Dy']] = [month, day]
-
         data.loc[data[data['CODE'] == 71].index[-1], 'OPV1'] = r        
         
 
-    def edit_nitrogen_rate(self, rate):
+    def edit_nitrogen_rate(self, rate, year_id = 15):
         # Modify the OPV1 column for the penultimate row where CODE is 71
-        data.loc[penultimate_index_71, 'OPV1'] = 0.2 if rate == 0 else rate
+        if ((self['CODE'] == 71) & (self['Yid'] == year_id)).any():
+            self.loc[(self['CODE'] == 71) & (self['Yid'] == year_id), 'OPV1'] = 0.2 if rate == 0 else rate
+    
+    def edit_nrates(self, nrates):
+        for i, nrate in enumerate(nrates, start = 1):
+            self.edit_nitrogen_rate(nrate, i)
