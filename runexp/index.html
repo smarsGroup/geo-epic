@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/runexp/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Quick Start Guide - EPIC package</title>
+    <title>Running an Experiment - Geo-Epic</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Quick Start Guide";
+        var mkdocs_page_name = "Running an Experiment";
         var mkdocs_page_input_path = "runexp.md";
         var mkdocs_page_url = "/EPIC-pkg/runexp/";
       </script>
@@ -30,7 +30,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> EPIC package
+          <a href=".." class="icon icon-home"> Geo-Epic
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -44,7 +44,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC model</a>
+                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC Model</a>
                 </li>
               </ul>
               <ul>
@@ -52,53 +52,27 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../Weather/">Weather module</a>
+                <li class="toctree-l1"><a class="reference internal" href="../Weather/">Weather Module</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../Soil/">SSURGO Soil</a>
+                <li class="toctree-l1"><a class="reference internal" href="../Soil/">Soil Module</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management Info</a>
+                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management</a>
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">Quick Start Guide</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Running an Experiment</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#1-create-new-workspace">1. Create new workspace</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#2-input-data-preparation">2. Input data preparation</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#a-for-soil">a) For soil:</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#b-for-weather-and-sites">b) For Weather and sites</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#3-edit-config-file-as-needed">3. Edit config file as needed</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#4-prepare-opc-file">4. Prepare OPC File</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#5-prepare-the-workspace">5. Prepare the workspace</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#6-and-execute-the-simulations">6. And execute the simulations</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#example-visualization">Example Visualization</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#7-post-process-the-output-visualization">7. Post-process the output visualization</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#for-post-processing">For post-processing</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#for-visualization">For visualization</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#your-plot-will-look-like-this">Your plot will look like this:</a>
-    </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#todo">(ToDo)</a>
     </li>
     </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../opt/">Model Calibration</a>
                 </li>
               </ul>
               <ul>
@@ -112,14 +86,14 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">EPIC package</a>
+          <a href="..">Geo-Epic</a>
         
       </nav>
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">Quick Start Guide</li>
+      <li class="breadcrumb-item active">Running an Experiment</li>
     <li class="wy-breadcrumbs-aside">
           <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/runexp.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
@@ -129,49 +103,74 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="run-an-epic-experiment">Run an EPIC Experiment</h1>
+                <h1 id="running-the-model">Running the model</h1>
+<h4 id="todo">(ToDo)</h4>
+<pre><code class="language-python">from geoEpic import Site, EpicModel
+
+# initialise a site object
+site = Site(opc = './continuous_corn.OPC',  # management file
+            dly = './1123455.DLY',          # daily weather file 
+            sol = './Andisol.SOL',          # soil file
+            sit = './1.SIT')                # site file
+
+
+# initialise the EPIC model
+model = EpicModel(path = './model/EPIC2301dt20230820')
+model.setup(start_year = 2014, duration = 10)
+model.set_output_types(['ACY', 'DGN'])
+
+# run the simulation for the site
+model.run(site)
+
+# get the required outputs
+acy = model.outputs['ACY']
+model.close()
+</code></pre>
+<p>Loading from config files:</p>
+<pre><code class="language-python">site = Site.from_config(lat = , lon = , config = './config.yml')
+model = EpicModel.from_config(config = './config.yml')
+
+model.run(site)
+model.close()
+</code></pre>
+<p>example config file:</p>
+<ul>
+<li>To edit the OPC, SOL or files in the epic model folder, you could use the epic_editor. the following command will copy the epiceditor in to your current folder.</li>
+</ul>
+<pre><code class="language-bash">&gt;&gt; geo-epic workspace add epic_editor
+</code></pre>
+<h1 id="running-an-epic-experiment">Running an EPIC Experiment</h1>
 <h3 id="1-create-new-workspace">1. Create new workspace</h3>
 <pre><code class="language-bash">epic_pkg workspace new -w Test
 cd Test
 </code></pre>
 <p>It willl create a new workspace in the new directory named 'Test'. This 'Test' folder will automatically create sub-folders for EPIC model like model, opc, sites, soil, weather and a config.yml doc in it. You need to to go to Test folder before simulation starts.</p>
-<h3 id="2-input-data-preparation">2. Input data preparation</h3>
-<h4 id="a-for-soil">a) For soil:</h4>
-<p>Go to <a href="https://www.nrcs.usda.gov/resources/data-and-reports/gridded-soil-survey-geographic-gssurgo-database">https://www.nrcs.usda.gov/resources/data-and-reports/gridded-soil-survey-geographic-gssurgo-database</a> and download the required soil database. </p>
-<p>Example: For Maryland, go to State Database-soils|Powered by Box link to download gSSURGO_MD.zip and keep it in soil folder after extarcing it.</p>
-<h4 id="b-for-weather-and-sites">b) For Weather and sites</h4>
-<p>Go to <a href="https://www.nass.usda.gov/Research_and_Science/Crop-Sequence-Boundaries/index.php">https://www.nass.usda.gov/Research_and_Science/Crop-Sequence-Boundaries/index.php</a> and Download the Crop Sequence Boundaries 2016-2023 dataset and extract it. This crop sequence boundary contains the crop-field shapefiles for whole USA. You can clip it for your AOI. Like if you are working in Maryland state, just clip it for Maryland and keep it in a new folder named 'CropRotations'.</p>
-<p><strong>NOTE</strong>: Using the crop-sequence boundary, the weather and sites files are automatically downloaded to create input files for AOI, but only the sites files are downloaded offline and stored in the respective folder. Weather files are stored on the server while operating the simulations without offline storage and deleted automatically after simulation.
-To download weather files automatically, use the following commands:</p>
-<pre><code>epic_pkg weather download daily
+<h3 id="2-edit-config-file-as-needed">2. Edit config file as needed</h3>
+<p>This package is mainly designed for study regions in the USA. In the config.yml file, update the settings in the config file based on your area of interest (AOI) and preferences. For example, if you need to run the model for the state of Maryland, USA, modify these rows as follows:</p>
+<pre><code>EXPName: Nitrogen Assessment (Your Experiment Name) 
+Region: Maryland 
+code: MD 
+Fields_of_Interests: ./CropRotations/MDRotFilt.shp
 </code></pre>
-<p>This command will only work if you already installed the package, created workspace and downloaded the crop-sequence-boundary.</p>
-<h3 id="3-edit-config-file-as-needed">3. Edit config file as needed</h3>
-<p>Since this package is designed to work for USA-based study regions. In the config.yml file, you need to change the following rows as per your AOI and convenience, but you can adopt the following practice:</p>
-<p><strong>Let's say you have to run the model for Maryland state of USA, change following rows:</strong></p>
-<p>a) EXPName: EPIC RUN (Carbon or Nitrogen Assessment) (You can keep anything)
-Region: Maryland
-code: MD
-Fields_of_Interests: ./CropRotations/MDRotFilt.shp</p>
-<p><strong>Note:</strong> This MDRotFilt.shp is the same file we downloaded and kept in the CropRotations folder in the previous step.
-b) Soil: 
-gdb_path: 4. Before going to editing the 
-./soil/MD_slopelen_1.csv</p>
-<p><strong>The thumb-rule is that the config file should be edited considering the code name of the study region. Like you did it here by replacing MD in the config file throughout.</strong></p>
-<h3 id="4-prepare-opc-file">4. Prepare OPC File</h3>
+<p>Note: The MDRotFilt.shp file is the same one downloaded and placed in the CropRotations folder in the previous step.</p>
+<pre><code>soil: 
+   ssurgo_gdb: ./soil/gSSURGO_MD.gdb
+</code></pre>
+<p>Guideline: The rule of thumb is to edit the configuration file using the region code specific to your study region, as done here using "MD" throughout the config file.</p>
+<h3 id="3-prepare-opc-file">3. Prepare OPC File</h3>
 <p>OPC refers to the agricultural management practice files which is yet to automated. For now, you need to prpare management files and keep it in a new folder named 'OPC' inside the 'Test' directory.</p>
-<h3 id="5-prepare-the-workspace">5. Prepare the workspace</h3>
+<h3 id="4-prepare-the-workspace">4. Prepare the workspace</h3>
 <pre><code class="language-bash">epic_pkg workspace prepare
 </code></pre>
 <p>This command will automatically pre-process the input files before simulation.</p>
-<h3 id="6-and-execute-the-simulations">6. And execute the simulations</h3>
+<h3 id="5-and-execute-the-simulations">5. And execute the simulations</h3>
 <pre><code class="language-bash">epic_pkg workspace run
 </code></pre>
 <p>This command will simulate the operation/s and automatically save the results in a new folder named 'Output'. </p>
 <p>This command will also create a <strong>post_process.pynb</strong> doc which will have an example code to visualize the required parameters from ACY and DGN files. </p>
 <p>You can edit this code as per your requirements. You just have to identify the parameters and edit accordingly.</p>
 <h2 id="example-visualization">Example Visualization</h2>
-<h3 id="7-post-process-the-output-visualization">7. Post-process the output visualization</h3>
+<h3 id="6-post-process-the-output-visualization">6. Post-process the output visualization</h3>
 <p>You need to post-process the output files according to your interests. Generally, as an agricultural reserachers you need to process the DGN and ACY files.</p>
 <h4 id="for-post-processing">For post-processing</h4>
 <pre><code>epic_pkg workspace post_process
@@ -182,13 +181,13 @@ gdb_path: 4. Before going to editing the
 </code></pre>
 <p>It will simply plot the 'YLDG' variable corresponding to the site ids and crate a map for study region. </p>
 <h3 id="your-plot-will-look-like-this">Your plot will look like this:</h3>
-<p><img alt="'Maryland_Yield'" src="../Yield_MD.png" /></p>
+<p><img alt="'Maryland_Yield'" src="./Yield_MD.png" /></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../OPC/" class="btn btn-neutral float-left" title="Crop Management Info"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../api/" class="btn btn-neutral float-right" title="API">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../OPC/" class="btn btn-neutral float-left" title="Crop Management"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../opt/" class="btn btn-neutral float-right" title="Model Calibration">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -218,7 +217,7 @@ gdb_path: 4. Before going to editing the
       <span><a href="../OPC/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../api/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../opt/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

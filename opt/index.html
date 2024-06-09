@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/api/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/opt/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>API - Geo-Epic</title>
+    <title>Model Calibration - Geo-Epic</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "API";
-        var mkdocs_page_input_path = "api.md";
-        var mkdocs_page_url = "/EPIC-pkg/api/";
+        var mkdocs_page_name = "Model Calibration";
+        var mkdocs_page_input_path = "opt.md";
+        var mkdocs_page_url = "/EPIC-pkg/opt/";
       </script>
     
     <!--[if lt IE 9]>
@@ -67,28 +67,14 @@
                 <li class="toctree-l1"><a class="reference internal" href="../runexp/">Running an Experiment</a>
                 </li>
               </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../opt/">Model Calibration</a>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Model Calibration</a>
+    <ul class="current">
+    </ul>
                 </li>
               </ul>
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">API</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#todo">(ToDo)</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#workspace">workspace</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#weather">weather</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#soil">soil</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#sites">sites</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api/">API</a>
                 </li>
               </ul>
       </div>
@@ -105,9 +91,9 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">API</li>
+      <li class="breadcrumb-item active">Model Calibration</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/api.md" class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/opt.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
   <hr/>
@@ -115,44 +101,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h2 id="commands-available">Commands Available</h2>
-<h3 id="todo">(ToDo)</h3>
-<p>Geo-Epic allows you to run various commands. The structure is as show below:</p>
-<pre><code class="language-bash">geo-epic {module} {func} -options
-</code></pre>
-<p>example usage:</p>
-<pre><code class="language-bash">geo-epic workspace new -w Test
-</code></pre>
-<h3 id="list-of-modules-and-functions">List of Modules and Functions:</h3>
-<h4 id="workspace"><strong>workspace</strong></h4>
-<ul>
-<li><strong>new</strong>: Create a new workspace with a template structure.</li>
-<li><strong>prepare</strong>: Prepare the input files using config file.</li>
-<li><strong>run</strong>: Execute the simulations.</li>
-<li><strong>post_process</strong>: Process Output files from simulation runs.</li>
-</ul>
-<h4 id="weather"><strong>weather</strong></h4>
-<ul>
-<li><strong>download_daily</strong>: Download daily weather data. </li>
-<li><strong>daily2monthly</strong>: Convert daily weather data to monthly.</li>
-</ul>
-<h4 id="soil"><strong>soil</strong></h4>
-<ul>
-<li><strong>process_gdb</strong>: Process ssurgo gdb file.</li>
-</ul>
-<h4 id="sites"><strong>sites</strong></h4>
-<ul>
-<li><strong>process_foi</strong>: Process fields of interest file.  (TODO)</li>
-<li><strong>generate</strong>: Generate site files from processed data.</li>
-</ul>
-<p>For more details on each command and its options, use:</p>
-<pre><code class="language-bash">geo-epic {module} {func} --help
-</code></pre>
+                <h1 id="overview">Overview</h1>
+<p>The Calibration Module in Geo-Epic is developed to assist in tuning desired parameters involved in the EPIC model based on observational data, such as Leaf Area Index (LAI), Net Ecosystem Exchange (NEE), crop yield, or biomass. This allows model parameters to be refined to better reflect specific local conditions or experimental results.</p>
+<h1 id="getting-started">Getting Started</h1>
+<p>To begin calibration, import the calibration module from the package:</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../opt/" class="btn btn-neutral float-left" title="Model Calibration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../runexp/" class="btn btn-neutral float-left" title="Running an Experiment"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api/" class="btn btn-neutral float-right" title="API">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -179,8 +137,10 @@
         </span>
     
     
-      <span><a href="../opt/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../runexp/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../api/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

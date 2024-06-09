@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Python Utility function to run EPIC model" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/" />
       <link rel="shortcut icon" href="img/favicon.ico" />
-    <title>EPIC package</title>
+    <title>Geo-Epic</title>
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -30,7 +30,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href="." class="icon icon-home"> EPIC package
+          <a href="." class="icon icon-home"> Geo-Epic
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -42,29 +42,15 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href=".">Home</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#commands-available">Commands Available</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#list-of-modules-and-functions">List of Modules and Functions:</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#workspace">workspace</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#weather">weather</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#soil">soil</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#sites">sites</a>
-    </li>
-        </ul>
-    </li>
-        </ul>
     </li>
     </ul>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="epic/">EPIC model</a>
+                <li class="toctree-l1"><a class="reference internal" href="epic/">EPIC Model</a>
                 </li>
               </ul>
               <ul>
@@ -72,19 +58,23 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="Weather/">Weather module</a>
+                <li class="toctree-l1"><a class="reference internal" href="Weather/">Weather Module</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="Soil/">SSURGO Soil</a>
+                <li class="toctree-l1"><a class="reference internal" href="Soil/">Soil Module</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="OPC/">Crop Management Info</a>
+                <li class="toctree-l1"><a class="reference internal" href="OPC/">Crop Management</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="runexp/">Quick Start Guide</a>
+                <li class="toctree-l1"><a class="reference internal" href="runexp/">Running an Experiment</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="opt/">Model Calibration</a>
                 </li>
               </ul>
               <ul>
@@ -98,7 +88,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href=".">EPIC package</a>
+          <a href=".">Geo-Epic</a>
         
       </nav>
       <div class="wy-nav-content">
@@ -115,11 +105,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="epic-python-package">EPIC Python Package</h1>
+                <h1 id="geo-epic">Geo-Epic</h1>
 <p>A toolkit for geospatial crop simulations using EPIC model</p>
-<p><img alt="'Maryland_Yield'" src="Yield_MD.png" /></p>
+<p><img alt="'Maryland_Yield'" src="assets/Yield_MD.png" /></p>
+<h2 id="overview">Overview</h2>
+<p>This package expands the capabilities of the <strong>EPIC crop simulation model</strong>, to simulate crop growth and development across large geographies, such as entire states or counties by leveraging openly availabe remote sensing products and geospatial databases. Additionally, the toolkit features a unique calibration module that allows fine-tuning of model parameters to reflect specific local conditions or experimental results. This toolkit allows researchers to assess crop production potential, management scenarios and risks at broader scales, informing decision-making for sustainable agricultural practices.</p>
 <h2 id="installation">Installation</h2>
-<p>Before starting the setup, ensure you have <code>wget</code> and <code>conda</code> installed.</p>
 <p>Setup a Virtual environment. (conda Recommended)</p>
 <pre><code class="language-bash">conda create --name epic_env python=3.9
 conda activate epic_env
@@ -127,43 +118,12 @@ conda activate epic_env
 <p>Install the EPIC Python Package</p>
 <pre><code class="language-bash">pip install git+https://github.com/smarsGroup/EPIC-pkg.git
 </code></pre>
-<h2 id="commands-available">Commands Available</h2>
-<p>Epic_pkg allows you to run various commands. The structure is as show below:</p>
-<pre><code class="language-bash">epic_pkg {module} {func} -options
-</code></pre>
-<p>example usage:</p>
-<pre><code class="language-bash">epic_pkg workspace new -w Test
-</code></pre>
-<h3 id="list-of-modules-and-functions">List of Modules and Functions:</h3>
-<h4 id="workspace"><strong>workspace</strong></h4>
-<ul>
-<li><strong>new</strong>: Create a new workspace with a template structure.</li>
-<li><strong>prepare</strong>: Prepare the input files using config file.</li>
-<li><strong>run</strong>: Execute the simulations.</li>
-<li><strong>post_process</strong>: Process Output files from simulation runs.</li>
-</ul>
-<h4 id="weather"><strong>weather</strong></h4>
-<ul>
-<li><strong>download_daily</strong>: Download daily weather data. </li>
-<li><strong>daily2monthly</strong>: Convert daily weather data to monthly.</li>
-</ul>
-<h4 id="soil"><strong>soil</strong></h4>
-<ul>
-<li><strong>process_gdb</strong>: Process ssurgo gdb file.</li>
-</ul>
-<h4 id="sites"><strong>sites</strong></h4>
-<ul>
-<li><strong>process_foi</strong>: Process fields of interest file.  (TODO)</li>
-<li><strong>generate</strong>: Generate site files from processed data.</li>
-</ul>
-<p>For more details on each command and its options, use:</p>
-<pre><code class="language-bash">epic_pkg {module} {func} --help
-</code></pre>
+<p>Before starting the setup, ensure you have <a href="https://cloudcone.com/docs/article/the-linux-wget-command/"><code>wget</code></a> and <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html"><code>conda</code></a> installed. <br> Follow the links for corresponding installation guides.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="epic/" class="btn btn-neutral float-right" title="EPIC model">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="epic/" class="btn btn-neutral float-right" title="EPIC Model">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -211,5 +171,5 @@ conda activate epic_env
 
 <!--
 MkDocs version : 1.5.3
-Build Date UTC : 2024-05-02 00:04:44.757449+00:00
+Build Date UTC : 2024-06-09 20:45:23.281569+00:00
 -->

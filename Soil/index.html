@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/Soil/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>SSURGO Soil - EPIC package</title>
+    <title>Soil Module - Geo-Epic</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "SSURGO Soil";
+        var mkdocs_page_name = "Soil Module";
         var mkdocs_page_input_path = "Soil.md";
         var mkdocs_page_url = "/EPIC-pkg/Soil/";
       </script>
@@ -30,7 +30,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> EPIC package
+          <a href=".." class="icon icon-home"> Geo-Epic
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -44,7 +44,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC model</a>
+                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC Model</a>
                 </li>
               </ul>
               <ul>
@@ -52,21 +52,25 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../Weather/">Weather module</a>
+                <li class="toctree-l1"><a class="reference internal" href="../Weather/">Weather Module</a>
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">SSURGO Soil</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Soil Module</a>
     <ul class="current">
     </ul>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management Info</a>
+                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../runexp/">Quick Start Guide</a>
+                <li class="toctree-l1"><a class="reference internal" href="../runexp/">Running an Experiment</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../opt/">Model Calibration</a>
                 </li>
               </ul>
               <ul>
@@ -80,14 +84,14 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">EPIC package</a>
+          <a href="..">Geo-Epic</a>
         
       </nav>
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">SSURGO Soil</li>
+      <li class="breadcrumb-item active">Soil Module</li>
     <li class="wy-breadcrumbs-aside">
           <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/Soil.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
@@ -97,16 +101,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h3 id="usda-gssurgo">USDA gSSURGO</h3>
+                <h1 id="soil-module">Soil Module</h1>
+<p>In agriculture simulations, such as those conducted using the EPIC model, soil data directly influences water availability, nutrient supply, and overall crop growth predictions. Soil input files to the model contain detailed information about the soil properties of a specific location, depth wise. Geo-Epic helps in generating soil files required by the EPIC Model from two soil data sources: <br></p>
+<ul>
+<li><strong><a href="https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo">USDA SSURGO</a></strong>: which contains detailed surveys of U.S. soils. <br></li>
+<li><strong><a href="https://soilgrids.org/">ISRIC SoilGrids 250m</a></strong>: which offers global coverage in a grid format.</li>
+</ul>
+<p><img alt="soilg" src="../assets/sol.jpg" /></p>
+<h1 id="usage">Usage</h1>
+<h3 id="usda-ssurgo">USDA SSURGO</h3>
+<p>The USDA Soil Survey Geographic <strong>(SSURGO)</strong> database is a comprehensive resource for soil data collected by the Natural Resources Conservation Service <strong>(NRCS)</strong> across the United States and the Territories. This database provides detailed information on soil properties and classifications. The data is collected through extensive field surveys and laboratory analysis. For more detailed information, visit the <a href="https://www.nrcs.usda.gov/resources/data-and-reports/soil-survey-geographic-database-ssurgo">USDA NRCS SSURGO</a> page.</p>
+<p>To fetch and output soil files using the USDA SSURGO database, following commands could be used. For a specific location, specify the latitude and longitude coordinates to generate a soil file named out_name.SOL. </p>
+<pre><code class="language-bash"># Fetch and output soil files for a specific latitude and longitude
+&gt;&gt; geo-epic soil usda --fetch {lat} {lon} --out {out_path}
+
+# Fetch for a list of locations in a csv file with lat, lon, out_path columns
+&gt;&gt; geo-epic soil usda --fetch {list.csv} --out {column_name}
+
+# Fetch for crop sequence boundaries shape file.
+&gt;&gt; geo-epic soil usda --fetch {aoi_csb.shp} --out {out_dir}
+</code></pre>
+<p><strong>Processing ssurgo gdb file</strong>:</p>
+<p>To process a SSURGO GDB file and generate soil files for all unique soils contained in it, follow these steps. For instance, if you require soil files for Maryland, navigate to the 'State Database - Soils' section, and download the 'gSSURGO_MD.zip' file. Once the download is complete, extract the contents and place the GDB file in the 'soil' folder within your workspace. Use the following command to generate the soil files for all mukeys. </p>
 <p>Link: <a href="https://www.nrcs.usda.gov/resources/data-and-reports/gridded-soil-survey-geographic-gssurgo-database">https://www.nrcs.usda.gov/resources/data-and-reports/gridded-soil-survey-geographic-gssurgo-database</a></p>
-<p>Creating the soil input files is an important step for the model simulations, please visit the provided link and download the required soil database.</p>
-<p>For example, if you need the soil files for Maryland, go to the 'State Database-soils' section, powered by Box, and download 'gSSURGO_MD.zip'. After downloading, extract it and place the gdb file in the 'soil' folder in your workspace.</p>
+<pre><code class="language-bash">&gt;&gt; geo-epic soil process_gdb -i {path/to/ssurgo.gdb} -o {out_dir} 
+</code></pre>
+<h3 id="isric-soil-grids-data">ISRIC Soil Grids Data</h3>
+<p>The ISRIC Soil Grids 250 meters database is an advanced resource providing high-resolution global soil information. Managed by the International Soil Reference and Information Centre <strong>(ISRIC)</strong>, it uses state-of-the-art machine learning methods to map soil properties across the globe. The prediction models are based on soil profile observations and environmental covariates, including climate, land cover, and terrain morphology. SoilGrids offers soil properties at six standard depth intervals at 250 meters spatial resolution. For more detailed information, visit the <a href="https://www.isric.org/explore/soilgrids">ISRIC Soil Grids</a> page.</p>
+<p><img alt="soilgrid" src="../assets/SoilGrids_banner_web.png" /></p>
+<p>To fetch and output soil files using the ISRIC Soil Grids 250 meters database, you can use the following commands.</p>
+<pre><code class="language-bash"># Fetch and output soil files for a specific latitude and longitude
+&gt;&gt; geo-epic soil soilgrids --fetch {lat} {lon} --out {out_path}
+
+# Fetch for a list of locations in a csv file with lat, lon, out_path columns
+&gt;&gt; geo-epic soil soilgrids --fetch {list.csv} --out {column_name}
+</code></pre>
+<p>Once the tool finishes running, you should see files named {out_name}.SOL in your specified output directory. Open this file to verify that it contains the necessary soil data formatted correctly for use in the EPIC model.</p>
+<p><strong>Refer to the EPIC manual for Soil file formatting</strong></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../Weather/" class="btn btn-neutral float-left" title="Weather module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../OPC/" class="btn btn-neutral float-right" title="Crop Management Info">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Weather/" class="btn btn-neutral float-left" title="Weather Module"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../OPC/" class="btn btn-neutral float-right" title="Crop Management">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>

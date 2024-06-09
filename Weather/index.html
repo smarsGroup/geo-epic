@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://smarsgroup.github.io/EPIC-pkg/Weather/" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Weather module - EPIC package</title>
+    <title>Weather Module - Geo-Epic</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Weather module";
+        var mkdocs_page_name = "Weather Module";
         var mkdocs_page_input_path = "Weather.md";
         var mkdocs_page_url = "/EPIC-pkg/Weather/";
       </script>
@@ -30,7 +30,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
     <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> EPIC package
+          <a href=".." class="icon icon-home"> Geo-Epic
         </a><div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
       <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
@@ -44,7 +44,7 @@
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC model</a>
+                <li class="toctree-l1"><a class="reference internal" href="../epic/">EPIC Model</a>
                 </li>
               </ul>
               <ul>
@@ -52,21 +52,25 @@
                 </li>
               </ul>
               <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="./">Weather module</a>
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Weather Module</a>
     <ul class="current">
     </ul>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../Soil/">SSURGO Soil</a>
+                <li class="toctree-l1"><a class="reference internal" href="../Soil/">Soil Module</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management Info</a>
+                <li class="toctree-l1"><a class="reference internal" href="../OPC/">Crop Management</a>
                 </li>
               </ul>
               <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../runexp/">Quick Start Guide</a>
+                <li class="toctree-l1"><a class="reference internal" href="../runexp/">Running an Experiment</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../opt/">Model Calibration</a>
                 </li>
               </ul>
               <ul>
@@ -80,14 +84,14 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
       <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">EPIC package</a>
+          <a href="..">Geo-Epic</a>
         
       </nav>
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">Weather module</li>
+      <li class="breadcrumb-item active">Weather Module</li>
     <li class="wy-breadcrumbs-aside">
           <a href="https://github.com/smarsGroup/EPIC-pkg/edit/master/docs/Weather.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
@@ -98,22 +102,98 @@
             <div class="section" itemprop="articleBody">
               
                 <h3 id="weather-module">Weather Module</h3>
-<p>Weather input files for EPIC model are created from the below listed sources. During the simulations, these weather files are temporarily stored and are automatically deleted once the simulation is complete. They are not stored offline.</p>
-<p>To get weather info and save them as daily and monthy input files, the following command can be used:</p>
-<pre><code>epic_pkg weather download_daily
-</code></pre>
-<p>Note: This command will only function correctly if you have already set up your workspace, and downloaded the crop-sequence boundaries and croped it to your area of interest."</p>
-<h3 id="sources">Sources</h3>
+<p><img alt="weather" src="../assets/fg.jpg" /></p>
+<p>Weather data is vital in providing essential environmental inputs that significantly influence crop growth and development. Reliable weather inputs ensure that agricultural simulations reflect realistic responses to climatic conditions. The EPIC model requires weather input files that detail daily and monthly climatic variables. Daily files provide day-to-day weather data, while monthly files summarize the average or total values per month. These files are crucial for driving the daily simulation processes in EPIC.</p>
+<h3 id="fetching-weather-data">Fetching Weather Data</h3>
+<p>Geo-Epic streamlines the process of fetching and organizing weather data essential for EPIC simulations. It supports the creation of weather input files from daymet, and also from sophisticated datasets available through Google Earth Engine. One can define a composite collection in the config file, detailing the specific variables to select from each data source, tailoring the dataset to meet the needs of their simulations. </p>
+<h4 id="using-gee-collections">Using GEE collections</h4>
+<p>Geo-epic allows the integration of weather and climate data sources on GEE. To explore the datasets, visit <a href="https://developers.google.com/earth-engine/datasets/">Google Earth Engine's dataset catalog</a> and <a href="https://gee-community-catalog.org/projects/agera5_datasets/">GEE Community Catalog</a>. Private assets can also be uploaded to Earth Engine, to use them in combination with existing datasets. Below is an example of configuration file that can be used to create weather input files.</p>
+<p><strong>Example config files:</strong></p>
 <ul>
-<li><strong>DAYMET</strong> : <a href="https://daymet.ornl.gov/">https://daymet.ornl.gov/</a> </li>
-<li><strong>NLDAS</strong> : <a href="https://climatedataguide.ucar.edu/climate-data/nldas-north-american-land-data-assimilation-system/">https://climatedataguide.ucar.edu/climate-data/nldas-north-american-land-data-assimilation-system/</a> </li>
+<li><strong>using AgERA5</strong></li>
 </ul>
+<pre><code class="language-yml"># Global parameters
+global_scope:
+  time_range: ['2002-01-01', '2022-12-31']
+  variables: ['srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']  
+  resolution: 9600
+
+
+# Specify Earth Engine (EE) collections and their respective variables
+collections:
+  daymet:
+    collection: 'projects/climate-engine-pro/assets/ce-ag-era5/daily'
+    variables:
+      srad: b('Solar_Radiation_Flux') 
+      tmax: b('Temperature_Air_2m_Max_24h') - 273.15
+      tmin: b('Temperature_Air_2m_Min_24h') - 273.15
+      prcp: b('Precipitation_Flux') 
+      rh: b('Relative_Humidity_2m_06h')
+      ws: b('Wind_Speed_10m_Mean')
+</code></pre>
+<!-- 
+- **Daymet and Gridmet**
+
+
+<pre><code class="language-yml"># Global parameters
+global_scope:
+  time_range: ['2002-01-01', '2022-12-31']
+  variables: ['srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']  
+  resolution: 1000
+
+
+# Specify Earth Engine (EE) collections and their respective variables
+collections:
+  daymet:
+    collection: NASA/ORNL/DAYMET_V4
+    variables:
+      srad: b('srad') 
+      tmax: b('tmax') 
+      tmin: b('tmin') 
+      prcp: b('prcp') 
+
+  gridmet:
+    collection: 'IDAHO_EPSCOR/GRIDMET'
+    variables:
+      ws: b('vs')
+
+# Derived variables
+derived_variables:
+  rh: '100 * exp((17.625 * {srad}) / (243.04 + {srad})) / exp((17.625 * {tmax}) / (243.04 + {tmax}))'
+</code></pre>
+
+ -->
+
+<p><strong>Using the config file to get data:</strong></p>
+<pre><code># Fetch and output weather input files for a specific latitude and longitude
+&gt;&gt; geo-epic weather config.yml --fetch {lat} {lon} --out {out_path}
+
+# Fetch for a list of locations in a csv file with lat, lon, out_path columns
+&gt;&gt; geo-epic weather config.yml --fetch {list.csv} --out {column_name}
+
+# Fetch for crop sequence boundaries shape file.
+&gt;&gt; geo-epic weather config.yml --fetch {aoi_csb.shp} --out {out_dir}
+</code></pre>
+<h4 id="from-daymet-and-nldas">From Daymet and NLDAS</h4>
+<p>To fetch weather data for a specific latitude and longitude using the Daymet dataset, start by downloading the windspeed data from the NLDAS dataset and saving it to the specified directory. Afterward, fetch the other required weather data from the Daymet dataset.</p>
+<pre><code class="language-bash"># To download windspeed data, use the following command
+&gt;&gt; geo-epic weather windspeed -bbox &lt;bounding_box&gt; -start &lt;start_date&gt; -end &lt;end_date&gt; -out_dir './weather'
+
+# To fetch and output weather input files for a specific latitude and longitude
+&gt;&gt; geo-epic weather daymet --fetch {lat} {lon} -start &lt;start_date&gt; -end &lt;end_date&gt; --out './weather'
+</code></pre>
+<!-- 
+
+### Sources
+
+- **DAYMET** : [https://daymet.ornl.gov/](https://daymet.ornl.gov/) 
+- **NLDAS** : [https://climatedataguide.ucar.edu/climate-data/nldas-north-american-land-data-assimilation-system/](https://climatedataguide.ucar.edu/climate-data/nldas-north-american-land-data-assimilation-system/)  -->
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../csb/" class="btn btn-neutral float-left" title="Crop Sequence Boundaries"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../Soil/" class="btn btn-neutral float-right" title="SSURGO Soil">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../Soil/" class="btn btn-neutral float-right" title="Soil Module">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
