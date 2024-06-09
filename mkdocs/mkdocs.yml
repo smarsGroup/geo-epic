@@ -1,0 +1,24 @@
+### Site metadata ###
+
+site_name: Geo-Epic
+site_description: Python Utility function to run EPIC model
+site_url: https://smarsgroup.github.io/EPIC-pkg/
+
+repo_url: https://github.com/smarsGroup/EPIC-pkg
+
+# site_dir: './site'
+### Build settings ###
+
+theme: readthedocs
+
+
+nav:
+  - Home: index.md
+  - EPIC Model: epic.md
+  - Crop Sequence Boundaries: csb.md
+  - Weather Module: Weather.md
+  - Soil Module: Soil.md
+  - Crop Management: OPC.md
+  - Running an Experiment: runexp.md
+  - Model Calibration: opt.md
+  - API: api.md
