@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/OPC/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/OPC/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/Soil/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/Soil/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/Weather/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/Weather/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/api/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/api/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/csb/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/csb/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/epic/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/epic/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/opt/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/opt/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://smarsgroup.github.io/EPIC-pkg/runexp/</loc>
+         <loc>https://smarsgroup.github.io/geo-epic/runexp/</loc>
          <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
