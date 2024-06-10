@@ -7,7 +7,7 @@ For more details on EPIC model, visit [Texas A&M AgriLife site](https://epicapex
 <br>
 <br>
 <br>
-![EPIC Introduction](./assets/cropsim.png)
+![EPIC Introduction](./assets/crop.png)
 <br>
 <br>
 <br>
