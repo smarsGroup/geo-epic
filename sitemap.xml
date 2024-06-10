@@ -2,47 +2,47 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/OPC/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/Soil/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/Weather/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/api/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/csb/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/epic/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/opt/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://smarsgroup.github.io/EPIC-pkg/runexp/</loc>
-         <lastmod>2024-06-09</lastmod>
+         <lastmod>2024-06-10</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
