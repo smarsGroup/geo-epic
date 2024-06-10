@@ -13,7 +13,7 @@ theme: readthedocs
 
 
 nav:
-  - Overview: index.md
+  - Intro: index.md
   - EPIC Model: epic.md
   - Crop Sequence Boundaries: csb.md
   - Weather Module: Weather.md
