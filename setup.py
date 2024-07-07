@@ -42,12 +42,12 @@ else:
 
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
 
-from epic_lib.misc import ConfigParser
-config = ConfigParser('./', './epic_lib/templates/ws_template/config.yml')
+from geo_epic.misc import ConfigParser
+config = ConfigParser('./', './geo_epic/templates/ws_template/config.yml')
 
-config.update_config({'soil' : {'soil_map': f'{home_dir}/epic_pkg_metadata/SSURGO.tif',},
-                      'site': {'elevation': f'{home_dir}/epic_pkg_metadata/SRTM_1km_US_project.tif',
-                                'slope': f'{home_dir}/epic_pkg_metadata/slope_us.tif',
+config.update_config({'soil' : {'soil_map': f'{home_dir}/geo_epic_metadata/SSURGO.tif',},
+                      'site': {'elevation': f'{home_dir}/geo_epic_metadata/SRTM_1km_US_project.tif',
+                                'slope': f'{home_dir}/geo_epic_metadata/slope_us.tif',
     }, })
 
 # Function to read the requirements.txt file
@@ -57,20 +57,20 @@ def read_requirements():
 
 # Setup function
 setup(
-    name='epic_pkg',
+    name='geo_epic',
     version='0.1',
     packages=find_packages(),
     install_requires=read_requirements(),
     include_package_data=True,
     package_data={
-        'epic_lib': ['templates/**/**/*',
+        'geo_epic': ['templates/**/**/*',
                     'ssurgo/template.sol',
                     'sites/template.sit',
                     'templates/EPICeditor.xlsm'],
     },
     entry_points={
         'console_scripts': [
-            'epic_pkg=epic_lib.dispatcher:main',
+            'geo-epic=geo_epic.dispatcher:main',
         ],
     },
 )

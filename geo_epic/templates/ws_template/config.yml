@@ -1,0 +1,54 @@
+# Experiment details
+EXPName: Total Factor Productivity
+Region: Oklahoma
+code: OK
+Fields_of_Interest: ./CropRotationMaps/OKRotFilt.shp
+Processed_Info:     # leave empty
+
+
+# Model details
+EPICModel: ./model/EPIC2301dt20230820
+start_year: 1995
+duration: 25
+output_types:
+  - ACY  # Annual Crop data file
+  - DGN  # Daily general output file
+log_dir: ./log
+output_dir: ./output # if empty, Output files from epic runs are not saved (To save space use post_process options).
+
+
+# Weather configuration
+weather:
+  dir: ./weather
+  start_date: 1981-01
+  end_date: 2020-12
+  offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
+  primary_source: daymet # daymet, gridmet, NLDAS, ERA5 (Only daymet works for now.)
+
+# Soil details
+soil:
+  ssurgo_gdb: ./soil/gSSURGO_OK.gdb
+  soil_map: /Users/sachinvel/geo_epic_metadata/SSURGO.tif
+  files_dir:  #if soil files directory is specified, processing gdb file is skipped.
+
+# Info for Sit files
+site:
+  dir: ./sites
+  slope: /Users/sachinvel/geo_epic_metadata/slope_us.tif
+  elevation: /Users/sachinvel/geo_epic_metadata/SRTM_1km_US_project.tif
+  slope_length: ./soil/OK_slopelen.csv
+
+
+# OPC details
+opc_dir: ./opc
+opc_prefix: CropRot
+
+
+# Run params
+select: Random(0.1) # Range(0.35, 0.8), Random(0.1) or a boolean expression to select fields with specific property. ex: group == 1, area < 6
+num_of_workers: 40 # No. of parellel processes. Should be less than number of cpu cores.
+timeout: 5 # No. of seconds to let a simulation run. Execution is terminated after timeout.
+
+# Post Process
+process_outputs: ./utils.py reduce_outputs # if not empty during runs, output processing is also carried out.
+visualize: ./utils.py spatial_plot # specify function to visualize the required results
