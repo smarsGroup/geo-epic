@@ -28,14 +28,14 @@ weather:
 # Soil details
 soil:
   ssurgo_gdb: ./soil/gSSURGO_OK.gdb
-  soil_map: /Users/sachinvel/geo_epic_metadata/SSURGO.tif
+  soil_map: /home/velmurugans/geo_epic_metadata/SSURGO.tif
   files_dir:  #if soil files directory is specified, processing gdb file is skipped.
 
 # Info for Sit files
 site:
   dir: ./sites
-  slope: /Users/sachinvel/geo_epic_metadata/slope_us.tif
-  elevation: /Users/sachinvel/geo_epic_metadata/SRTM_1km_US_project.tif
+  slope: /home/velmurugans/geo_epic_metadata/slope_us.tif
+  elevation: /home/velmurugans/geo_epic_metadata/SRTM_1km_US_project.tif
   slope_length: ./soil/OK_slopelen.csv
 
 
