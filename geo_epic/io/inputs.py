@@ -9,7 +9,9 @@ class DLY(pd.DataFrame):
         """
         Load data from a DLY file into DataFrame.
         """
-        data = pd.read_fwf(f'{path}.DLY', widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
+        if not path.endswith('.DLY'):
+            raise ValueError("The path must end with '.DLY'")
+        data = pd.read_fwf(path, widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
         data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
         return cls(data)
 
@@ -25,6 +27,9 @@ class DLY(pd.DataFrame):
         """
         Save as monthly file
         """
+        if not path.endswith('.INP'):
+            raise ValueError("The path must end with '.INP'")
+        
         grouped = self.groupby('month')
         # Calculate mean for all columns except 'prcp'
         ss = grouped.mean()
@@ -54,7 +59,7 @@ class DLY(pd.DataFrame):
             line = fmt % tuple(row.tolist() + [str(ss.columns[i])])
             lines.append(line)
         
-        with open(f'{path}.INP', 'w') as ofile:
+        with open(path, 'w') as ofile:
             ofile.write('\n'.join(lines))
             
         return ss

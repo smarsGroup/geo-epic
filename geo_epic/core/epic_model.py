@@ -100,7 +100,7 @@ class EpicModel:
             ofile.write(fmt)
         
     def save_monthly(self,field):
-        dly_file = DLY(field.dly)
+        dly_file = DLY.load(field.dly)
         monthly_file_loc = os.path.join(self.parent_folder, 'weather',f'{self.fid}.INP')
         dly_file.to_monthly(monthly_file_loc)
         
