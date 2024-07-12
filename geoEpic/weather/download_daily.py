@@ -6,14 +6,14 @@ import rasterio
 import xarray as xr
 import rioxarray as rio
 import geopandas as gpd
-from epic_lib.io import DLY
-from epic_lib.weather.daymet import *
+from geoEpic.io import DLY
+from geoEpic.weather.daymet import *
 import subprocess
-from epic_lib.weather.main import DailyWeather
-from epic_lib.misc.utils import parallel_executor
-from epic_lib.misc import ConfigParser
-from epic_lib.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
-from epic_lib.dispatcher import dispatch
+from geoEpic.weather.main import DailyWeather
+from geoEpic.misc.utils import parallel_executor
+from geoEpic.misc import ConfigParser
+from geoEpic.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
+from geoEpic.dispatcher import dispatch
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -37,8 +37,15 @@ print('Processing shape file')
 # dates = pd.date_range(start = start_date, end = end_date, freq = 'M')
 
 print('curr', os.getcwd())
-gdf = gpd.read_file(aoi)
-gdf = gdf.to_crs(epsg=4326)
+
+if aoi.endswith('.shp'):
+    gdf = gpd.read_file(aoi)
+    gdf = gdf.to_crs(epsg=4326)
+    lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
+elif aoi.endswith('.csv'):
+    gdf = pd.read_csv(aoi)
+    lon_min, lat_min = np.floor(gdf['x'].min() * 1e5)/1e5, np.floor(gdf['y'].min() * 1e5)/1e5
+    lon_max, lat_max = np.ceil(gdf['x'].max() * 1e5)/1e5, np.ceil(gdf['y'].max() * 1e5)/1e5
 
 # Change working dir
 os.makedirs(working_dir, exist_ok = True)
@@ -46,7 +53,7 @@ os.chdir(working_dir)
 
 
 res_value = 0.00901  # 1 km resolution in degree
-lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
+
 lon = np.arange(lon_min, lon_max, res_value)
 lat = np.arange(lat_min, lat_max, res_value)
 lon, lat = np.meshgrid(lon, lat)
@@ -58,10 +65,11 @@ grid = np.arange(lat.size).reshape(lat.shape)
 data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
 
 # Mask the DataArray using Nebraska's shape
-mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
-                                  transform=data_set.rio.transform(),
-                                  invert=True, out_shape=data_set.shape)
-data_set = data_set.where(mask)
+if aoi.endswith('.shp'):
+    mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
+                                    transform=data_set.rio.transform(),
+                                    invert=True, out_shape=data_set.shape)
+    data_set = data_set.where(mask)
 # Save the DataArray as a GeoTIFF
 data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
