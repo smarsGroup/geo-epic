@@ -3,10 +3,10 @@ import argparse
 import pandas as pd
 import subprocess
 import geopandas as gpd
-from epic_lib.misc import ConfigParser
-from epic_lib.misc.utils import calc_centroids#, find_column
-from epic_lib.ssurgo import get_soil_ids
-from epic_lib.dispatcher import dispatch
+from geoEpic.misc import ConfigParser
+from geoEpic.misc.utils import calc_centroids#, find_column
+from geoEpic.ssurgo import get_soil_ids
+from geoEpic.dispatcher import dispatch
 import numpy as np
 
 parser = argparse.ArgumentParser(description="EPIC workspace")

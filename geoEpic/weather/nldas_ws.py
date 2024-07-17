@@ -4,8 +4,8 @@ import xarray as xr
 import rioxarray as rio
 import pandas as pd
 from pydap.cas.urs import setup_session
-from epic_lib.misc.utils import parallel_executor
-from epic_lib.misc.formule import windspd
+from geoEpic.misc.utils import parallel_executor
+from geoEpic.misc.formule import windspd
 from tqdm import tqdm
 import argparse
 
@@ -30,9 +30,13 @@ os.chdir(args.working_dir)
 # Define date range from command-line arguments
 dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'BM')
 
+
+lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
 # Latitude and longitude ranges from command-line arguments
 lat_range = slice(lat_min, lat_max)
 lon_range = slice(lon_min, lon_max)
+
+data_set = data_set.sel(lon = lon_range, lat = lat_range)
 
 username = 'bharathc'
 password = '@Ce1one$28'

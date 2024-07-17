@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
-from epic_lib.dispatcher import dispatch
-from epic_lib.misc import ConfigParser
+from geoEpic.dispatcher import dispatch
+from geoEpic.misc import ConfigParser
 
 curr_dir = os.getcwd()
 

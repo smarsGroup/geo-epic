@@ -46,7 +46,7 @@ else:
     print(f"'{metadata_dir}' already exists, skipping file downloads.")
 
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
-from epic_lib.misc import ConfigParser
+from geoEpic.misc import ConfigParser
 config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
 
 config.update_config({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
