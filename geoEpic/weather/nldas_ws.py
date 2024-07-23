@@ -36,8 +36,6 @@ lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
 lat_range = slice(lat_min, lat_max)
 lon_range = slice(lon_min, lon_max)
 
-# data_set = data_set.sel(lon = lon_range, lat = lat_range)
-
 username = 'bharathc'
 password = '@Ce1one$28'
 
