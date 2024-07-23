@@ -22,6 +22,20 @@ class DLY(pd.DataFrame):
             fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
             np.savetxt(ofile, self.values[1:], fmt = fmt)
     
+    def set_start_date(self,start_date):
+        start_date_pd = pd.to_datetime('1990-1')
+        ref_year = start_date_pd.year
+        ref_month = start_date_pd.month
+        ref_day = start_date_pd.day
+
+        # Create a boolean mask for rows where the date is greater than the reference date
+        mask = (self['year'] >= ref_year) | \
+            ((self['year'] == ref_year) & (self['month'] >= ref_month)) | \
+            ((self['year'] == ref_year) & (self['month'] == ref_month) & (self['day'] >= ref_day))
+
+        # Filter the DataFrame using the mask
+        self= self[mask]
+    
     def to_monthly(self, path):
         """
         Save as monthly file

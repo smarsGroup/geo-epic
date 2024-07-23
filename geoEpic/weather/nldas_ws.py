@@ -28,7 +28,7 @@ os.makedirs(args.working_dir, exist_ok = True)
 os.chdir(args.working_dir)
 
 # Define date range from command-line arguments
-dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'BM')
+dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'BME')
 
 
 lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
@@ -36,7 +36,7 @@ lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
 lat_range = slice(lat_min, lat_max)
 lon_range = slice(lon_min, lon_max)
 
-data_set = data_set.sel(lon = lon_range, lat = lat_range)
+# data_set = data_set.sel(lon = lon_range, lat = lat_range)
 
 username = 'bharathc'
 password = '@Ce1one$28'
@@ -90,7 +90,7 @@ def download_func(date):
 
 
 # Use parallel execution to download data for all dates
-parallel_executor(download_func, dates, max_workers = 8, return_value = False)
+parallel_executor(download_func, dates, max_workers = 4, return_value = False)
 
 print('Writing windspeed data to CSV...')
 os.makedirs('NLDAS_csv', exist_ok = True)
