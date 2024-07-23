@@ -26,8 +26,12 @@ script_paths = {
         "add": "workspace/add.py",
         "post_process": "workspace/post_process.py",
         "visualize": "workspace/visualize.py"
-    }
+    },
+    "csb_utils": {
+        "crop_csb": "csb_utils/crop_csb.py"
+    },
 }
+
 
 
 def dispatch(module, func, options_str, wait = True):
