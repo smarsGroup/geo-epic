@@ -2,11 +2,11 @@ import os
 import shutil
 import subprocess
 from glob import glob
-from epic_lib.weather import DailyWeather
+from geoEpic.weather import DailyWeather
 import numpy as np
 import pandas as pd
-from epic_lib.misc import ConfigParser
-from epic_lib.misc.utils import *
+from geoEpic.misc import ConfigParser
+from geoEpic.misc.utils import *
 
 daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"], weather['offline'])
 

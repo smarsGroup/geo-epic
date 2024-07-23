@@ -1,8 +1,8 @@
 import os
 import argparse
 import pandas as pd
-from epic_lib.misc import ConfigParser
-from epic_lib.misc.utils import parallel_executor, import_function
+from geoEpic.misc import ConfigParser
+from geoEpic.misc.utils import parallel_executor, import_function
 from glob import glob
 
 # Fetch the base directory

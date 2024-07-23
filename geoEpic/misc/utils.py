@@ -74,17 +74,21 @@ def writeDATFiles(new_dir, config, fid, row):
     
     daily_src = ''
     monthly_src = ''
-    # if config['weather']['offline']:
-    #     weather_dir = config['weather']['dir']
-    #     daily_src = weather_dir + '/Daily/'
-    #     monthly_src = weather_dir + '/Monthly/'
+    clim_id = fid
+    
+    if config['weather']['offline']:
+        weather_dir = config['weather']['dir']
+        daily_src = weather_dir + '/Daily/'
+        monthly_src = weather_dir + '/Monthly/'
+        clim_id = row['dly_id']
+        
 
     with open(f'{new_dir}/ieWedlst.DAT', 'w') as ofile:
-        fmt = '%8d    "%s%d.DLY"\n'%(fid, daily_src, fid)  
+        fmt = '%8d    "%s%d.DLY"\n'%(fid, daily_src, clim_id)  
         ofile.write(fmt)
 
     with open(f'{new_dir}/ieWealst.DAT', 'w') as ofile:
-        fmt = '%8d    "%s%d.INP"   %.2f   %.2f  NB            XXXX\n'%(fid, monthly_src, fid, row['x'], row['y'])
+        fmt = '%8d    "%s%d.INP"   %.2f   %.2f  NB            XXXX\n'%(fid, monthly_src, clim_id, row['x'], row['y'])
         ofile.write(fmt)
     
     with open(f'{new_dir}/ieOplist.DAT', 'w') as ofile:
