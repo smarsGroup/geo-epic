@@ -16,8 +16,8 @@ script_paths = {
         "daily2monthly": "weather/daily2monthly.py"
     },
     "soil": {
-        "process_gdb": "ssurgo/processing.py",
-        "usda": "ssurgo/fetch.py"
+        "process_gdb": "soil/ssurgo_gdb.py",
+        "usda": "soil/fetch_usda.py"
     },
     "sites": {
         "generate": "sites/generate.py"

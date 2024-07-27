@@ -8,8 +8,8 @@ import argparse
 parser = argparse.ArgumentParser(description="Process raster data and save results.")
 parser.add_argument("-o", "--out_dir", type=str, required=True, help="Output directory to save results.")
 parser.add_argument("-i", "--info_file", type=str, required=True, help="Path to the info file.")
-parser.add_argument("-ele", "--elevation", type=str, required=True, help="Path to the SRTM_1km_US_project.tif")
-parser.add_argument("-slope", "--slope_us", type=str, required=True, help="Path to the slope_us.tif")
+parser.add_argument("-ele", "--elevation", type=str, required=True, help="Path to the elevation.tif")
+parser.add_argument("-slope", "--slope", type=str, required=True, help="Path to the slope.tif")
 parser.add_argument("-sl", "--slope_len", type=str, required=True, help="Path to the slope_len.csv")
 args = parser.parse_args()
 
@@ -19,7 +19,7 @@ coords = info[['x', 'y']].values
 prefix = f'{os.path.dirname(__file__)}'
 
 info['ele'] = sample_raster_nearest(args.elevation, coords)['band_1']
-info['slope'] = sample_raster_nearest(args.slope_us, coords)['band_1']
+info['slope'] = sample_raster_nearest(args.slope, coords)['band_1']
 
 info = info.fillna(0)
 info['ssu'] = info['soil_id'].astype(int)
