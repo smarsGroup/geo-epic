@@ -10,7 +10,8 @@ class DLY(pd.DataFrame):
         """
         Load data from a DLY file into DataFrame.
         """
-        data = pd.read_fwf(f'{path}.DLY', widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
+        if not path.endswith('.DLY'): path += '.DLY'
+        data = pd.read_fwf(path, widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
         data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
         return cls(data)
 
@@ -18,23 +19,10 @@ class DLY(pd.DataFrame):
         """
         Save DataFrame into a DLY file.
         """
-        with open(f'{path}.DLY', 'w') as ofile:
+        if not path.endswith('.DLY'): path += '.DLY'
+        with open(path, 'w') as ofile:
             fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
             np.savetxt(ofile, self.values[1:], fmt = fmt)
-    
-    def set_start_date(self,start_date):
-        start_date_pd = pd.to_datetime('1990-1')
-        ref_year = start_date_pd.year
-        ref_month = start_date_pd.month
-        ref_day = start_date_pd.day
-
-        # Create a boolean mask for rows where the date is greater than the reference date
-        mask = (self['year'] >= ref_year) | \
-            ((self['year'] == ref_year) & (self['month'] >= ref_month)) | \
-            ((self['year'] == ref_year) & (self['month'] == ref_month) & (self['day'] >= ref_day))
-
-        # Filter the DataFrame using the mask
-        self= self[mask]
     
     def to_monthly(self, path):
         """
@@ -69,7 +57,8 @@ class DLY(pd.DataFrame):
             line = fmt % tuple(row.tolist() + [str(ss.columns[i])])
             lines.append(line)
         
-        with open(f'{path}.INP', 'w') as ofile:
+        if not path.endswith('.INP'): path += '.INP'
+        with open(path, 'w') as ofile:
             ofile.write('\n'.join(lines))
             
         return ss
@@ -89,6 +78,7 @@ class OPC(pd.DataFrame):
         Returns:
         OPC: An instance of the OPC class containing the loaded data.
         """
+        if not path.endswith('.OPC'): path += '.OPC'
         widths = [3, 3, 3, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8]
         data = pd.read_fwf(path, widths=widths, skiprows=2, header=None)
         data = data.dropna().astype(float)

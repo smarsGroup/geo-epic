@@ -119,8 +119,10 @@ class CropCom:
         Load data from a file into DataFrame.
         """
         wd = [5, 5] + [8] * 58 + [50]
-        self.data = pd.read_fwf(path + '/CROPCOM.DAT', widths=wd, skiprows=1)
-        with open(path + '/CROPCOM.DAT', 'r') as file:
+        if not path.endswith('.DAT'): 
+          path = os.path.join(path, 'CROPCOM.DAT')
+        self.data = pd.read_fwf(path, widths=wd, skiprows=1)
+        with open(path, 'r') as file:
             self.header = [file.readline() for _ in range(2)]
         self.name = 'CROPCOM'
         self.prms = None
@@ -165,7 +167,9 @@ class CropCom:
         Save DataFrame into an OPC file.
         """
         data = self.combine_integer_decimal()
-        with open(f'{path}/CROPCOM.DAT', 'w') as ofile:
+        if not path.endswith('.DAT'): 
+          path = os.path.join(path, 'CROPCOM.DAT')
+        with open(path, 'w') as ofile:
             ofile.write(''.join(self.header))
             fmt = '%5d%5s' + '%8.2f'*11 + '%8.4f' + \
               '%8.2f'*5 + '%8.4f'*3 + '%8.2f'*6 + '%8.4f'*9 + \
@@ -203,7 +207,9 @@ class ieParm:
         """
         Load data from an ieParm file into DataFrame.
         """
-        df = r['readParm'](path + '/ieParm.DAT')
+        if not path.endswith('.DAT'): 
+          path = os.path.join(path, 'ieParm.DAT')
+        df = r['readParm'](path)
         df = pd.DataFrame(df)
         df.columns = ["SCRP1_" + str(i) for i in range(1, 31)] + \
                      ["SCRP2_" + str(i) for i in range(1, 31)] + \
@@ -215,7 +221,9 @@ class ieParm:
 
 
     def save(self, path):
-        r['writeParm'](self.data.values, path + '/ieParm.DAT')
+        if not path.endswith('.DAT'): 
+          path = os.path.join(path, 'ieParm.DAT')
+        r['writeParm'](self.data.values, path)
     
     def edit(self, values):
         cols = self.prms['Parm'].values

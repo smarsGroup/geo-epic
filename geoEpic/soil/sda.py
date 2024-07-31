@@ -46,15 +46,32 @@ class SoilDataAccess:
             raise ValueError("No data found for the provided query.")
     
     @staticmethod
-    def mukey_condition(input_value):
+    def _mukey_condition(input_value):
         if isinstance(input_value, int):
             return f"'{input_value}'"
         elif isinstance(input_value, str):
             return f"SELECT * FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('{input_value}')"
         else:
             raise ValueError("Input must be an integer (mukey) or a string (WKT).")
-    
+        
+    @staticmethod
+    def get_mukey(wkt):
+        """
+        Fetches the mukey for a given WKT location.
 
+        Args:
+        wkt (str): The WKT location.
+
+        Returns:
+        int: The mukey for the specified location.
+        """
+        query = f"""
+        SELECT mukey
+        FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('{wkt}')
+        """
+        result = SoilDataAccess.query(query)
+        return result['mukey'].values[0]
+        
     @staticmethod
     def fetch_properties(input_value):
         """
@@ -75,7 +92,7 @@ class SoilDataAccess:
         LEFT JOIN legend lg ON sc.areasymbol = lg.areasymbol
         LEFT JOIN (
         SELECT * FROM mapunit
-        WHERE mukey in ({SoilDataAccess.mukey_condition(input_value)})
+        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
         ) mu ON lg.lkey = mu.lkey
         LEFT JOIN component co ON mu.mukey = co.mukey
         LEFT JOIN chorizon ch ON co.cokey = ch.cokey
@@ -115,31 +132,40 @@ class SoilDataAccess:
         soil_df['mukey'] = soil_df['mukey'].astype(int)
         return soil_df.round(4)
     
-    def fetch_slope_length():
+    @staticmethod
+    def fetch_slope_length(input_value):
         """
-        Fetches soil data based on the input value. If the input is an integer, it is used as mukey. If the input is a string, it is used as WKT.
+        Fetches the slope length for a given input value. If the input is an integer, it is used as mukey. If the input is a string, it is used as WKT.
 
         Args:
         input (int or str): The input value representing either a mukey (int) or a WKT location (str).
 
         Returns:
-        pd.DataFrame: A DataFrame containing the soil data for the specified input.
+        float: The slope length for the specified input value.
         """
-        query = f''' 
-        SELECT DISTINCT mu.mukey,co.cokey,ch.chkey,mu.musym, desgnvert,hzdepb_r,dbthirdbar_r,
-        wfifteenbar_r,wthirdbar_r,sandtotal_r,silttotal_r,ph1to1h2o_r,awc_r,sumbases_r,om_r,
-        caco3_r,cec7_r,sieveno10_r,fraggt10_r,frag3to10_r,dbovendry_r,ksat_r,compname,hydgrp,
-        comppct_r,slope_r,slopelenusle_r, albedodry_r
-        FROM sacatalog sc
-        LEFT JOIN legend lg ON sc.areasymbol = lg.areasymbol
-        LEFT JOIN (
-        SELECT * FROM mapunit
-        WHERE mukey in ({SoilDataAccess.mukey_condition(input_value)})
-        ) mu ON lg.lkey = mu.lkey
-        LEFT JOIN component co ON mu.mukey = co.mukey
-        LEFT JOIN chorizon ch ON co.cokey = ch.cokey
-        WHERE mu.mukey IS NOT NULL
-        AND compkind='Series'
-        AND wthirdbar_r > 0
-        '''
-        return SoilDataAccess.query(query)
+        query = f"""
+        SELECT slopelenusle_r
+        FROM component
+        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
+        """
+        result = SoilDataAccess.query(query)
+        return result['slopelenusle_r'].values[0]
+
+    @staticmethod
+    def fetch_nccpi(input_value):
+        """
+        Fetches the NCCPI values for a given input value. If the input is an integer, it is used as mukey. If the input is a string, it is used as WKT.
+
+        Args:
+        input (int or str): The input value representing either a mukey (int) or a WKT location (str).
+
+        Returns:
+        pd.DataFrame: A DataFrame containing the NCCPI values for the specified input value.
+        """
+        query = f"""
+        SELECT nccpi3all, nccpi3corn, nccpi3soy
+        FROM valu1
+        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
+        """
+        result = SoilDataAccess.query(query)
+        return result[['nccpi3all', 'nccpi3corn', 'nccpi3soy']]

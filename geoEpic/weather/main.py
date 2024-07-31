@@ -19,12 +19,15 @@ class DailyWeather:
         if not self.offline:
             nldas_id = int(self.lookup.get(lat, lon))
             data = get_daymet_data(lat, lon, self.start_date, self.end_date)
+            data['date'] = pd.to_datetime(data[['year', 'month', 'day']])
             ws = pd.read_csv(self.path + f'/NLDAS_csv/{nldas_id}.csv')
-            ws.columns = ['date', 'vals']
+            ws.columns = ['date', 'ws']
             ws['date'] = pd.to_datetime(ws['date'])
-            end_date = pd.to_datetime(self.end_date)
-            ws = ws[ws['date'] <= end_date]
-            data['ws'] = ws['vals']
+            data['date'] = pd.to_datetime(data[['year', 'month', 'day']])
+            data = pd.merge(data, ws, on='date', how='left', suffixes=('', '_new'))
+            data['ws'] = data['ws'].fillna(3.5)
+            data.sort_values('date', inplace=True)
+            data.drop('date', axis=1, inplace=True)
             return DLY(data)
         else:
             daymet_id = int(self.lookup.get(lat, lon))

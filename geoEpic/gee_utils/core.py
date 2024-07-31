@@ -5,13 +5,30 @@ from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
 
 import ee
+from initialize import ee_Initialize
 
-try:
-    ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com')
-except:
-    ee.Authenticate()
-    ee.Initialize(opt_url='https://earthengine-highvolume.googleapis.com')
+ee_Initialize()
 
+
+def extract_features(collection, aoi, date_range, resolution):
+        
+    def map_function(image):
+        # Function to reduce image region and extract data
+        date = image.date().format()
+        reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
+        reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
+        return ee.Feature(None, reduction).set('Date', date)
+
+    filtered_collection = collection.filterBounds(aoi)
+    filtered_collection = filtered_collection.filterDate(*date_range)
+    daily_data = filtered_collection.map(map_function)
+    df = ee.data.computeFeatures({
+            'expression': daily_data,
+            'fileFormat': 'PANDAS_DATAFRAME'
+        })
+    
+    df['Date'] = pd.to_datetime(df['Date']).dt.date
+    return df
 
 class CompositeCollection:
     """
@@ -100,31 +117,13 @@ class CompositeCollection:
             aoi = ee.Geometry.Point(aoi_coords[0])
         else:
             aoi = ee.Geometry.Polygon(aoi_coords)
-
-        def map_function(image):
-            # Function to reduce image region and extract data
-            date = image.date().format()
-            reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
-            reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=self.resolution, maxPixels=1e9)
-            return ee.Feature(None, reduction).set('Date', date)
         
-        def get_features(args):
-            # Helper function to extract data for each collection
+        def extract_features_wrapper(args):
             name, collection, date_range = args
-            filtered_collection = collection.filterBounds(aoi)
-            filtered_collection = filtered_collection.filterDate(*date_range)
-            daily_data = filtered_collection.map(map_function)
-            df = ee.data.computeFeatures({
-                    'expression': daily_data,
-                    'fileFormat': 'PANDAS_DATAFRAME'
-                })
-            
-            df['Date'] = pd.to_datetime(df['Date']).dt.date
-            return df
-        
+            return extract_features(collection, aoi, date_range, self.resolution)
         # Use ThreadPoolExecutor to parallelize the extraction process
         with ThreadPoolExecutor(max_workers=20) as executor:
-            results = list(executor.map(get_features, self.args))
+            results = list(executor.map(extract_features_wrapper, self.args))
 
         # Merge the results into a single DataFrame
         df_merged = results[0]
@@ -172,3 +171,21 @@ class CompositeCollection:
         safe_dict = np.__dict__
         safe_dict.update(df.to_dict(orient='series'))
         return eval(expression, {"__builtins__": None}, safe_dict)
+
+
+
+if __name__ == '__main__':
+    # yaml_file = 'weather_config.yml'
+    # composite_collection = CompositeCollection(yaml_file)
+
+    # from time import time
+    # start = time()
+
+    # parallel_executor(composite_collection.extract, [[[-98.114, 41.855]]]*10, method = 'Thread', return_value=True, max_workers=40)
+
+    # end = time()
+    # print(end - start)
+    
+    col = CompositeCollection('./landsat_lai.yml')
+    df = col.extract([[-98.114, 41.855]])
+    print(df)

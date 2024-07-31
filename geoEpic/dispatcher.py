@@ -6,7 +6,7 @@ import sys
 script_paths = {
     "utility": {
         "crop_csb": "utility/crop_csb.py",
-        "gee": "utility/gee.py"
+        "gee": "gee_utils/fetch.py"
     },
     "weather": {
         "gee": "weather/gee.py",

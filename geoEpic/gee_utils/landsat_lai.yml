@@ -1,0 +1,52 @@
+# Global parameters
+global_scope:
+  time_range: ['2010-01-01', '2022-12-31']
+  variables: ['nir', 'red', 'green', 'ndvi', 'lai_ndvi']  
+  resolution: 10
+
+
+# Specify Earth Engine collections and their respective variables
+collections:
+  # lc05:
+  #   collection: LANDSAT/LT05/C02/T1_L2
+  #   select: (b('QA_PIXEL') >> 6) & 1
+  #   variables:
+  #     nir: b('SR_B4')*0.0000275 - 0.2
+  #     red: b('SR_B3')*0.0000275 - 0.2
+  #     green: b('SR_B2')*0.0000275 - 0.2
+  #     blue: b('SR_B1')*0.0000275 - 0.2
+      
+  le07:
+    collection: LANDSAT/LE07/C02/T1_L2
+    select:  (b('QA_PIXEL') >> 6) & 1
+    variables:
+      nir: b('SR_B4')*0.0000275 - 0.2
+      red: b('SR_B3')*0.0000275 - 0.2
+      green: b('SR_B2')*0.0000275 - 0.2
+  
+  hlsl30:
+    collection: NASA/HLS/HLSL30/v002
+    select:  "!((b('Fmask') >> 1 & 1) | (b('Fmask') >> 4 & 1))"
+    variables:
+      nir: b('B5')
+      red: b('B4')
+      green: b('B3')
+
+  sentinel2:
+    collection: COPERNICUS/S2_HARMONIZED
+    linkcollection: 
+      collection: GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED
+      bands: ['cs_cdf']
+    select:  b('cs_cdf') > 0.8
+    variables:
+      nir: 1.001 * (b('B8')*0.0001) - 0.00029
+      red: 0.982 * (b('B4')*0.0001) + 0.00094
+      green: 1.005 * (b('B3')*0.0001) - 0.00093
+
+
+# Derived variables
+derived_variables:
+  ndvi: '(nir - red)/(nir + red)'
+  lai_ndvi: where(11.266*ndvi - 4.007 < 0, 0, 11.266*ndvi - 4.007)
+  lai_sr: where(-9.29*exp(-0.163*(nir/red)) + 6.91 < 0, 0, -9.29*exp(-0.163*(nir/red)) + 6.91)
+  rdvi: '(nir - red)/sqrt(nir + red)'

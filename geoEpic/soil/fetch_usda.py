@@ -1,79 +1,84 @@
 from utils import write_soil_file
 import pandas as pd
 from sda import SoilDataAccess
-
-
-mukey = 642029
-soil_properties_df = SoilDataAccess.fetch_properties(mukey)
-print(soil_properties_df)
-soil_properties_df.to_csv('soil.csv', index = False)
-
-write_soil_file(soil_properties_df, './')
-
-import requests
-import json
-import pandas as pd
-import argparse
 import numpy as np
 import geopandas as gpd
 from tqdm import tqdm
 import os
-import rasterio
-import xarray as xr
-import rioxarray as rio
+import argparse
 # from ..misc.utils import parallel_executor
 # from ..misc.raster_utils import raster_to_dataframe
 
-# def save_data_as_csv(data, lat, lon, output_dir='./data'):
-#     if data:
-#         df = data
-#         file_name = f"ssurgo_data_lat_{lat}_lon_{lon}.csv"
-#         file_path = f"{output_dir}/{file_name}"
-#         os.makedirs(output_dir, exist_ok=True)
-#         df.to_csv(file_path, index=False)
-
-# def process_row(row):
-#     ssurgo_data, lat, lon = download_ssurgo_data(row)
-#     save_data_as_csv(ssurgo_data, lat, lon)
-
-import argparse
-import os
-import sys
-
-def fetch_data(input_data, output_path):
+    
+def fetch_data(input_data, output_dir, raw):
     """
-    Fetches weather data based on the input type which could be coordinates, a CSV file, or a shapefile.
+    Process a single location (mukey or WKT) and save the results.
 
     Args:
-        config_file (str): Path to the configuration YAML file.
+        input_data (str): The input data representing either a mukey (int) or a WKT location (str).
+        output_dir (str): Directory where the results will be saved.
+        raw (bool): Whether to save the results as raw CSV or .SOL file.
+    """
+    df = SoilDataAccess.fetch_properties(input_data)
+    mukey = df['mukey'].iloc[0]
+    
+    if raw:
+        csv_path = os.path.join(output_dir, f"{mukey}.csv")
+        if not os.path.exists(csv_path):
+            df.to_csv(csv_path, index=False)
+        else:
+            print(f"File {csv_path} already exists, skipping.")
+    else:
+        sol_path = os.path.join(output_dir, f"{mukey}.SOL")
+        if not os.path.exists(sol_path):
+           write_soil_file(df, output_dir)
+        else:
+            print(f"File {sol_path} already exists, skipping.")
+        
+        
+
+def fetch_list(input_data, output_dir, raw):
+    """
+    Fetches soil data based on the input type which could be coordinates, a CSV file, or a shapefile.
+
+    Args:
         input_data (str): Could be latitude and longitude as a string, path to a CSV file, or path to a shapefile.
-        output_path (str): Directory or file path where the output should be saved.
+        output_dir (str): Directory or file path where the output should be saved.
+        raw (bool): Whether to save the results as raw CSV or .SOL file.
     """
     if input_data.endswith('.csv'):
-        # Handle fetching based on CSV file
-        print(f"Fetching weather data for locations in CSV file: {input_data}")
-        # Implementation would go here
+        locations = pd.read_csv(input_data)
+        parallel_executor(fetch_data, locations['location'], output_dir, raw)
     elif input_data.endswith('.shp'):
-        # Handle fetching based on shapefile
-        print(f"Fetching weather data for area in shape file: {input_data}")
-    
-    # Example print to simulate output file path
-    print(f"Data will be saved to: {output_path}")
-
+        shapefile = gpd.read_file(input_data)
+        shapefile['centroid'] = shapefile.geometry.centroid
+        locations = shapefile['centroid'].apply(lambda x: f'point({x.x} {x.y})')
+        parallel_executor(fetch_data, locations, output_dir, raw)
+    else:
+       fetch_data(input_data, output_dir, raw)
+        
+        
 def main():
     parser = argparse.ArgumentParser(description="Fetch and output data from USDA SSURGO")
     parser.add_argument('--fetch', metavar='INPUT', nargs='+', help='Latitude and longitude as two floats, or a file path')
     parser.add_argument('--out', default='./', dest='output_path', help='Output directory or file path for the fetched data')
+    parser.add_argument('--raw', action='store_true', help='Save results as raw CSV instead of .SOL file')
 
     args = parser.parse_args()
 
     if len(args.fetch) == 2:
         latitude, longitude = map(float, args.fetch)
-        wkt = f'point({latitude}, {longitude})'
-        df = SoilDataAccess.fetch_properties(wkt)
+        wkt = f'point({latitude} {longitude})'
+        fetch_data(wkt, args.output_path, args.raw)
     else:
-        fetch_data(args.fetch[0], args.output_path)
+        fetch_list(args.fetch[0], args.output_path, args.raw)
+
 
 
 if __name__ == '__main__':
+    mukey = 642029
+    soil_properties_df = SoilDataAccess.fetch_properties(mukey)
+    print(soil_properties_df)
+    soil_properties_df.to_csv('soil.csv', index = False)
+    write_soil_file(soil_properties_df, './')
     main()
