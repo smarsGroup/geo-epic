@@ -16,12 +16,12 @@ if sys.platform.startswith('win'):
     print("Installation not supported for Windows.")
     sys.exit(1)
 
-try:
-    import osgeo
-    print('GDAL already installed')
-except:
-    print('Installing GDAL...')
-    install_gdal("GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl")
+# try:
+#     import osgeo
+#     print('GDAL already installed')
+# except:
+#     print('Installing GDAL...')
+#     install_gdal("GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl")
 
 # Define metadata directory in the user's home folder
 home_dir = os.path.expanduser("~")
