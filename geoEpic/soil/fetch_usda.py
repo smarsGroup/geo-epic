@@ -6,7 +6,7 @@ import geopandas as gpd
 from tqdm import tqdm
 import os
 import argparse
-# from ..misc.utils import parallel_executor
+# from ..misc import parallel_executor
 # from ..misc.raster_utils import raster_to_dataframe
 
     

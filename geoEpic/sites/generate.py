@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from geoEpic.misc.utils import parallel_executor
+from geoEpic.misc import parallel_executor
 from geoEpic.misc.raster_utils import sample_raster_nearest
 import argparse
 

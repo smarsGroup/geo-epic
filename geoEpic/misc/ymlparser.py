@@ -43,7 +43,7 @@ class ConfigParser:
                 data[key] = value
         return data
 
-    def update_config(self, updates):
+    def update(self, updates):
         """Update the current config with new values."""
         self.config_data = self._recursive_update(self.config_data, updates)
         self.save()
@@ -52,11 +52,6 @@ class ConfigParser:
         """Retrieve a value from the configuration."""
         data = self.config_data.get(key, default)
         return self._update_relative_paths(data)
-    
-    def update(self, key, value):
-        """Set a value in the configuration."""
-        self.config_data[key] = value
-        self.save() 
     
     def __getitem__(self, key):
         return self.get(key, None)

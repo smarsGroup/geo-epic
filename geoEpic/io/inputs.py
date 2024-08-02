@@ -64,8 +64,14 @@ class DLY(pd.DataFrame):
         return ss
 
 
+
 class OPC(pd.DataFrame):
     _metadata = ['header', 'name', 'prms', 'start_year']
+
+    # Class attributes for codes
+    plantation_codes = [2, 3]
+    harvest_code = 650
+    fertilizer_code = 71
 
     @classmethod
     def load(cls, path):
@@ -109,35 +115,35 @@ class OPC(pd.DataFrame):
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
             np.savetxt(ofile, self.values, fmt=fmt)
 
-    def edit_plantation_date(self, year_id, month, day):
+    def edit_plantation_date(self, year_id, month, day, crop_code=None):
         """
-        Edit the plantation date for a given year.
+        Edit the plantation date for a given year and optionally crop code.
 
         Parameters:
         year_id (int): Year identifier.
         month (int): Month of plantation.
         day (int): Day of plantation.
+        crop_code (int, optional): Crop code. If not provided, the first instance is changed.
         """
-        plantation_code_3_idx = self[(self['CODE'] == 3) & (self['Yid'] == year_id)].index
-        if not plantation_code_3_idx.empty:
-            self.loc[plantation_code_3_idx, ['Mn', 'Dy']] = [month, day]
-            return
-        plantation_code_2_idx = self[(self['CODE'] == 2) & (self['Yid'] == year_id)].index
-        if not plantation_code_2_idx.empty:
-            self.loc[plantation_code_2_idx, ['Mn', 'Dy']] = [month, day]
-            return
+        if crop_code is not None:
+            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].index
+        else:
+            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id)].index
 
-    def edit_nitrogen_rate(self, rate, year_id=15, month=None, day=None):
+        if not plantation_idx.empty:
+            self.loc[plantation_idx[0], ['Mn', 'Dy']] = [month, day]
+
+    def edit_fertilizer_rate(self, rate, year_id=15, month=None, day=None):
         """
-        Edit the nitrogen rate for a given year.
+        Edit the fertilizer rate for a given year.
 
         Parameters:
-        rate (float): Nitrogen rate to be set.
+        rate (float): Fertilizer rate to be set.
         year_id (int, optional): Year identifier. Defaults to 15.
-        month (int, optional): Month for the nitrogen rate application. Defaults to None.
-        day (int, optional): Day for the nitrogen rate application. Defaults to None.
+        month (int, optional): Month for the fertilizer rate application.  If not provided, the first instance is changed.
+        day (int, optional): Day for the fertilizer rate application. Defaults to None.
         """
-        condition = (self['CODE'] == 71) & (self['Yid'] == year_id)
+        condition = (self['CODE'] == self.fertilizer_code) & (self['Yid'] == year_id)
         if month is not None and day is not None:
             condition &= (self['Mn'] == month) & (self['Dy'] == day)
             if condition.any():
@@ -148,28 +154,33 @@ class OPC(pd.DataFrame):
                 last_index = self[condition].index[-1]
                 self.loc[last_index, 'OPV1'] = 0.2 if rate == 0 else rate
 
-    def edit_harvest_date(self, year_id, month, day):
+    def edit_harvest_date(self, year_id, month, day, crop_code=None):
         """
-        Edit the harvest date for a given year.
+        Edit the harvest date for a given year and optionally crop code.
 
         Parameters:
         year_id (int): Year identifier.
         month (int): Month of harvest.
         day (int): Day of harvest.
+        crop_code (int, optional): Crop code. If not provided, the first instance is changed.
         """
-        harvest_code_650_idx = self[(self['CODE'] == 650) & (self['Yid'] == year_id)].index
-        if not harvest_code_650_idx.empty:
-            self.loc[harvest_code_650_idx, ['Mn', 'Dy']] = [month, day]
+        if crop_code is not None:
+            harvest_idx = self[(self['CODE'] == self.harvest_code) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].index
+        else:
+            harvest_idx = self[(self['CODE'] == self.harvest_code) & (self['Yid'] == year_id)].index
+
+        if not harvest_idx.empty:
+            self.loc[harvest_idx[0], ['Mn', 'Dy']] = [month, day]
 
     def edit_nrates(self, nrates):
         """
-        Edit the nitrogen rates for multiple years.
+        Edit the fertilizer rates for all years.
 
         Parameters:
-        nrates (list): List of nitrogen rates to be set for each year.
+        nrates (list): List of fertilizer rates to be set for each year.
         """
         for i, nrate in enumerate(nrates, start=1):
-            self.edit_nitrogen_rate(nrate, i)
+            self.edit_fertilizer_rate(nrate, i)
 
     def update_phu(self, dly, cropcom):
         """
@@ -189,8 +200,8 @@ class OPC(pd.DataFrame):
         years = self['Yid'].unique()
         for year_id in years:
             # Get plantation and harvest dates from the OPC file
-            plantation_date = self[(self['CODE'].isin([2, 3])) & (self['Yid'] == year_id)].iloc[0]
-            harvest_date = self[(self['CODE'] == 650) & (self['Yid'] == year_id)].iloc[0]
+            plantation_date = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id)].iloc[0]
+            harvest_date = self[(self['CODE'] == self.harvest_code) & (self['Yid'] == year_id)].iloc[0]
             
             pd_year = self.start_year + int(plantation_date['Yid']) - 1
             hd_year = self.start_year + int(harvest_date['Yid']) - 1
@@ -211,4 +222,4 @@ class OPC(pd.DataFrame):
             phu = HU.sum()
 
             # Update OPV1 with PHU
-            self.loc[(self['CODE'].isin([2, 3])) & (self['Yid'] == year_id), 'OPV1'] = phu
+            self.loc[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id), 'OPV1'] = phu

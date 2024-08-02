@@ -10,8 +10,7 @@ from geoEpic.io import DLY
 from geoEpic.weather.daymet import *
 import subprocess
 from geoEpic.weather.main import DailyWeather
-from geoEpic.misc.utils import parallel_executor
-from geoEpic.misc import ConfigParser
+from geoEpic.misc import ConfigParser, parallel_executor
 from geoEpic.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
 from geoEpic.dispatcher import dispatch
 # Parse command line arguments

@@ -112,6 +112,158 @@ writeParm <- function(x, FileName) {
 
 r(script)
 
+
+# def readParm(FileName):
+#     # Reading the first part of the file
+#     PARM1 = pd.read_fwf(FileName, widths=[8, 8], header=None, nrows=30)
+#     VarNames1 = ["SCRP1_" + str(i) for i in range(1, 30)] + ["SCRP2_" + str(i) for i in range(1, 30)]
+#     PARM1_1 = pd.DataFrame(PARM1.values.T.ravel()).T 
+#     PARM1_1.columns = VarNames1
+
+#     # Reading the second part of the file
+#     PARM2 = pd.read_fwf(FileName, widths=[8] * 10, header=None, skiprows=30, nrows=13)
+#     PARM3 = PARM2.values.flatten()
+
+#     PARM5 = pd.DataFrame(PARM3).T
+#     i, j = 1, 1
+#     cols = []
+#     for val in PARM3:
+#         if not np.isnan(val):
+#             cols.append(f"PARM{i}")
+#             i += 1
+#         else:
+#             cols.append(f"PARM_nan{j}")
+#             j += 1
+#     PARM5.columns = cols
+
+#     return pd.concat([PARM1_1, PARM5], axis=1)
+
+
+# from decimal import Decimal
+
+# class ieParm(pd.DataFrame):
+#     @classmethod
+#     def load(cls, path):
+#         """
+#         Load data from an ieParm file into DataFrame.
+#         """
+#         df = readParm(path + '/ieParm.DAT')
+#         inst = cls(df)
+#         inst.name = 'ieParm'
+#         return inst
+
+#     def save(self, path):
+#         """
+#         Save DataFrame into an ieParm file.
+#         """
+#         PARM1 = self[[col for col in self.columns if "SCRP" in col]]
+#         PARM2 = self[[col for col in self.columns if "PARM" in col]]
+        
+#         PARM1_data = PARM1.values.reshape((2, 29)).T
+#         PARM2_data = PARM2.values.reshape((13, 10))
+        
+#         s = ''
+#         for row in PARM2_data:
+#             for col in row:
+#                 if np.isnan(col): break
+#                 col = np.round(col, 6)
+#                 dec = 0 if col == int(col) else len(str(Decimal(str(col))).split(".")[1])
+#                 # print(col, dec)
+#                 if dec <= 2: fmt = "%8.2f"
+#                 elif dec > 6: fmt = "%8.6f"
+#                 else: fmt = f"%8.{dec}f"
+#                 s += fmt % col
+#             s += '\n'
+
+#         with open(f'{path}/ieParm.DAT', 'w') as file:
+#             np.savetxt(file, PARM1_data[:-2], fmt='%8.2f%8.2f')
+#             file.write('\n')
+#             np.savetxt(file, PARM1_data[-2:], fmt='%8.2f%8.2f')
+#             file.write(s)
+
+# def read_parm(file_name):
+#     wd1 = [8, 8]
+#     PARM1 = pd.read_fwf(file_name, widths=wd1, nrows=30, header=None, skip_blank_lines=False)
+#     VarNames1 = ["SCRP1_" + str(i) for i in range(1, 31)] + ["SCRP2_" + str(i) for i in range(1, 31)]
+    
+#     PARM1_1 = pd.DataFrame(PARM1.values.flatten(order='F')).transpose()
+#     PARM1_1.columns = VarNames1
+    
+#     wd2 = [8] * 10
+#     PARM2 = pd.read_fwf(file_name, widths=wd2, skiprows=30, nrows=13, header=None, skip_blank_lines=False)
+#     PARM3 = PARM2.values.flatten()
+#     PARM4 = PARM3[~np.isnan(PARM3)]
+    
+#     PARM5 = pd.DataFrame(PARM4).transpose()
+#     PARM5.columns = ["PARM" + str(i + 1) for i in range(len(PARM4))]
+    
+#     result_df = pd.concat([PARM1_1, PARM5], axis=1)
+#     return result_df
+
+# def write_parm(x, file_name):
+#     def n_digits(x):
+#         return len(str(int(np.abs(np.floor(x)))))
+
+#     def decimal_places(x):
+#         if x % 1 != 0:
+#             x = format(x, 'f')
+#             decimal_str = str(x).split('.')[1].rstrip('0')
+#             return len(decimal_str)
+#         else:
+#             return 0 
+        
+#     text1 = []
+#     text_format1 = "{:8.2f}{:8.2f}"
+#     x1 = np.dstack((x[:, :30], x[:, 30:60]))
+#     x1 = x1.squeeze()
+
+#     text1 = []
+#     for ii in range(x1.shape[0]):
+#         if not np.isnan(x1[ii]).any():
+#             text1.append(text_format1.format(x1[ii, 0], x1[ii, 1]))
+#         else:
+#             text1.append(" ")
+
+#     x2 = x[:, 60:]
+
+#     x3_values = np.hstack((
+#         x2[:, :103].flatten(),
+#         np.repeat(np.nan, 7),
+#         x2[:, 103:108].flatten(),
+#         np.repeat(np.nan, 5),
+#         x2[:, 108:112].flatten(),
+#         np.repeat(np.nan, 6)
+#     ))
+
+#     text2 = []
+#     idx = 0
+#     for _ in range(13):
+#         text3 = []
+#         for _ in range(10):
+#             if np.isnan(x3_values[idx]):
+#                 text3.append("")
+#             else:
+#                 if n_digits(x3_values[idx]) == 1:
+#                     if decimal_places(x3_values[idx]) <= 2:
+#                         text_format2 = "{:8.2f}"
+#                     elif decimal_places(x3_values[idx]) >= 6:
+#                         text_format2 = "{:8.6f}"
+#                     else:
+#                         text_format2 = "{:8." + str(decimal_places(x3_values[idx])) + "f}"
+#                 else:
+#                     text_format2 = "{:8.2f}"
+
+#                 text3.append(text_format2.format(x3_values[idx]))
+
+#             idx += 1
+
+#         text2.append("".join(text3))
+    
+#     text = text1 + text2
+
+#     with open(file_name, 'w') as f:
+#         f.write("\n".join(text))
+
 class CropCom:
     
     def __init__(self, path):

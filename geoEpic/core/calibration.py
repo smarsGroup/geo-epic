@@ -4,14 +4,10 @@ import pandas as pd
 from geoEpic.dispatcher import dispatch
 from geoEpic.misc import ConfigParser
 
-curr_dir = os.getcwd()
-
-config = ConfigParser('./config.yml')
-model_path = os.path.dirname(config['EPICModel'])
-
 class MakeProblem:
 
-    def __init__(self, fitness, *dfs):
+    def __init__(self, workspace, fitness, *dfs):
+        self.workspace = workspace
         self.dfs = dfs
         self.obj = fitness
         cons, lens = [], []
@@ -31,12 +27,12 @@ class MakeProblem:
         # Update parameters in each dataframe and save
         for df, vals in zip(self.dfs, split_x):
             df.edit(vals)
-            df.save(model_path)
+            df.save(self.workspace.model_path)
 
         # Execute the model and capture output
         # command = 'epic_pkg workspace run'
-        dispatch('workspace', 'run', '-b False', wait = True)
-        ret = self.obj()
+        processed_outputs = self.workspace.run()
+        ret = self.obj(processed_outputs)
         return ret
     
     @property

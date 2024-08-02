@@ -5,19 +5,19 @@ from glob import glob
 from geoEpic.weather import DailyWeather
 import numpy as np
 import pandas as pd
-from geoEpic.misc import ConfigParser
+from geoEpic.misc import ConfigParser, parallel_executor
 from geoEpic.misc.utils import *
 
 daily_weather = DailyWeather(weather["dir"], weather["start_date"], weather["end_date"], weather['offline'])
 
 class EPICModel:
-    def __init__(self, config):
+    def __init__(self, config_path):
+        config = ConfigParser(config_path)
         self.model = config['EPICModel']
         self.output_dir = config['output_dir']
         self.log_dir = config['log_dir']
         self.model_dir = os.path.dirname(self.model)
-        self.config = config
-        self.base_dir = os.getcwd()  # Assuming base_dir is the current working directory
+        self.base_dir = config.dir
 
         # Ensure output and log directories exist
         os.makedirs(self.output_dir, exist_ok=True)
@@ -26,7 +26,7 @@ class EPICModel:
         # Make the model executable
         subprocess.Popen(f'chmod +x {self.model}', shell=True).wait()
 
-    def run(self, row):
+    def run(self, site):
         # Assumes 'row' is a dictionary containing FieldID, x, y, and other needed keys
         fid = row['FieldID']
         new_dir = os.path.join(self.base_dir, 'sims', str(fid))

@@ -5,8 +5,8 @@ import subprocess
 from geoEpic.weather import DailyWeather
 import numpy as np
 import pandas as pd
-from geoEpic.misc import ConfigParser
-from geoEpic.misc.utils import *
+from geoEpic.misc import ConfigParser, parallel_executor
+from geoEpic.misc.sys_utils import *
 from glob import glob
 # import importlib.util
 # import sys

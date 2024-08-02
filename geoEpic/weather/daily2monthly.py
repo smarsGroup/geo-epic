@@ -1,7 +1,7 @@
 import os
 import argparse
 from geoEpic.io import DLY
-from geoEpic.misc.utils import parallel_executor
+from geoEpic.misc import parallel_executor
 from glob import glob
 
 parser = argparse.ArgumentParser(description="Daily to Monthly")
