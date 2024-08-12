@@ -36,7 +36,7 @@ def run_ogr2ogr(args):
     elif args.state_fips or args.county_fips or args.state_name:
         where_clause = []
         if args.state_name:
-            state_fips = get_state_fips(state_name.strip())
+            state_fips = get_state_fips(args.state_name.strip())
             where_clause.append(f"STATEFIPS = '{state_fips}'")
         elif args.state_fips:
             where_clause.append(f"STATEFIPS = '{args.state_fips}'")
