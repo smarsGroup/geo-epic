@@ -75,7 +75,7 @@ data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
 if not os.path.exists('./NLDAS_csv'):
-    dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
+    dispatch('weather', 'windspeed', f'-s {start_date} -e {end_date} \
                     -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
 
 daily_weather = DailyWeather('.', start_date, end_date)
