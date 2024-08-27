@@ -55,46 +55,6 @@ def read_gdb_layer(gdb_data, layer_name, columns = None, names = None):
         
     return pd.DataFrame(features)
 
-
-def writeDATFiles(new_dir, config, fid, row):
-    with open(f'{new_dir}/EPICRUN.DAT', 'w') as ofile:
-        fmt = '%8d %8d %8d 0 1 %8d  %8d  %8d  0   0  %2d   %4d   10.00   2.50  2.50  0.1/'
-        np.savetxt(ofile, [[int(fid)]*6 + [config["duration"], config["start_year"]]], fmt=fmt)
-        
-    with open(f'{new_dir}/ieSite.DAT', 'w') as ofile:
-        site_src = config["site"]["dir"]
-        fmt = '%8d    "%s/%d.sit"\n'%(fid, site_src, fid)
-        ofile.write(fmt)
-
-    with open(f'{new_dir}/ieSllist.DAT', 'w') as ofile:
-        soil_src = config["soil"]["files_dir"]
-        fmt = '%8d    "%s/%d.SOL"\n'%(fid, soil_src, row['soil_id'])  
-        ofile.write(fmt)
-    
-    daily_src = ''
-    monthly_src = ''
-    clim_id = fid
-    
-    if config['weather']['offline']:
-        weather_dir = config['weather']['dir']
-        daily_src = weather_dir + '/Daily/'
-        monthly_src = weather_dir + '/Monthly/'
-        clim_id = row['dly_id']
-        
-
-    with open(f'{new_dir}/ieWedlst.DAT', 'w') as ofile:
-        fmt = '%8d    "%s%d.DLY"\n'%(fid, daily_src, clim_id)  
-        ofile.write(fmt)
-
-    with open(f'{new_dir}/ieWealst.DAT', 'w') as ofile:
-        fmt = '%8d    "%s%d.INP"   %.2f   %.2f  NB            XXXX\n'%(fid, monthly_src, clim_id, row['x'], row['y'])
-        ofile.write(fmt)
-    
-    with open(f'{new_dir}/ieOplist.DAT', 'w') as ofile:
-        opc_src = config["opc_dir"]
-        fmt = '%8d    "%s/%s.OPC"\n'%(fid, opc_src, row['opc'])
-        ofile.write(fmt)
-        
         
 def calc_centroids(gdf):
     avg_lat = gdf['geometry'][0].bounds[1]

@@ -75,10 +75,8 @@ def process_model(row):
     for out_type in config['output_types']:
         out_file_loc = f'{fid}.{out_type}'
         glob('./*')
-        if os.path.exists(out_file_loc) and os.path.getsize(out_file_loc) > 0:
-            pass
-        else:
-            raise Exception("Output files not Found")
+        if not (os.path.exists(out_path) and os.path.getsize(out_path) > 0):
+            raise Exception(f"Output file ({out_type}) not found. \n Check {os.path.join(self.log_dir, f"{fid}.out")} for details")
     else: 
         if process_outputs is not None:
             process_outputs(fid, base_dir)

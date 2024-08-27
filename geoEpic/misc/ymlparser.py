@@ -62,7 +62,7 @@ class ConfigParser:
 if __name__ == '__main__':
     # Example usage
     config = ConfigParser('config.yml')
-    config.update_config({
+    config.update({
         'soil': {
             'files_dir': './soil_files'
         },

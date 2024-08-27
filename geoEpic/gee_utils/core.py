@@ -28,7 +28,10 @@ def extract_features(collection, aoi, date_range, resolution):
         })
     
     df['Date'] = pd.to_datetime(df['Date']).dt.date
+    if 'geo' in df.columns: df = df.drop(columns=['geo'])
+    df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
     return df
+
 
 class CompositeCollection:
     """
@@ -174,6 +177,38 @@ class CompositeCollection:
 
 
 
+class TimeSeries:
+
+    def __init__(self, collection, vars, date_range = None):
+        self.collection = collection.select(vars)
+        self.vars = vars
+        self.date_range = date_range
+    
+    def extract(self, aoi_coords, resolution = 30, date_range = None):
+        """
+        Extracts temporal data for a given Area of Interest (AOI).
+
+        Args:
+        aoi_coords (tuple/list): Coordinates representing the AOI, either as a Point or as vertices of a Polygon.
+
+        Returns:
+        pd.DataFrame: A pandas DataFrame containing the extracted data.
+        """
+        # Convert coordinates to AOI geometry
+        if isinstance(aoi_coords, (Polygon, MultiPolygon)):
+            aoi_coords = aoi_coords.exterior.coords[:]
+        if len(aoi_coords) == 1:
+            aoi = ee.Geometry.Point(aoi_coords[0])
+        else:
+            aoi = ee.Geometry.Polygon(aoi_coords)
+
+        if date_range is None:
+            date_range = self.date_range
+        df = extract_features(self.collection, aoi, date_range, resolution)
+        return df
+
+
+
 if __name__ == '__main__':
     # yaml_file = 'weather_config.yml'
     # composite_collection = CompositeCollection(yaml_file)
@@ -188,4 +223,11 @@ if __name__ == '__main__':
     
     col = CompositeCollection('./landsat_lai.yml')
     df = col.extract([[-98.114, 41.855]])
+    print(df)
+
+
+    start, end = '2010-01-01', '2022-12-31'
+    col =  ee.ImageCollection('LANDSAT/LE07/C02/T1_L2')#.filterDate(start, end)
+    tm = TimeSeries(col, ['SR_B4', 'SR_B5'])
+    df = tm.extract([[-98.114, 41.855]], date_range = [start, end])
     print(df)

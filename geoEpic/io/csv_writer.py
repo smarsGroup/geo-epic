@@ -31,7 +31,7 @@ class CSVWriter:
             *args: Variable length argument list representing the columns of the row.
         """
         if self.file_handle is not None:
-            self.file_handle.write(', '.join(str(arg) for arg in args) + '\n')
+            self.file_handle.write(','.join(str(arg) for arg in args) + '\n')
         else:
             raise Exception("File is not open. Please call the 'open' method first.")
 

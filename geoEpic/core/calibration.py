@@ -1,15 +1,13 @@
 import os
 import numpy as np
 import pandas as pd
-from geoEpic.dispatcher import dispatch
-from geoEpic.misc import ConfigParser
 
-class MakeProblem:
-
-    def __init__(self, workspace, fitness, *dfs):
+class PygmoProblem:
+    def __init__(self, workspace, *dfs):
         self.workspace = workspace
+        if self.workspace.fitness is None:
+            raise Exception("Fitness function is not set")
         self.dfs = dfs
-        self.obj = fitness
         cons, lens = [], []
         for df in dfs:
             cons += list(df.constraints())
@@ -27,12 +25,10 @@ class MakeProblem:
         # Update parameters in each dataframe and save
         for df, vals in zip(self.dfs, split_x):
             df.edit(vals)
-            df.save(self.workspace.model_path)
+            df.save(self.workspace.model.path)
 
         # Execute the model and capture output
-        # command = 'epic_pkg workspace run'
-        processed_outputs = self.workspace.run()
-        ret = self.obj(processed_outputs)
+        ret = self.workspace.run()
         return ret
     
     @property

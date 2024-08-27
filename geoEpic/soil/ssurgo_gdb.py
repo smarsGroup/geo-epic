@@ -4,8 +4,8 @@ import pandas as pd
 from tqdm import tqdm
 from osgeo import ogr
 import argparse
-from geoEpic.misc.utils import parallel_executor, read_gdb_layer
-from geoEpic.misc import ConfigParser
+from geoEpic.misc import read_gdb_layer
+from geoEpic.misc import ConfigParser, parallel_executor
 
 parser = argparse.ArgumentParser(description="soil file creation script")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")

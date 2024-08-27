@@ -6,9 +6,11 @@ import importlib.util
 import shutil
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+import threading
+from threading import Timer
 
 
-def with_timeout(func, timeout, *args, **kwargs):
+def run_with_timeout(func, timeout, *args, **kwargs):
     """
     Executes a function with a timeout using signals (not recommended).
 
@@ -38,7 +40,7 @@ def with_timeout(func, timeout, *args, **kwargs):
 
     return result
     
-
+    
 def parallel_executor(func, args, method='Process', max_workers=10, return_value=False, bar=True, timeout=None):
     """
     Executes a function across multiple processes and collects the results.
@@ -63,11 +65,11 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
     
     with PoolExecutor(max_workers=max_workers) as executor:
         if bar: pbar = tqdm(total=len(args))
-        
-        if timeout is None:
-            futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
+
+        if method == 'Process' and timeout is not None:
+            futures = {executor.submit(run_with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}
         else:
-            futures = {executor.submit(with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}
+            futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
         
         try:
             for future in as_completed(futures):

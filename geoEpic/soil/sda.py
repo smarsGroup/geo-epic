@@ -153,22 +153,3 @@ class SoilDataAccess:
         """
         result = SoilDataAccess.query(query)
         return result['slopelenusle_r'].values[0]
-
-    @staticmethod
-    def fetch_nccpi(input_value):
-        """
-        Fetches the NCCPI values for a given input value. If the input is an integer, it is used as mukey. If the input is a string, it is used as WKT.
-
-        Args:
-        input (int or str): The input value representing either a mukey (int) or a WKT location (str).
-
-        Returns:
-        pd.DataFrame: A DataFrame containing the NCCPI values for the specified input value.
-        """
-        query = f"""
-        SELECT nccpi3all, nccpi3corn, nccpi3soy
-        FROM valu1
-        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
-        """
-        result = SoilDataAccess.query(query)
-        return result[['nccpi3all', 'nccpi3corn', 'nccpi3soy']]

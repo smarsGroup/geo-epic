@@ -4,24 +4,17 @@ from setuptools import setup, find_packages
 import subprocess
 import urllib.request
 
-def install_gdal(filename):
-    # Download the wheel file
-    url = "https://smarslab-files.s3.amazonaws.com/epic-utils/" + filename
-    urllib.request.urlretrieve(url, filename)
-    subprocess.check_call(['pip', 'install', filename])
-    os.remove(filename)
-
 # Check if the OS is Windows and exit if true
 if sys.platform.startswith('win'):
     print("Installation not supported for Windows.")
     sys.exit(1)
 
-# try:
-#     import osgeo
-#     print('GDAL already installed')
-# except:
-#     print('Installing GDAL...')
-#     install_gdal("GDAL-3.4.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.whl")
+try:
+    import osgeo
+    print('GDAL already installed')
+except:
+    print('Installing GDAL...')
+    subprocess.check_call(['conda', 'install', 'gdal'])
 
 # Define metadata directory in the user's home folder
 home_dir = os.path.expanduser("~")
@@ -46,13 +39,6 @@ else:
     print(f"'{metadata_dir}' already exists, skipping file downloads.")
 
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
-from geoEpic.misc import ConfigParser
-config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
-
-config.update_config({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
-                      'site': {'elevation': f'{home_dir}/GeoEPIC_metadata/SRTM_1km_US_project.tif',
-                                'slope': f'{home_dir}/GeoEPIC_metadata/slope_us.tif',
-    }, })
 
 # Function to read the requirements.txt file
 def read_requirements():
@@ -70,7 +56,9 @@ setup(
         'geoEpic': ['templates/**/**/*',
                     'soil/template.sol',
                     'sites/template.sit',
-                    'templates/EPICeditor.xlsm'],
+                    'templates/EPICeditor.xlsm',
+                    'gee_utils/config.json',
+                    ],
     },
     entry_points={
         'console_scripts': [
@@ -78,3 +66,14 @@ setup(
         ],
     },
 )
+
+
+
+from geoEpic.misc import ConfigParser
+
+config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
+
+config.update({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
+                'site': {'elevation': f'{home_dir}/GeoEPIC_metadata/SRTM_1km_US_project.tif',
+                         'slope': f'{home_dir}/GeoEPIC_metadata/slope_us.tif',
+    }, })
