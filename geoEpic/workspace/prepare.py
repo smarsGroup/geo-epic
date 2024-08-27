@@ -5,7 +5,7 @@ import subprocess
 import geopandas as gpd
 from geoEpic.misc import ConfigParser
 from geoEpic.misc.utils import calc_centroids#, find_column
-# from geoEpic.ssurgo import get_soil_ids
+from geoEpic.soil import get_ssurgo_mukeys
 from geoEpic.dispatcher import dispatch
 import numpy as np
 
@@ -99,9 +99,8 @@ else:
 
 
 coords = info_df[['x', 'y']].values
-
 ssurgo_map = soil["soil_map"]
-# info_df['soil_id'] = get_soil_ids(coords, ssurgo_map, soil_dir) 
+info_df['soil_id'] = get_ssurgo_mukeys(coords, ssurgo_map, soil_dir) 
 info_df.to_csv(curr_dir + '/info.csv', index = False)
 
 # create site files

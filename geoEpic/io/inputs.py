@@ -15,6 +15,29 @@ class DLY(pd.DataFrame):
         data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
         return cls(data)
 
+    def validate(self, start_year, end_year):
+        date_range = pd.date_range(start=f'{start_year}-01-01', end=f'{end_year}-12-31', freq='D')
+        expected_df = pd.DataFrame({
+            'year': date_range.year,
+            'month': date_range.month,
+            'day': date_range.day
+        })
+
+        # Merge with original DataFrame to check for missing dates
+        merged_df = pd.merge(expected_df, self, on=['year', 'month', 'day'], how='left')
+        
+        if self.isnull().values.any():
+            print("The DataFrame contains NaN values.")
+            return False
+    
+        missing_dates = merged_df[merged_df.isnull().any(axis=1)]
+        if not missing_dates.empty:
+            print("Missing rows for the following dates:")
+            print(missing_dates[['year', 'month', 'day']])
+            return False
+
+        return True
+
     def save(self, path):
         """
         Save DataFrame into a DLY file.
@@ -22,7 +45,8 @@ class DLY(pd.DataFrame):
         if not path.endswith('.DLY'): path += '.DLY'
         with open(path, 'w') as ofile:
             fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
-            np.savetxt(ofile, self.values[1:], fmt = fmt)
+            np.savetxt(ofile, self.values[:], fmt = fmt)
+    
     
     def to_monthly(self, path):
         """

@@ -20,7 +20,7 @@ class DailyWeather:
             nldas_id = int(self.lookup.get(lat, lon))
             data = get_daymet_data(lat, lon, self.start_date, self.end_date)
             data['date'] = pd.to_datetime(data[['year', 'month', 'day']])
-            ws = pd.read_csv(self.path + f'/NLDAS_csv/{nldas_id}.csv')
+            ws = pd.read_csv(self.path + f'/NLDAS_csv/{nldas_id}.csv',header=None)
             ws.columns = ['date', 'ws']
             ws['date'] = pd.to_datetime(ws['date'])
             data['date'] = pd.to_datetime(data[['year', 'month', 'day']])
