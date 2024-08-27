@@ -23,14 +23,11 @@ weather:
   start_date: 1981-01-01
   end_date: 2020-12-31
   offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
-  primary_source: daymet # daymet, gridmet, NLDAS, ERA5 (Only daymet works for now.)
 
 # Soil details
 soil:
-  ssurgo_gdb: ./soil/gSSURGO_NE.gdb
   soil_map: /home/velmurugans/GeoEPIC_metadata/SSURGO.tif
   files_dir:  #if soil files directory is specified, processing gdb file is skipped.
-  template_file: ./soil/files/template.sol
 
 # Info for Sit files
 site:
@@ -42,14 +39,8 @@ site:
 
 # OPC details
 opc_dir: ./opc
-opc_prefix: CropRot
-
 
 # Run params
 select: Random(0.1) # Range(0.35, 0.8), Random(0.1) or a expression to select csbs with specific property. ex: CNTYFIPS == 8; Shape_Area > 6
 num_of_workers: 40 # No. of parellel processes. Should be less than number of cpu cores.
 timeout: 10 # No. of seconds to let a simulation run. Execution is terminated after timeout.
-
-# Post Process
-process_outputs: ./utils.py reduce_outputs # if not empty during runs, output processing is also carried out.
-visualize: ./utils.py spatial_plot # specify function to visualize the required results

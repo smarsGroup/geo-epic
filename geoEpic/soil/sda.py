@@ -129,7 +129,10 @@ class SoilDataAccess:
         'slope_length': merged['slopelenusle_r'],
         'hydgrp_conv': merged['Hydgrp_conv']
         })
+        # soil_df = soil_df.groupby('Layer_depth').mean()
+        
         soil_df['mukey'] = soil_df['mukey'].astype(int)
+        
         return soil_df.round(4)
     
     @staticmethod
