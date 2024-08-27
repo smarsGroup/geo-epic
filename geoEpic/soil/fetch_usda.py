@@ -1,13 +1,10 @@
 from utils import write_soil_file
 import pandas as pd
 from sda import SoilDataAccess
-import numpy as np
 import geopandas as gpd
-from tqdm import tqdm
 import os
 import argparse
-# from ..misc import parallel_executor
-# from ..misc.raster_utils import raster_to_dataframe
+from geoEpic.misc.utils import parallel_executor
 
     
 def fetch_data(input_data, output_dir, raw):
@@ -48,7 +45,8 @@ def fetch_list(input_data, output_dir, raw):
     """
     if input_data.endswith('.csv'):
         locations = pd.read_csv(input_data)
-        parallel_executor(fetch_data, locations['location'], output_dir, raw)
+        point_strings = [f"point({row.latitude} {row.longitude})" for _, row in locations.iterrows()]
+        parallel_executor(fetch_data, point_strings, output_dir, raw)
     elif input_data.endswith('.shp'):
         shapefile = gpd.read_file(input_data)
         shapefile['centroid'] = shapefile.geometry.centroid
@@ -65,10 +63,10 @@ def main():
     parser.add_argument('--raw', action='store_true', help='Save results as raw CSV instead of .SOL file')
 
     args = parser.parse_args()
-
+    
     if len(args.fetch) == 2:
         latitude, longitude = map(float, args.fetch)
-        wkt = f'point({latitude} {longitude})'
+        wkt = f'point({longitude} {latitude})'
         fetch_data(wkt, args.output_path, args.raw)
     else:
         fetch_list(args.fetch[0], args.output_path, args.raw)
@@ -76,9 +74,9 @@ def main():
 
 
 if __name__ == '__main__':
-    mukey = 642029
-    soil_properties_df = SoilDataAccess.fetch_properties(mukey)
-    print(soil_properties_df)
-    soil_properties_df.to_csv('soil.csv', index = False)
-    write_soil_file(soil_properties_df, './')
+    # mukey = 642029
+    # soil_properties_df = SoilDataAccess.fetch_properties(mukey)
+    # print(soil_properties_df)
+    # soil_properties_df.to_csv('soil.csv', index = False)
+    # write_soil_file(soil_properties_df, './')
     main()
