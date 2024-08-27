@@ -4,28 +4,43 @@ import pandas as pd
 from geoEpic.misc.utils import parallel_executor
 from geoEpic.misc.raster_utils import sample_raster_nearest
 import argparse
+from geoEpic.misc import ConfigParser
+
 
 parser = argparse.ArgumentParser(description="Process raster data and save results.")
-parser.add_argument("-o", "--out_dir", type=str, required=True, help="Output directory to save results.")
-parser.add_argument("-i", "--info_file", type=str, required=True, help="Path to the info file.")
-parser.add_argument("-ele", "--elevation", type=str, required=True, help="Path to the elevation.tif")
-parser.add_argument("-slope", "--slope", type=str, required=True, help="Path to the slope.tif")
-parser.add_argument("-sl", "--slope_len", type=str, required=True, help="Path to the slope_len.csv")
+parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
+
+# parser.add_argument("-o", "--out_dir", type=str, required=True, help="Output directory to save results.")
+# parser.add_argument("-i", "--info_file", type=str, required=True, help="Path to the info file.")
+# parser.add_argument("-ele", "--elevation", type=str, required=True, help="Path to the elevation.tif")
+# parser.add_argument("-slope", "--slope", type=str, required=True, help="Path to the slope.tif")
+# parser.add_argument("-sl", "--slope_len", type=str, required=True, help="Path to the slope_len.csv")
 args = parser.parse_args()
 
-info = pd.read_csv(args.info_file)
+config = ConfigParser(args.config)
+
+site = config["site"]
+
+out_dir = site['dir']
+info_file = config['Processed_Info']
+elevation = site['elevation']
+slope = site['slope']
+slope_len = site['slope_length']
+
+
+info = pd.read_csv(info_file)
 coords = info[['x', 'y']].values
 
 prefix = f'{os.path.dirname(__file__)}'
 
-info['ele'] = sample_raster_nearest(args.elevation, coords)['band_1']
-info['slope'] = sample_raster_nearest(args.slope, coords)['band_1']
+info['ele'] = sample_raster_nearest(elevation, coords)['band_1']
+info['slope'] = sample_raster_nearest(slope, coords)['band_1']
 
 info = info.fillna(0)
 info['ssu'] = info['soil_id'].astype(int)
 info['slope_steep'] = round(info['slope'] / 100, 2)
 
-slope_len = pd.read_csv(args.slope_len)
+slope_len = pd.read_csv(slope_len)
 slope_len = slope_len[['mukey', 'slopelen_1']]
 slope_len['mukey'] = slope_len['mukey'].astype(int)
 slope_len['slopelen_1'] = slope_len['slopelen_1'].astype(float)
@@ -37,7 +52,7 @@ with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
 def write_site(row):
-    with open(os.path.join(args.out_dir, f"{int(row['FieldID'])}.sit"), 'w') as f:
+    with open(os.path.join(out_dir, f"{int(row['FieldID'])}.sit"), 'w') as f:
         # Modify the template lines
         template[0] = 'USA crop simulations\n'
         template[1] = 'Prototype\n'

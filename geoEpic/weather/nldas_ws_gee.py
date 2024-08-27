@@ -9,46 +9,28 @@ from geoEpic.misc.formule import windspd
 from tqdm import tqdm
 import argparse
 from geoEpic.misc import ConfigParser
-import geopandas as gpd
-
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="NLDAS Script with Arguments")
-parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
-parser.add_argument("-w", "--max_workers", default = 4, help = "No. of maximum workers")
-# parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
-# parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
-# parser.add_argument("-b", "--extent", type=float, nargs=4, metavar=('LAT_MIN', 'LAT_MAX', 'LON_MIN', 'LON_MAX'), 
-#                         default = [39.8, 43.0, -104, -95.3], help = "Bounding box coordinates")
-# parser.add_argument("-o", "--working_dir", required=True, help="Working directory")
+
+parser.add_argument("-s", "--start_date", default="1981-01", help="Start date (YYYY-MM) for date range")
+parser.add_argument("-e", "--end_date", default="2023-06", help="End date (YYYY-MM) for date range")
+parser.add_argument("-b", "--extent", type=float, nargs=4, metavar=('LAT_MIN', 'LAT_MAX', 'LON_MIN', 'LON_MAX'), 
+                        default = [39.8, 43.0, -104, -95.3], help = "Bounding box coordinates")
+parser.add_argument("-o", "--working_dir", required=True, help="Working directory")
 args = parser.parse_args()
 
-config = ConfigParser(args.config)
-max_workers = args.max_workers
-weather = config["weather"]
-aoi = config["Fields_of_Interest"]
-start_date = weather["start_date"]
-end_date = weather["end_date"]
-working_dir = weather["dir"]
-
 # Access values using args.bbox
-if aoi.endswith('.shp'):
-    gdf = gpd.read_file(aoi)
-    gdf = gdf.to_crs(epsg=4326)
-    lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
-elif aoi.endswith('.csv'):
-    gdf = pd.read_csv(aoi)
-    lon_min, lat_min = np.floor(gdf['x'].min() * 1e5)/1e5, np.floor(gdf['y'].min() * 1e5)/1e5
-    lon_max, lat_max = np.ceil(gdf['x'].max() * 1e5)/1e5, np.ceil(gdf['y'].max() * 1e5)/1e5
+lat_min, lat_max, lon_min, lon_max = args.extent
 
 args = parser.parse_args()
 
 # Change working dir
-os.makedirs(working_dir, exist_ok = True)
-os.chdir(working_dir)
+os.makedirs(args.working_dir, exist_ok = True)
+os.chdir(args.working_dir)
 
 # Define date range from command-line arguments
-dates = pd.date_range(start = start_date, end = end_date, freq = 'BME')
+dates = pd.date_range(start = args.start_date, end = args.end_date, freq = 'BME')
 
 
 lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
@@ -108,7 +90,7 @@ def download_func(date):
 
 
 # Use parallel execution to download data for all dates
-parallel_executor(download_func, dates, max_workers = max_workers, return_value = False)
+parallel_executor(download_func, dates, max_workers = 4, return_value = False)
 
 print('Writing windspeed data to CSV...')
 os.makedirs('NLDAS_csv', exist_ok = True)
@@ -127,7 +109,7 @@ for date in tqdm(dates):
         df.to_csv(f'NLDAS_csv/{i}.csv', mode='a', header=False, index=False)
     
     # Use parallel execution to write data to CSV for all grid points
-    parallel_executor(write_func, range(h*w), max_workers=max_workers, return_value = False,bar=False)
+    parallel_executor(write_func, range(h*w), bar = False)
 
 
 

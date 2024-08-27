@@ -68,7 +68,7 @@ setup(
     include_package_data=True,
     package_data={
         'geoEpic': ['templates/**/**/*',
-                    'ssurgo/template.sol',
+                    'soil/template.sol',
                     'sites/template.sit',
                     'templates/EPICeditor.xlsm'],
     },

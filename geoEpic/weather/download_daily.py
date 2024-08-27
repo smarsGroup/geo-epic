@@ -21,15 +21,18 @@ parser.add_argument("-w", "--max_workers", default = 20, help = "No. of maximum 
 args = parser.parse_args()
 
 curr_dir = os.getcwd()
+config_loc = os.path.abspath(args.config)
 
 config = ConfigParser(args.config)
+
+max_workers = int(args.max_workers)
 
 weather = config["weather"]
 aoi = config["Fields_of_Interest"]
 working_dir = weather["dir"]
 region_code = config["code"]
-start_date = weather["start_date"]
-end_date = weather["end_date"]
+start_date = weather["start_date"].strftime('%Y-%m-%d')
+end_date = weather["end_date"].strftime('%Y-%m-%d')
 
 print('Processing shape file')
 
@@ -75,9 +78,10 @@ data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
 if not os.path.exists('./NLDAS_csv'):
-    dispatch('weather', 'download_windspeed', f'-s {start_date} -e {end_date} \
-                    -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
-
+    # dispatch('weather', 'windspeed', f'-s {start_date} -e {end_date} \
+    #                 -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
+    dispatch('weather', 'windspeed', f'-c {config_loc}', True)
+    
 daily_weather = DailyWeather('.', start_date, end_date)
 
 os.makedirs('./Daily', exist_ok = True)
@@ -99,8 +103,19 @@ cmids = cmids[cmids['band_1'] != -1]
 cmids.reset_index(inplace = True)
 cmids = cmids.rename(columns={'band_1': 'daymet_id'})
 
+#remove existing daymet ids in output folder from input args
+present_daymet_ids = [int(f.split('.')[0]) for f in os.listdir('./Daily')]
+cmids['daymet_id'] = cmids['daymet_id'].astype(int)
+cmids = cmids[~cmids['daymet_id'].isin(present_daymet_ids)]
+
+
 cmids_ls = cmids.to_dict('records')
-parallel_executor(create_dly, cmids_ls, max_workers = args.max_workers)
+# print(f' input : {cmids_ls[0]}')
+
+# test for one field_id
+
+create_dly(cmids_ls[0])
+parallel_executor(create_dly, cmids_ls[1:], max_workers = max_workers)
 
 # # Determine the latitude and longitude range based on the provided arguments
 # if args.shapefile:
