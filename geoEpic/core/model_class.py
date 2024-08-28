@@ -20,7 +20,6 @@ class EPICModel:
         self.duration = 10
         self.output_dir = None
         self.log_dir = './'
-        
     
     def setup(self, config):
         self.start_year = config.get('start_year', 2014) 

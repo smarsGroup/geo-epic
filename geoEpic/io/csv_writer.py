@@ -1,5 +1,6 @@
 import fcntl
 import os
+import csv
 
 class CSVWriter:
     def __init__(self, file_path, mode='a'):
@@ -12,6 +13,8 @@ class CSVWriter:
         self.file_path = file_path
         self.mode = mode
         self.file_handle = None
+        self.writer = None
+        self.headers_written = False
 
     def open(self, mode=None):
         """Open the CSV file in the specified mode and lock it for exclusive access.
@@ -22,18 +25,34 @@ class CSVWriter:
         if mode:
             self.mode = mode
         self.file_handle = open(self.file_path, self.mode)
+        self.writer = csv.writer(self.file_handle)
         fcntl.flock(self.file_handle, fcntl.LOCK_EX)  # Lock the file
-
-    def write_row(self, *args):
-        """Write a row to the CSV file with arbitrary number of columns.
-        
-        Args:
-            *args: Variable length argument list representing the columns of the row.
-        """
-        if self.file_handle is not None:
-            self.file_handle.write(','.join(str(arg) for arg in args) + '\n')
+        # Check if we need to write headers by checking if the file is empty
+        if os.stat(self.file_path).st_size == 0:
+            self.headers_written = False
         else:
+            self.headers_written = True
+
+    def write_row(self, *args, **kwargs):
+        """Write a row to the CSV file.
+        
+        Args can be a variable length argument list representing the columns of the row,
+        or kwargs can be a dict with column names and values.
+        """
+        if self.file_handle is None:
             raise Exception("File is not open. Please call the 'open' method first.")
+
+        if kwargs:
+            if not self.headers_written:
+                # Write the header based on dictionary keys
+                header = list(kwargs.keys())
+                self.writer.writerow(header)
+                self.headers_written = True
+            # Write the row based on dictionary values
+            self.writer.writerow([kwargs[key] for key in header])
+        else:
+            # Assume args contains only values in the correct order
+            self.writer.writerow(args)
 
     def close(self):
         """Release the lock and close the CSV file."""
@@ -50,10 +69,3 @@ class CSVWriter:
     def __exit__(self, exc_type, exc_value, traceback):
         """Support context manager 'with' statement by closing the file."""
         self.close()
-
-
-# # Example usage:
-# file_path = '/path/to/yourfile.csv'
-# with CSV(file_path, 'w') as csv_writer:
-#     csv_writer.write_row('Column1', 'Column2', 'Column3')
-#     csv_writer.write_row('Data1', 'Data2', 'Data3')

@@ -2,19 +2,18 @@
 EXPName: Nebraska Mead Site
 Region: Nebraska
 code: NE
-Fields_of_Interest: ./NE_site/NE_site.shp
-Processed_Info:     # leave empty
+Area_of_Interest: ./NE_site/NE_site.shp
 
 
-# Model details
+# Model configuration
 EPICModel: ./model/EPIC2301dt20230820
 start_year: 1995
 duration: 25
 output_types:
   - ACY  # Annual Crop data file
   - DGN  # Daily general output file
-log_dir: ./log
-output_dir: ./output # if empty, Output files from epic runs are not saved (To save space use post_process options).
+log_dir: ./logs
+output_dir: ./output
 
 
 # Weather configuration
@@ -23,11 +22,12 @@ weather:
   start_date: 1981-01-01
   end_date: 2020-12-31
   offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
+  source: daymet
 
 # Soil details
 soil:
   soil_map: /home/velmurugans/GeoEPIC_metadata/SSURGO.tif
-  files_dir:  #if soil files directory is specified, processing gdb file is skipped.
+  files_dir: ./soil/files
 
 # Info for Sit files
 site:
@@ -36,11 +36,15 @@ site:
   elevation: /home/velmurugans/GeoEPIC_metadata/SRTM_1km_US_project.tif
   slope_length: ./soil/NE_slopelen.csv
 
-
-# OPC details
+# OPC directory
 opc_dir: ./opc
 
-# Run params
-select: Random(0.1) # Range(0.35, 0.8), Random(0.1) or a expression to select csbs with specific property. ex: CNTYFIPS == 8; Shape_Area > 6
-num_of_workers: 40 # No. of parellel processes. Should be less than number of cpu cores.
-timeout: 10 # No. of seconds to let a simulation run. Execution is terminated after timeout.
+
+# Workspace Run Options
+run_info: ./info.csv  # Path to Info CSV or SHP file with columns ('SiteID', 'soil', 'opc', 'dly'). Include ('lat', 'lon') for a CSV file.
+# Method for selecting specific sites. Ex: Range(0.35, 0.8), Random(0.1), "CNTYFIPS == 8"; "Shape_Area > 6"
+select: Random(0.1)  
+# Number of parallel processes to run. Recommended to be less than the number of CPU cores.
+num_of_workers: 40
+# Timeout for each simulation run in seconds. Execution is terminated after this timeout.
+timeout: 10  

@@ -4,10 +4,11 @@ import pandas as pd
 from geoEpic.misc import parallel_executor
 from geoEpic.misc.raster_utils import sample_raster_nearest
 import argparse
+import geopandas as gpd
 from geoEpic.misc import ConfigParser
 
 
-parser = argparse.ArgumentParser(description="Process raster data and save results.")
+parser = argparse.ArgumentParser(description="Generate Site files.")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
 
 # parser.add_argument("-o", "--out_dir", type=str, required=True, help="Output directory to save results.")
@@ -22,14 +23,32 @@ config = ConfigParser(args.config)
 site = config["site"]
 
 out_dir = site['dir']
-info_file = config['Processed_Info']
+info_file = config['run_info']
 elevation = site['elevation']
 slope = site['slope']
 slope_len = site['slope_length']
 
 
-info = pd.read_csv(info_file)
-coords = info[['x', 'y']].values
+
+if info_file.lower().endswith('.csv'):
+    data = pd.read_csv(info_file)
+    required_columns_csv = {'siteid', 'soil', 'lat', 'lon'}
+    if not required_columns_csv.issubset(set(data.columns.str.lower())):
+        raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'lat', 'lon'")
+elif info_file.lower().endswith('.shp'):
+    data = gpd.read_file(info_file)
+    data = data.to_crs(epsg=4326)  # Convert to latitude and longitude projection
+    data['lat'] = data.geometry.centroid.y
+    data['lon'] = data.geometry.centroid.x
+    required_columns_shp = {'siteid', 'soil'}
+    if not required_columns_shp.issubset(set(data.columns.str.lower())):
+        raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil'")
+    data.drop(columns=['geometry'], inplace=True)
+else:
+    raise ValueError("Unsupported file format. Please provide a '.csv' or '.shp' file.")
+
+info = data
+coords = info[['lat', 'lon']].values
 
 prefix = f'{os.path.dirname(__file__)}'
 
@@ -37,14 +56,25 @@ info['ele'] = sample_raster_nearest(elevation, coords)['band_1']
 info['slope'] = sample_raster_nearest(slope, coords)['band_1']
 
 info = info.fillna(0)
-info['ssu'] = info['soil_id'].astype(int)
+info['ssu'] = info['soil'].astype(int)
 info['slope_steep'] = round(info['slope'] / 100, 2)
 
-slope_len = pd.read_csv(slope_len)
-slope_len = slope_len[['mukey', 'slopelen_1']]
-slope_len['mukey'] = slope_len['mukey'].astype(int)
-slope_len['slopelen_1'] = slope_len['slopelen_1'].astype(float)
-info = pd.merge(info, slope_len, how='left', left_on='ssu', right_on='mukey')
+# Check if slope_len is a TIFF file or a CSV file
+if slope_len.lower().endswith('.tif') or slope_len.lower().endswith('.tiff'):
+    # Sample raster data for slope length
+    slope_len_data = sample_raster_nearest(slope_len, coords)
+    # Add slope length data directly to the info DataFrame
+    info['slopelen_1'] = slope_len_data['band_1']  # Adjust 'band_1' as necessary
+elif slope_len.lower().endswith('.csv'):
+    # Read CSV file for slope length
+    slope_len_df = pd.read_csv(slope_len)
+    slope_len_df = slope_len_df[['mukey', 'slopelen_1']]
+    slope_len_df['mukey'] = slope_len_df['mukey'].astype(int)
+    slope_len_df['slopelen_1'] = slope_len_df['slopelen_1'].astype(float)
+    # Merge the slope length data with the info DataFrame
+    info = pd.merge(info, slope_len_df, how='left', left_on='ssu', right_on='mukey')
+else:
+    raise ValueError("Unsupported file format for slope_len. Expected .tif or .csv")
 
 print("writing site files")
 #site template
