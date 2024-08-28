@@ -13,6 +13,7 @@ class EPICModel:
         self.base_dir = os.getcwd()
         self.executable = path
         self.path = os.path.dirname(self.executable)
+        self.executable_name = os.path.basename(self.executable)
         # Make the model executable
         subprocess.Popen(f'chmod +x {self.executable}', shell=True).wait()
         # Model run options
@@ -55,8 +56,8 @@ class EPICModel:
         exts_2 = lines[50].replace('*', ' ').strip().split()  # Line 51, zero-based index
 
         # Get the original toggle lines
-        toggle_line_1 = lines[14].strip().split()  # Line 15, zero-based index
-        toggle_line_2 = lines[15].strip().split()  # Line 16, zero-based index
+        toggle_line_1 = (lines[14].strip().split())  # Line 15, zero-based index
+        toggle_line_2 = (lines[15].strip().split())  # Line 16, zero-based index
 
         # Prepare full lists of extensions and toggles
         exts = exts_1 + exts_2
@@ -67,8 +68,8 @@ class EPICModel:
             toggles[i] = '1' if ext.lower() in outputs_to_enable else '0'
 
         # Split the combined toggles back into two parts
-        new_toggle_line_1 = ''.join(toggles[:len(toggle_line_1)])
-        new_toggle_line_2 = ''.join(toggles[len(toggle_line_1):])
+        new_toggle_line_1 = '   ' + '   '.join(toggles[:len(toggle_line_1)])
+        new_toggle_line_2 = '   ' + '   '.join(toggles[len(toggle_line_1):])
 
         # Replace the old lines with the new ones in the list of lines
         lines[14] = new_toggle_line_1 + '\n'
@@ -86,7 +87,7 @@ class EPICModel:
         # Delete the new directory if it exists and create a new one
         if os.path.exists(new_dir):
             shutil.rmtree(new_dir)
-        shutil.copytree(self.model_dir, new_dir)
+        shutil.copytree(self.path, new_dir)
         os.chdir(new_dir)
 
         dly = site.get_dly()
@@ -96,7 +97,7 @@ class EPICModel:
         self.writeDATFiles(site)
 
         # Run the model and handle outputs
-        command = f'nohup ./{self.executable} > {os.path.join(self.log_dir, f"{fid}.out")} 2>&1'
+        command = f'nohup ./{self.executable_name} > {os.path.join(self.log_dir, f"{fid}.out")} 2>&1'
         subprocess.Popen(command, shell=True).wait()
 
         # Check and move output files
@@ -135,7 +136,7 @@ class EPICModel:
             ofile.write(fmt)
 
         with open(f'./ieWedlst.DAT', 'w') as ofile:
-            fmt = '%8d    "./%s.DLY"\n'%(str(fid))  
+            fmt = '%8d    "./%s.DLY"\n'%(fid, str(fid))  
             ofile.write(fmt)
 
         with open(f'./ieWealst.DAT', 'w') as ofile:

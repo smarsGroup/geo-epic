@@ -18,7 +18,7 @@ def raster_to_dataframe(raster_file):
     lon_coords, lat_coords = _lon_lat_coords(trans, bands[0].shape)
 
     # Create a dictionary with coordinates and band data
-    data_dict = {'x': lon_coords, 'y': lat_coords}
+    data_dict = {'lon': lon_coords, 'lat': lat_coords}
     for i, band in enumerate(bands, 1):
         band_name = band_names[i-1] if band_names[i-1] else f'band_{i}'
         data_dict[band_name] = band.flatten()
@@ -26,26 +26,40 @@ def raster_to_dataframe(raster_file):
     return pd.DataFrame(data_dict)
 
 
-def sample_raster_nearest(raster_file, coords, crs = "EPSG:4326"):
+
+def sample_raster_nearest(raster_file, coords, crs="EPSG:4326"):
     """
     Sample a raster file at specific coordinates, taking the nearest pixel.
-    raster_file: path to the raster file
-    coords: a list of (x, y)/(lat, lon) tuples
-    crs: the crs the coords are in.
-    return: a dictionary with band names as keys and lists of pixel values at the given coordinates as values
+    
+    Args:
+        raster_file (str): Path to the raster file.
+        coords (list of tuples): List of (x, y)/(lat, lon) tuples.
+        crs (str): The CRS the coords are in.
+        
+    Returns:
+        dict: A dictionary with band names as keys and lists of pixel values at the given coordinates as values.
     """
     with rasterio.open(raster_file) as src:
-        bands = src.read() 
+        bands = src.read()
         band_names = src.descriptions
+
         # Convert coordinates to raster's CRS
-        transformer = Transformer.from_crs(crs, src.crs, always_xy = True)
+        transformer = Transformer.from_crs(crs, src.crs, always_xy=True)
         transformed_coords = np.array([transformer.transform(*coord) for coord in coords])
+
         # Get the values of the nearest pixels
         rows, cols = src.index(*transformed_coords.T)
-        samples = {"x": transformed_coords[:, 0], "y": transformed_coords[:, 1]}
+        
+        # Clip rows and cols to be within bounds
+        rows = np.clip(rows, 0, src.height - 1)
+        cols = np.clip(cols, 0, src.width - 1)
+
+        samples = {"lon": transformed_coords[:, 0], "lat": transformed_coords[:, 1]}
+        
         for i, band in enumerate(bands, 1):
             band_name = band_names[i-1] if band_names[i-1] else f'band_{i}'
             samples[band_name] = band[rows, cols]
+        
     return pd.DataFrame(samples)
 
 
@@ -67,10 +81,20 @@ def reproject_crop_raster(src, dst, out_epsg, min_coords, max_coords):
               dstSRS = out_srs)
     
 
-class CSVGeoInterface:
-    def __init__(self, csv_file):
-        """Initialize the interface by loading the CSV file and preparing the data for haversine distance queries."""
-        self.df = pd.read_csv(csv_file).dropna()  # Drop rows with NaN in any column
+class GeoInterface:
+    def __init__(self, data_source):
+        """Initialize the interface by loading the data source."""
+        if isinstance(data_source, str):
+            if data_source.lower().endswith('.tif') or data_source.lower().endswith('.tiff'):
+                self.df = raster_to_dataframe(data_source).dropna()  # Handle raster file
+            else:
+                self.df = pd.read_csv(data_source).dropna()  # Handle CSV file
+        elif isinstance(data_source, pd.DataFrame):
+            self.df = data_source.dropna()  # Handle DataFrame
+        else:
+            raise ValueError("data_source must be a file path (CSV or TIF) or a pandas DataFrame.")
+        
+        # Prepare data for haversine distance queries
         self.points_rad = np.deg2rad(self.df[['lat', 'lon']].values)
         self.tree = BallTree(self.points_rad, metric='haversine')
 

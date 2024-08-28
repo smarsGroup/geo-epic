@@ -3,7 +3,7 @@ import os
 import csv
 
 class CSVWriter:
-    def __init__(self, file_path, mode='a'):
+    def __init__(self, file_path, mode='a+'):
         """Initialize the CSV class with a file path and file mode.
         
         Args:
@@ -22,8 +22,9 @@ class CSVWriter:
         Args:
             mode (str): Optionally specify a mode ('w' for writing, 'a' for appending) at opening.
         """
-        if mode:
-            self.mode = mode
+        if mode: self.mode = mode
+        # if not os.path.exists(self.file_path):
+        #     if 'a' in self.mode: open(self.file_path, 'w+').close()
         self.file_handle = open(self.file_path, self.mode)
         self.writer = csv.writer(self.file_handle)
         fcntl.flock(self.file_handle, fcntl.LOCK_EX)  # Lock the file
@@ -31,7 +32,16 @@ class CSVWriter:
         if os.stat(self.file_path).st_size == 0:
             self.headers_written = False
         else:
-            self.headers_written = True
+            self._read_header()
+    
+    def _read_header(self):
+        """Read the header from the file if it exists."""
+        if self.file_handle:
+            self.file_handle.seek(0)  # Go to the start of the file
+            first_line = self.file_handle.readline()
+            if first_line:
+                self.header = first_line.strip().split(',')
+                self.headers_written = True
 
     def write_row(self, *args, **kwargs):
         """Write a row to the CSV file.
@@ -45,11 +55,11 @@ class CSVWriter:
         if kwargs:
             if not self.headers_written:
                 # Write the header based on dictionary keys
-                header = list(kwargs.keys())
-                self.writer.writerow(header)
+                self.header = list(kwargs.keys())
+                self.writer.writerow(self.header)
                 self.headers_written = True
             # Write the row based on dictionary values
-            self.writer.writerow([kwargs[key] for key in header])
+            self.writer.writerow([kwargs[key] for key in self.header])
         else:
             # Assume args contains only values in the correct order
             self.writer.writerow(args)

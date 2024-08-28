@@ -5,8 +5,8 @@ import pandas as pd
 from functools import wraps
 from geoEpic.io import DLY, CSVWriter
 from geoEpic.misc import ConfigParser, parallel_executor
-from model_class import EPICModel
-from site_class import Site
+from .model_class import EPICModel
+from .site_class import Site
 import geopandas as gpd
 from shapely.geometry import shape
 from pyproj import Proj, transform
@@ -16,6 +16,7 @@ from geoEpic.misc.utils import filter_dataframe
 class DataLogger:
     def __init__(self, output_folder, delete_after_use=True):
         self.output_folder = output_folder
+        os.makedirs(output_folder, exist_ok=True)
         self.dataframes = {}
         self.delete_after_use = delete_after_use
 
@@ -32,19 +33,20 @@ class DataLogger:
             os.remove(filename)
         return df
 
-    def log(self, func_name, result):
+    def log_dict(self, func_name, result):
         if not isinstance(result, dict):
             raise ValueError(f"{func_name} output must be a dictionary.")
         filename = os.path.join(self.output_folder, f"{func_name}.csv")
-        with CSVWriter(filename, 'a') as writer:
+        with CSVWriter(filename) as writer:
             writer.write_row(**result)
 
 
 class Workspace:
     def __init__(self, config_path):
-        self.config = ConfigParser(config_path)
-        self.base_dir = self.config.dir
-        self.routines = []
+        config = ConfigParser(config_path)
+        self.config = config.config_data
+        self.base_dir = config.dir
+        self.routines = {}
         self.fitness_function = None
         self.dataframes = {}
         self.delete_after_use = True
@@ -100,12 +102,14 @@ class Workspace:
 
     def post_process(self, func):
         @wraps(func)
-        def wrapper(run_id):
-            result = func(run_id)
-            self.data_logger.log(func.__name__, {'SiteID': run_id, **result.values()})
+        def wrapper(site):
+            result = func(site)
+            if not isinstance(result, dict):
+                raise ValueError(f"{func.__name__} must return a dictionary.")
+            self.data_logger.log_dict(func.__name__, {'SiteID': site.site_id, **result})
             return result
 
-        self.routines.append(wrapper)
+        self.routines[func.__name__] = wrapper
         return wrapper
 
     def fitness(self, func):
@@ -118,9 +122,9 @@ class Workspace:
         return self.data_logger.get(func)
 
     def run_function(self, site_info):
-        site = Site(self.workspace.config, site_info)
+        site = Site.from_config(self.config, site_info)
         self.model.run(site)
-        for func in self.routines:
+        for func in self.routines.values():
             func(site)
         if len(self.routines) > 0 and self.delete_after_use:
             for outs in site.outputs.values():
@@ -128,10 +132,30 @@ class Workspace:
 
     def run(self):
         info_ls = self.select()
-        # Run all the sites in parallel
         parallel_executor(self.run_function, info_ls, method='Process', 
                           max_workers = self.config["num_of_workers"], timeout = self.config["timeout"])
         if self.fitness_function is not None:
             return self.fitness_function()
         else: 
             return None
+
+
+
+
+# # Example usage:
+# workspace = Workspace()
+
+# @workspace.post_process
+# def example_function(run_id):
+#     return {
+#         'variable_a': run_id * 2,
+#         'variable_b': run_id + 10
+#     }
+
+# @workspace.fitness
+# def example_fitness():
+#     df = workspace.get_data('example_function')
+#     print(df)
+#     mean_a = df['variable_a'].mean()
+#     return mean_a
+

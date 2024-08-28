@@ -10,6 +10,7 @@ class DLY(pd.DataFrame):
         """
         Load data from a DLY file into DataFrame.
         """
+        path = str(path)
         if not path.endswith('.DLY'): path += '.DLY'
         data = pd.read_fwf(path, widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
         data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
@@ -42,6 +43,7 @@ class DLY(pd.DataFrame):
         """
         Save DataFrame into a DLY file.
         """
+        path = str(path)
         if not path.endswith('.DLY'): path += '.DLY'
         with open(path, 'w') as ofile:
             fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
@@ -81,6 +83,7 @@ class DLY(pd.DataFrame):
             line = fmt % tuple(row.tolist() + [str(ss.columns[i])])
             lines.append(line)
         
+        path = str(path)
         if not path.endswith('.INP'): path += '.INP'
         with open(path, 'w') as ofile:
             ofile.write('\n'.join(lines))
@@ -108,6 +111,7 @@ class OPC(pd.DataFrame):
         Returns:
         OPC: An instance of the OPC class containing the loaded data.
         """
+        path = str(path)
         if not path.endswith('.OPC'): path += '.OPC'
         widths = [3, 3, 3, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8]
         data = pd.read_fwf(path, widths=widths, skiprows=2, header=None)
@@ -134,6 +138,10 @@ class OPC(pd.DataFrame):
         Parameters:
         path (str): Path to save the OPC file.
         """
+        # Check if the path is a directory
+        if not os.path.isdir(path):
+            raise ValueError(f"The specified path '{path}' is not a valid directory.")
+    
         with open(f'{path}/{self.name}', 'w') as ofile:
             ofile.write(''.join(self.header))
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'

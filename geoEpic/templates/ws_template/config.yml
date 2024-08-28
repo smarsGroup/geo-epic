@@ -26,14 +26,14 @@ weather:
 
 # Soil details
 soil:
-  soil_map: /home/velmurugans/GeoEPIC_metadata/SSURGO.tif
+  soil_map: /home/chandrab/GeoEPIC_metadata/SSURGO.tif
   files_dir: ./soil/files
 
 # Info for Sit files
 site:
   dir: ./sites
-  slope: /home/velmurugans/GeoEPIC_metadata/slope_us.tif
-  elevation: /home/velmurugans/GeoEPIC_metadata/SRTM_1km_US_project.tif
+  slope: /home/chandrab/GeoEPIC_metadata/slope_us.tif
+  elevation: /home/chandrab/GeoEPIC_metadata/SRTM_1km_US_project.tif
   slope_length: ./soil/NE_slopelen.csv
 
 # OPC directory
@@ -43,8 +43,8 @@ opc_dir: ./opc
 # Workspace Run Options
 run_info: ./info.csv  # Path to Info CSV or SHP file with columns ('SiteID', 'soil', 'opc', 'dly'). Include ('lat', 'lon') for a CSV file.
 # Method for selecting specific sites. Ex: Range(0.35, 0.8), Random(0.1), "CNTYFIPS == 8"; "Shape_Area > 6"
-select: Random(0.1)  
+select: Random(0.1)
 # Number of parallel processes to run. Recommended to be less than the number of CPU cores.
 num_of_workers: 40
 # Timeout for each simulation run in seconds. Execution is terminated after this timeout.
-timeout: 10  
+timeout: 10

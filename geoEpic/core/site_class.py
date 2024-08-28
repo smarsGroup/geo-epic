@@ -28,24 +28,27 @@ class Site:
     @classmethod
     def from_config(cls, config, site_info):
         instance = cls()
+        # print(site_info)
         instance.opc_path = os.path.join(config['opc_dir'], f"{site_info['opc']}") \
-            if site_info['opc'].lower().endswith('.opc') else os.path.join(config['opc_dir'], f"{site_info['opc']}.OPC")
+            if str(site_info['opc']).lower().endswith('.opc') else os.path.join(config['opc_dir'], f"{site_info['opc']}.OPC")
 
         # Append '.DLY' extension only if not already present
-        instance.dly_path = os.path.join(config['weather']['dir'], f"{site_info['dly']}") \
-            if site_info['dly'].lower().endswith('.dly') else os.path.join(config['dly_dir'], f"{site_info['dly']}.DLY")
+        instance.dly_path = os.path.join(config['weather']['dir'], 'Daily',f"{site_info['dly']}") \
+            if str(site_info['dly']).lower().endswith('.dly') else os.path.join(config['weather']['dir'], 'Daily',f"{site_info['dly']}.DLY")
 
         # Append '.SOL' extension only if not already present
         instance.sol_path = os.path.join(config['soil']['files_dir'], f"{site_info['soil']}") \
-            if site_info['sol'].lower().endswith('.sol') else os.path.join(config['sol_dir'], f"{site_info['sol']}.SOL")
+            if str(site_info['soil']).lower().endswith('.sol') else os.path.join(config['soil']['files_dir'], f"{site_info['soil']}.SOL")
 
         # Append '.SIT' extension only if not already present
-        instance.sit_path = os.path.join(config['site']['dir'], f"{site_info['SiteID']}.SIT") 
+        instance.sit_path = os.path.join(config['site']['dir'], f"{site_info['SiteID']}.sit") 
         instance.site_id = site_info['SiteID']
-    
+        instance.lat = site_info['lat']
+        instance.lon = site_info['lon']
+        # print(site_info)
         return instance
 
 
     def get_dly(self):
         if self.dly_path is not None:
-            return DLY(self.dly_path)
+            return DLY.load(self.dly_path)
