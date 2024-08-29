@@ -1,11 +1,11 @@
 import os
 import numpy as np
 import pandas as pd
-from geoEpic.misc import parallel_executor
-from geoEpic.misc.raster_utils import sample_raster_nearest
+from geoEpic.utils import parallel_executor
+from geoEpic.utils import sample_raster_nearest
 import argparse
 import geopandas as gpd
-from geoEpic.misc import ConfigParser
+from geoEpic.io import ConfigParser
 
 
 parser = argparse.ArgumentParser(description="Generate Site files.")

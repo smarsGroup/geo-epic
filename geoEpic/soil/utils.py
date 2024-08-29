@@ -1,7 +1,6 @@
 import os
 import subprocess
-from geoEpic.misc.utils import find_nearest
-from geoEpic.misc.raster_utils import raster_to_dataframe
+from geoEpic.utils import find_nearest, raster_to_dataframe
     
 def get_ssurgo_mukeys(coords, ssurgo_map, files_dir):
     ssurgo = raster_to_dataframe(ssurgo_map)

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import requests
 from io import StringIO
-from geoEpic.misc.formule import rh_vappr
+from geoEpic.utils.formule import rh_vappr
 
 def get_daymet_data(lat: float, lon: float, start: str, end: str):
     """

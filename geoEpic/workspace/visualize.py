@@ -1,8 +1,8 @@
 import os
 import argparse
 import pandas as pd
-from geoEpic.misc import ConfigParser
-from geoEpic.misc.sys_utils import *
+from geoEpic.io import ConfigParser
+from geoEpic.utils import import_function
 from glob import glob
 
 # Fetch the base directory

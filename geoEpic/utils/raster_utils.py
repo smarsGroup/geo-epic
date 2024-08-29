@@ -5,6 +5,24 @@ from osgeo import gdal, osr
 from pyproj import Transformer
 from sklearn.neighbors import BallTree
 
+
+def find_nearest(src, dst, metric = 'minkowski', k = 1):
+    """
+    Find the indices in dst that correspond to each row in src based on the k nearest neighbors.
+    Returns: numpy.ndarray: Indices in dst for each row in src
+    """
+    # Check if the metric is 'haversine' and convert DataFrame lat/lon to radians if necessary
+    if metric == 'haversine':
+        src = np.deg2rad(src)
+        dst = np.deg2rad(dst)
+
+    # Fit the nearest neighbors model on the destination DataFrame
+    tree = BallTree(dst, metric = metric)
+    _, inds = tree.query(src, k = k)
+    if k == 1: inds = inds[:, 0]
+    return inds
+
+
 def raster_to_dataframe(raster_file):
     """
     Converts .tiff file to DataFrame with pixel locations and band values.

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from .daymet import *
 from geoEpic.io import DLY
-from geoEpic.misc.raster_utils import RasterInterface
+from geoEpic.utils import RasterInterface
     
 class DailyWeather:
     def __init__(self, path, start_date, end_date, offline = False):

@@ -5,7 +5,7 @@ import sys
 # Mapping of modules and functions to their respective relative paths
 script_paths = {
     "utility": {
-        "crop_csb": "utility/crop_csb.py",
+        "crop_csb": "utils/crop_csb.py",
         "gee": "gee_utils/fetch.py"
     },
     "weather": {

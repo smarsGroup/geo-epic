@@ -1,24 +1,9 @@
 import numpy as np
 import pandas as pd
-from sklearn.neighbors import BallTree
-
-
-
-def find_nearest(src, dst, metric = 'minkowski', k = 1):
-    """
-    Find the indices in dst that correspond to each row in src based on the k nearest neighbors.
-    Returns: numpy.ndarray: Indices in dst for each row in src
-    """
-    # Check if the metric is 'haversine' and convert DataFrame lat/lon to radians if necessary
-    if metric == 'haversine':
-        src = np.deg2rad(src)
-        dst = np.deg2rad(dst)
-
-    # Fit the nearest neighbors model on the destination DataFrame
-    tree = BallTree(dst, metric = metric)
-    _, inds = tree.query(src, k = k)
-    if k == 1: inds = inds[:, 0]
-    return inds
+import os
+import sys
+import importlib.util
+import shutil
 
 
 def read_gdb_layer(gdb_data, layer_name, columns = None, names = None):
@@ -55,22 +40,6 @@ def read_gdb_layer(gdb_data, layer_name, columns = None, names = None):
         
     return pd.DataFrame(features)
 
-        
-def calc_centroids(gdf):
-    avg_lat = gdf['geometry'][0].bounds[1]
-    avg_lon = gdf.total_bounds[::2].mean()
-    epsg_code = 32700 if avg_lat < 0 else 32600
-    epsg_code += int((avg_lon + 180) / 6) + 1
-    # Calculate centroid of each polygon in UTM coordinates
-    gdf = gdf.to_crs(epsg = epsg_code)
-    gdf['centroid'] = gdf.centroid.to_crs(epsg=4326)
-    gdf['x'] = gdf['centroid'].x
-    gdf['y'] = gdf['centroid'].y
-    return gdf
-
-
-    
-# import pandas as pd
 
 def filter_dataframe(df, expression):
     if expression is None: return df
@@ -123,3 +92,71 @@ def filter_dataframe(df, expression):
             
     return df.reset_index()
     
+
+
+def import_function(cmd = None):
+    """
+    Loads a function from a module based on a path and function name specified in the config.
+    
+    Args:
+        cmd (str): "/path/to/module.py function_name".
+
+    Returns:
+        function: The loaded function, or None if not found.
+    """
+    if cmd is None: return None
+
+    path, function_name = cmd.split()
+
+    # Ensure the path is in the right format and loadable
+    module_name = os.path.splitext(os.path.basename(path))[0]
+    spec = importlib.util.spec_from_file_location(module_name, path)
+
+    if spec is None:
+        print(f"Cannot find module {path}")
+        return None
+
+    # Load the module
+    try:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
+    except Exception as e:
+        print(f"Error loading module: {e}")
+        return None
+
+    # Get the function and return it
+    if hasattr(module, function_name):
+        return getattr(module, function_name)
+    else:
+        print(f"Function {function_name} not found in {path}")
+        return None
+    
+
+
+def check_disk_space(output_dir, est, safety_margin=0.1):
+    """
+    Checks whether there is sufficient disk space available for saving output files.
+
+    Args:
+        output_dir (str): Directory where files will be saved.
+        config (dict): Configuration dictionary with an "output_types" key.
+        safety_margin (float): The safety margin to add to the estimated disk usage (default is 10%).
+
+    Raises:
+        Exception: If the free disk space is lower than the estimated required space.
+    """
+    # Retrieve disk space details for the specified output directory
+    total_bytes, used_bytes, free_bytes = shutil.disk_usage(output_dir)
+    
+    # Convert free bytes to GiB for easy reading
+    free_gib = free_bytes // (1024**3)
+
+    # Adjust for the safety margin
+    estimated_required_gib = int(est * (1 + safety_margin))
+
+    # Check if there is sufficient free disk space
+    if free_gib < estimated_required_gib:
+        message = (f"Insufficient disk space in '{output_dir}'. Estimated required: {est} GiB, "
+                   f"Available: {free_gib} GiB. Consider using the 'Process Outputs' option.")
+        raise Exception(message)

@@ -4,7 +4,7 @@ from sda import SoilDataAccess
 import geopandas as gpd
 import os
 import argparse
-from geoEpic.misc import parallel_executor
+from geoEpic.utils import parallel_executor
 
     
 def fetch_data(input_data, output_dir, raw):

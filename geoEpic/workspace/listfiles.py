@@ -2,7 +2,7 @@ import os
 import argparse
 import numpy as np
 import pandas as pd
-from epic_lib.misc import ConfigParser
+from epic_lib.io import ConfigParser
 
 # Fetch the base directory
 parser = argparse.ArgumentParser(description="EPIC workspace")

@@ -19,8 +19,7 @@ class ConfigParser:
         if isinstance(data, dict):
             data = data.copy()
             for key, value in data.items():
-                if isinstance(value, str) and value.startswith('./'):
-                    data[key] = os.path.join(self.dir, value[2:])
+                    data[key] = self._update_relative_paths(value)
         return data
 
     def load(self):
@@ -52,6 +51,10 @@ class ConfigParser:
         """Retrieve a value from the configuration."""
         data = self.config_data.get(key, default)
         return self._update_relative_paths(data)
+    
+    def as_dict(self):
+        data = self._update_relative_paths(self.config_data)
+        return data
     
     def __getitem__(self, key):
         return self.get(key, None)

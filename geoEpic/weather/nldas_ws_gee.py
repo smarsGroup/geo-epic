@@ -4,11 +4,11 @@ import xarray as xr
 import rioxarray as rio
 import pandas as pd
 from pydap.cas.urs import setup_session
-from geoEpic.misc.utils import parallel_executor
-from geoEpic.misc.formule import windspd
+from geoEpic.utils import parallel_executor
+from geoEpic.utils.formule import windspd
 from tqdm import tqdm
 import argparse
-from geoEpic.misc import ConfigParser
+from geoEpic.io import ConfigParser
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="NLDAS Script with Arguments")

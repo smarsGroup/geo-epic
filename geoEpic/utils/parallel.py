@@ -1,14 +1,6 @@
 import signal
-import time
-import os
-import sys
-import importlib.util
-import shutil
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-import threading
-from threading import Timer
-
 
 def run_with_timeout(func, timeout, *args, **kwargs):
     """
@@ -75,7 +67,7 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
             for future in as_completed(futures):
                 ind = futures[future]
                 if future.exception() is not None:
-                    print(f'\nFunction execution failed for args:\n {args[ind]}')
+                    print(f'\nExecution failed for args:\n {args[ind]}')
                     print(f'Exception: {future.exception()}.\n')
                     failed_indices.append(ind)
                 elif return_value:
@@ -89,71 +81,3 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
             if bar: pbar.close()
     
     return results, failed_indices
-
-
-def import_function(cmd = None):
-    """
-    Loads a function from a module based on a path and function name specified in the config.
-    
-    Args:
-        cmd (str): "/path/to/module.py function_name".
-
-    Returns:
-        function: The loaded function, or None if not found.
-    """
-    if cmd is None: return None
-
-    path, function_name = cmd.split()
-
-    # Ensure the path is in the right format and loadable
-    module_name = os.path.splitext(os.path.basename(path))[0]
-    spec = importlib.util.spec_from_file_location(module_name, path)
-
-    if spec is None:
-        print(f"Cannot find module {path}")
-        return None
-
-    # Load the module
-    try:
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-    except Exception as e:
-        print(f"Error loading module: {e}")
-        return None
-
-    # Get the function and return it
-    if hasattr(module, function_name):
-        return getattr(module, function_name)
-    else:
-        print(f"Function {function_name} not found in {path}")
-        return None
-    
-
-
-def check_disk_space(output_dir, est, safety_margin=0.1):
-    """
-    Checks whether there is sufficient disk space available for saving output files.
-
-    Args:
-        output_dir (str): Directory where files will be saved.
-        config (dict): Configuration dictionary with an "output_types" key.
-        safety_margin (float): The safety margin to add to the estimated disk usage (default is 10%).
-
-    Raises:
-        Exception: If the free disk space is lower than the estimated required space.
-    """
-    # Retrieve disk space details for the specified output directory
-    total_bytes, used_bytes, free_bytes = shutil.disk_usage(output_dir)
-    
-    # Convert free bytes to GiB for easy reading
-    free_gib = free_bytes // (1024**3)
-
-    # Adjust for the safety margin
-    estimated_required_gib = int(est * (1 + safety_margin))
-
-    # Check if there is sufficient free disk space
-    if free_gib < estimated_required_gib:
-        message = (f"Insufficient disk space in '{output_dir}'. Estimated required: {est} GiB, "
-                   f"Available: {free_gib} GiB. Consider using the 'Process Outputs' option.")
-        raise Exception(message)

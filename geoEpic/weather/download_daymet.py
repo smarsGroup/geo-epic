@@ -6,12 +6,12 @@ import rasterio
 import xarray as xr
 import rioxarray as rio
 import geopandas as gpd
-from geoEpic.io import DLY
+from geoEpic.io import DLY, ConfigParser
 from geoEpic.weather.daymet import *
 import subprocess
 from geoEpic.weather.main import DailyWeather
-from geoEpic.misc import ConfigParser, parallel_executor
-from geoEpic.misc.raster_utils import raster_to_dataframe, sample_raster_nearest
+from geoEpic.utils import parallel_executor
+from geoEpic.utils import raster_to_dataframe, sample_raster_nearest
 from geoEpic.dispatcher import dispatch
 from daymet import get_daymet_data
 

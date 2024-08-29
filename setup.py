@@ -69,7 +69,7 @@ setup(
 
 
 
-from geoEpic.misc import ConfigParser
+from geoEpic.io import ConfigParser
 
 config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
 

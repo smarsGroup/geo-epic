@@ -3,8 +3,7 @@ import argparse
 import pandas as pd
 import subprocess
 import geopandas as gpd
-from geoEpic.misc import ConfigParser
-from geoEpic.misc.utils import calc_centroids#, find_column
+from geoEpic.io import ConfigParser
 from geoEpic.soil import get_ssurgo_mukeys
 from geoEpic.dispatcher import dispatch
 import numpy as np
