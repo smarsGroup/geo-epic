@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 class PygmoProblem:
     """
@@ -25,8 +26,8 @@ class PygmoProblem:
             Exception: If no fitness function is set in the workspace.
         """
         self.workspace = workspace
-        if not hasattr(self.workspace, 'fitness') or self.workspace.fitness is None:
-            raise Exception("Fitness function is not set in the workspace")
+        if not hasattr(self.workspace, 'objective_function') or self.workspace.objective_function is None:
+            raise Exception("Objective function is not set for the workspace")
 
         self.dfs = dfs
         cons, lens = [], []
@@ -67,6 +68,7 @@ class PygmoProblem:
         """
         return np.concatenate([df.current for df in self.dfs])
 
+
     def get_bounds(self):
         """
         Get the bounds for parameters as tuples of (min, max) values for each parameter across all data frames.
@@ -75,3 +77,44 @@ class PygmoProblem:
             tuple: Two numpy arrays representing the lower and upper bounds of the parameters.
         """
         return self.bounds[:, 0], self.bounds[:, 1]
+    
+
+    def sensitivity_analysis(self, no_of_samples, sampler, analyzer):
+        """
+        Perform sensitivity analysis using SALib with status updates.
+
+        Parameters:
+        - no_of_samples (int): Number of samples to generate.
+        - sampler (function): SALib sampling function (e.g., saltelli.sample).
+        - analyzer (function): SALib analysis function (e.g., sobol.analyze).
+
+        Returns:
+        - dict: Results of the sensitivity analysis.
+        """
+        # Define the problem
+        problem = {
+            'num_vars': len(self.bounds),
+            'names': [f'param_{i}' for i in range(len(self.bounds))],
+            'bounds': [list(bound) for bound in self.bounds]
+        }
+     
+        # Generate samples
+        print(f"Generating {no_of_samples} samples...")
+        samples = sampler(problem, no_of_samples)  
+        
+        # Evaluate model outputs
+        print("Evaluating objective function for each sample...")
+        outputs = []
+        for i, sample in tqdm(enumerate(samples)):
+            output = self.fitness(sample)
+            outputs.append(output)
+        outputs = np.array(outputs)
+
+        # Perform analysis
+        print("Performing sensitivity analysis...")
+        results = analyzer(problem, samples, outputs, print_to_console=True)
+        print(f"Sensitivity analysis completed.")
+        return results
+
+    
+   

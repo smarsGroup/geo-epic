@@ -24,8 +24,8 @@ class ACY:
         """
         Extract variable from the ACY data.
         """
-        var_data = self.data[['YR', varname]].copy()
-        var_data = var_data.groupby('YR', as_index=False).max()
+        var_data = self.data[['YR', 'CPNM', varname]].copy()
+        # var_data = var_data.groupby('YR', as_index=False).max()
         var_data = var_data.reset_index().sort_values('YR')
         return var_data
         

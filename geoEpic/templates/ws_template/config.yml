@@ -21,8 +21,8 @@ weather:
   dir: ./weather
   start_date: 1981-01-01
   end_date: 2020-12-31
-  offline: false  # if true, weather info is downloaded from daymet before runs (To save space leave it false).
-  source: daymet
+  offline: false  # if true, weather info is downloaded and saved before runs (To save space leave it false).
+  source: daymet  # Default is daymet or edit to custom weather config file path  
 
 # Soil details
 soil:
