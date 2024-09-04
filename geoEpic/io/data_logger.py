@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from .csv_writer import CSVWriter
+from .csv_writer import CSVWriter, SQLTableWriter
 
 
 class DataLogger:
@@ -40,17 +40,17 @@ class DataLogger:
         Raises:
             FileNotFoundError: If the corresponding CSV file does not exist.
         """
-        filename = os.path.join(self.output_folder, f"{func_name}.csv")
-        if func_name not in self.dataframes:
-            if os.path.isfile(filename):
-                self.dataframes[func_name] = pd.read_csv(filename)
-            else:
-                raise FileNotFoundError(f"No data found for name: {func_name}")
-        df = self.dataframes[func_name]
-        if self.delete_after_use:
-            del self.dataframes[func_name]
-            os.remove(filename)
-        return df
+        filename = os.path.join(self.output_folder, f"{func_name}.db")
+        # if func_name not in self.dataframes:
+        if os.path.isfile(filename):
+            with SQLTableWriter(filename) as writer:
+                df = writer.query_rows()
+            if self.delete_after_use:
+                os.remove(filename)
+            return df
+        else:
+            raise FileNotFoundError(f"No data found for name: {func_name}")
+        
 
     def log_dict(self, func_name, result):
         """
@@ -65,6 +65,6 @@ class DataLogger:
         """
         if not isinstance(result, dict):
             raise ValueError(f"{func_name} output must be a dictionary.")
-        filename = os.path.join(self.output_folder, f"{func_name}.csv")
-        with CSVWriter(filename) as writer:
+        filename = os.path.join(self.output_folder, f"{func_name}.db")
+        with SQLTableWriter(filename) as writer:
             writer.write_row(**result)

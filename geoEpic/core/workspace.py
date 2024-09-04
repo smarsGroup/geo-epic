@@ -165,6 +165,7 @@ class Workspace:
         Returns:
             Any: The result of the objective function if set, otherwise None.
         """
+        self.model.setup(self.config)
         if select_str is None:
             select_str = self.config["select"]
         info = filter_dataframe(self.run_info, select_str)

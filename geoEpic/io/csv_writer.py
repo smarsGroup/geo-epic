@@ -1,6 +1,7 @@
 import fcntl
 import os
 import csv
+import pandas as pd
 
 class CSVWriter:
     def __init__(self, file_path, mode='a+'):
@@ -78,4 +79,79 @@ class CSVWriter:
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Support context manager 'with' statement by closing the file."""
+        self.close()
+
+
+
+import sqlite3
+import os
+
+class SQLTableWriter:
+    def __init__(self, table_path, columns=None):
+        self.db_path = table_path
+        self.table_name = os.path.basename(table_path).split('.')[0]
+        self.columns = columns
+        self.conn = None
+        self.cursor = None
+        self.initialized = False
+
+    def open(self):
+        self.conn = sqlite3.connect(self.db_path)
+        self.cursor = self.conn.cursor()
+        if self.columns:
+            columns_stmt = ', '.join([f"{col_name} {col_type}" for col_name, col_type in self.columns.items()])
+            self.cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_stmt})")
+            self.conn.commit()
+            self.initialized = True
+        self.cursor.execute("PRAGMA journal_mode=WAL;")
+        self.cursor.execute("PRAGMA synchronous = NORMAL;")  # Balance between speed and reliability
+        self.cursor.execute("PRAGMA temp_store = MEMORY;")  # Use memory for temp storage
+        self.cursor.execute("PRAGMA cache_size = -64000;")  # Increase cache size to 64MB
+
+
+    def write_row(self, **kwargs):
+        if self.conn is None or self.cursor is None:
+            raise Exception("Database is not open. Please call the 'open' method first.")
+        
+        if not self.initialized:
+            columns_stmt = ', '.join([f"{col} TEXT" for col in kwargs.keys()])
+            self.cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.table_name} ({columns_stmt})")
+            self.initialized = True
+
+        columns = ', '.join(kwargs.keys())
+        placeholders = ':' + ', :'.join(kwargs.keys())
+        self.cursor.execute(f"INSERT INTO {self.table_name} ({columns}) VALUES ({placeholders})", kwargs)
+        self.conn.commit()
+
+    def query_rows(self, condition=None, *args, **kwargs):
+        query = f"SELECT * FROM {self.table_name}"
+        if condition:
+            query += f" WHERE {condition}"
+        self.cursor.execute(query, *args, **kwargs)
+        rows = self.cursor.fetchall()
+
+        # Get column names from cursor.description
+        columns = [description[0] for description in self.cursor.description]
+
+        # Create a DataFrame from the rows and column names
+        return pd.DataFrame(rows, columns=columns)
+    
+
+    def delete_table(self):
+        """Delete the table from the database."""
+        if self.conn is None or self.cursor is None:
+            raise Exception("Database is not open. Please call the 'open' method first.")
+        self.cursor.execute(f"DROP TABLE IF EXISTS {self.table_name}")
+        self.conn.commit()
+
+    def close(self):
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
         self.close()
