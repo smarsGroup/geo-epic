@@ -106,9 +106,7 @@ def download_func(date):
     # Save the wind speed data to an .npy file
     np.save(f'NLDAS_data/{date_str}.npy', daily_wind_speed)
 
-
-# Use parallel execution to download data for all dates
-# parallel_executor(download_func, dates, max_workers = max_workers, return_value = False)
+parallel_executor(download_func, dates, max_workers = max_workers, return_value = False)
 
 print('Writing windspeed data to CSV...')
 os.makedirs('NLDAS_csv', exist_ok = True)

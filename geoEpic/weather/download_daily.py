@@ -21,6 +21,7 @@ parser.add_argument("-w", "--max_workers", default = 20, help = "No. of maximum 
 args = parser.parse_args()
 
 curr_dir = os.getcwd()
+config_loc = os.path.abspath(args.config)
 
 
 config = ConfigParser(args.config)
@@ -78,8 +79,7 @@ data_set = data_set.rio.write_crs("EPSG:4326")
 data_set.rio.to_raster("./climate_grid.tif")
 
 if not os.path.exists('./NLDAS_csv'):
-    dispatch('weather', 'windspeed', f'-s {start_date} -e {end_date} \
-                    -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
+    dispatch('weather', 'windspeed', f'-c {config_loc}', True)
     
 daily_weather = DailyWeather('.', start_date, end_date)
 

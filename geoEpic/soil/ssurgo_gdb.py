@@ -22,7 +22,6 @@ region = config['region']
 soil_conf = config["soil"]
 gdb_path = soil_conf['ssurgo_gdb']
 output_path = soil_conf['files_dir']
-template_file = soil_conf['template_file']
 
 driver = ogr.GetDriverByName("OpenFileGDB")
 gdb_data = driver.Open(gdb_path)
@@ -109,7 +108,7 @@ else:
 os.makedirs(outdir, exist_ok=True)
 
 # Read template file
-with open(template_file, 'r') as file:
+with open(f'{os.path.dirname(__file__)}/template.sol', 'r') as file:
     template_orig = file.readlines()
 padding = ['{:8.3f}'.format(0) for _ in range(23)]
 
