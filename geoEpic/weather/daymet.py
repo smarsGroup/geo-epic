@@ -19,7 +19,7 @@ def get_daymet_data(lat: float, lon: float, start: str, end: str):
     data_content = StringIO(response.text)
 
     # Read and format the data
-    data = pd.read_csv(data_content, skiprows=8, names=['year','yday','dayl','prcp','srad','swe','tmax','tmin','vp'])
+    data = pd.read_csv(data_content, skiprows=7, names=['year','yday','dayl','prcp','srad','swe','tmax','tmin','vp'])
     # data.drop(columns=['swe'], inplace=True)
 
     # get leap year between start and end years and add a column for 60th day
