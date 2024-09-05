@@ -9,12 +9,14 @@ if sys.platform.startswith('win'):
     print("Installation not supported for Windows.")
     sys.exit(1)
 
-try:
-    import osgeo
-    print('GDAL already installed')
-except:
-    print('Installing GDAL...')
-    subprocess.check_call(['conda', 'install', 'gdal'])
+# try:
+#     import osgeo
+#     print('GDAL already installed')
+# except:
+#     print('Installing GDAL...')
+#     subprocess.check_call(['conda', 'install', 'gdal','--no-update-deps'])
+
+
 
 # Define metadata directory in the user's home folder
 home_dir = os.path.expanduser("~")
@@ -38,7 +40,7 @@ if not os.path.exists(metadata_dir):
 else:
     print(f"'{metadata_dir}' already exists, skipping file downloads.")
 
-subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.12'])
+
 
 # Function to read the requirements.txt file
 def read_requirements():
@@ -68,8 +70,9 @@ setup(
 )
 
 
+subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
 
-from geoEpic.io import ConfigParser
+from geoEpic.config.config_parser import ConfigParser
 
 config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
 

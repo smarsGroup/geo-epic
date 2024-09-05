@@ -57,7 +57,8 @@ class CSVWriter:
             if not self.headers_written:
                 # Write the header based on dictionary keys
                 self.header = list(kwargs.keys())
-                self.writer.writerow(self.header)
+                if os.stat(self.file_path).st_size == 0:
+                    self.writer.writerow(self.header)
                 self.headers_written = True
             # Write the row based on dictionary values
             self.writer.writerow([kwargs[key] for key in self.header])

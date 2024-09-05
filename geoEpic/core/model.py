@@ -135,7 +135,8 @@ class EPICModel:
             if not (os.path.exists(out_path) and os.path.getsize(out_path) > 0):
                 os.chdir(self.base_dir)
                 shutil.rmtree(new_dir)
-                raise Exception(f"Output file ({out_type}) not found. Check {os.path.join(self.log_dir, f"{fid}.out")} for details")
+                log_file = os.path.join(self.log_dir, fid+".out")
+                raise Exception(f"Output file ({out_type}) not found. Check {log_file} for details")
             site.outputs[out_type] = out_path
             
         if self.output_dir:
