@@ -51,7 +51,7 @@ def sample_raster_nearest(raster_file, coords, crs="EPSG:4326"):
     
     Args:
         raster_file (str): Path to the raster file.
-        coords (list of tuples): List of (x, y)/(lat, lon) tuples.
+        coords (list of tuples): List of (x, y)/(lon, lat) tuples.
         crs (str): The CRS the coords are in.
         
     Returns:
@@ -127,7 +127,7 @@ class GeoInterface:
         Returns:
             pandas.Series: The row from the DataFrame corresponding to the nearest point.
         """
-        query_point_rad = np.deg2rad(np.array([[lat, lon]]))
+        query_point_rad = np.deg2rad(np.array([lat, lon]))
         _, index = self.tree.query(query_point_rad, k=1)
         nearest_index = index[0][0]
         return self.df.iloc[nearest_index]
