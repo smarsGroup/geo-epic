@@ -72,7 +72,7 @@ setup(
 
 subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
 
-from geoEpic.config.config_parser import ConfigParser
+from geoEpic.io.config_parser import ConfigParser
 
 config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
 
