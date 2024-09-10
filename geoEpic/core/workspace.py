@@ -90,7 +90,9 @@ class Workspace:
             missing_count = initial_count - final_count
             warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
             warnings.warn(warning_msg, RuntimeWarning)
-        self.run_info = data
+        path = os.path.join(self.base_dir, 'info.csv')
+        data.to_csv(path)
+        self.run_info = path
 
     def logger(self, func):
         """
@@ -168,8 +170,10 @@ class Workspace:
         self.model.setup(self.config)
         if select_str is None:
             select_str = self.config["select"]
-        info = filter_dataframe(self.run_info, select_str)
+        main_info = pd.read_csv(self.run_info)
+        info = filter_dataframe(main_info, select_str)
         info_ls = info.to_dict('records')
+        del main_info
         parallel_executor(self.run_simulation, info_ls, method='Process', 
                           max_workers=self.config["num_of_workers"], timeout=self.config["timeout"], bar = progress_bar)
         if self.objective_function is not None:
