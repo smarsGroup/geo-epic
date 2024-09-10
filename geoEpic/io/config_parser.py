@@ -72,5 +72,3 @@ if __name__ == '__main__':
         'Processed_Info': './processed_info.csv'
     })
     print(config.get('soil'))
-
-

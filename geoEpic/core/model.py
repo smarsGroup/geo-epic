@@ -182,3 +182,71 @@ class EPICModel:
         with open(f'./ieOplist.DAT', 'w') as ofile:
             fmt = '%8d    "%s"\n' % (fid, site.opc_path)
             ofile.write(fmt)
+    
+    def auto_irrigation(self, bir, efi=None, vimx=None, armn=None, armx=None):
+        """
+        Update the irrigation settings in the EPICCONT.DAT file.
+        Only BIR is required. Other parameters will be updated only if they are not None.
+
+        :param file_path: Path to the EPICCONT.DAT file
+        :param bir: Water stress factor to trigger automatic irrigation (BIR) - required
+        :param efi: Runoff volume/Volume irrigation water applied (EFI) - optional
+        :param vimx: Maximum annual irrigation volume (VIMX) in mm - optional
+        :param armn: Minimum single application volume (ARMN) in mm - optional
+        :param armx: Maximum single application volume (ARMX) in mm - optional
+        """
+        file_path = os.path.join(self.path, 'EPICCONT.DAT')
+        with open(file_path, 'r+') as file:
+            lines = file.readlines()
+            if len(lines) < 5:
+                raise ValueError("File does not have enough lines to update irrigation parameters.")
+            
+            # Split existing line into list of values
+            values = lines[4].split(' ')
+            # Update mandatory BIR and optional parameters if provided
+            values[5] = f"{bir:6.2f}"
+            if efi is not None:
+                values[6] = f"{efi:6.2f}"
+            if vimx is not None:
+                values[7] = f"{vimx:6.2f}"
+            if armn is not None:
+                values[8] = f"{armn:6.2f}"
+            if armx is not None:
+                values[9] = f"{armx:6.2f}"
+            
+            # Join back into a single string
+            lines[3] = ' '.join(values) + '\n'
+            
+            file.seek(0)
+            file.writelines(lines)
+
+    def auto_Nfertilization(self, bft0, fnp=None, fmx=None):
+        """
+        Update the nitrogen settings in the EPICCONT.DAT file.
+        Only BFT0 is required. Other parameters will be updated only if they are not None.
+
+        :param file_path: Path to the EPICCONT.DAT file
+        :param bft0: Nitrogen stress factor to trigger auto fertilization (BFT0) - required
+        :param fnp: Fertilizer application variable (FNP) - optional
+        :param fmx: Maximum annual N fertilizer applied for a crop (FMX) - optional
+        """
+        file_path = os.path.join(self.path, 'EPICCONT.DAT')
+        with open(file_path, 'r+') as file:
+            lines = file.readlines()
+            if len(lines) < 7:
+                raise ValueError("File does not have enough lines to update nitrogen parameters.")
+            
+            # Split existing line into list of values
+            values = lines[5].split(' ')
+            # Update mandatory BFT0 and optional parameters if provided
+            values[0] = f"{bft0:6.2f}"
+            if fnp is not None:
+                values[1] = f"{fnp:6.2f}"
+            if fmx is not None:
+                values[2] = f"{fmx:6.2f}"
+            
+            # Join back into a single string
+            lines[4] = ' '.join(values) + '\n'
+            
+            file.seek(0)
+            file.writelines(lines)
