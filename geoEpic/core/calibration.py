@@ -67,6 +67,13 @@ class PygmoProblem:
             np.array: A concatenated array of current parameter values from all data frames.
         """
         return np.concatenate([df.current for df in self.dfs])
+    
+    @property
+    def var_names(self):
+        names = []
+        for df in self.dfs:
+            names.extend(df.varnames())
+        return names
 
 
     def get_bounds(self):
@@ -79,51 +86,71 @@ class PygmoProblem:
         return self.bounds[:, 0], self.bounds[:, 1]
     
 
-    def sensitivity_analysis(self, no_of_samples, sampler, analyzer):
+    def sensitivity_analysis(self, base_no_of_samples, method):
         """
         Perform sensitivity analysis using SALib with status updates.
 
         Parameters:
-        - no_of_samples (int): Number of samples to generate.
-        - sampler (function): SALib sampling function (e.g., saltelli.sample).
-        - analyzer (function): SALib analysis function (e.g., sobol.analyze).
+        - base_no_of_samples (int): Base number of samples to generate.
+        - method (str): Sensitivity analysis method ('sobol', 'efast', 'morris').
 
         Returns:
         - dict: Results of the sensitivity analysis.
         """
-        # Define the problem
-        problem = {
+        from SALib import ProblemSpec
+        # Define the problem using ProblemSpec
+        sp = ProblemSpec({
             'num_vars': len(self.bounds),
             'names': [f'param_{i}' for i in range(len(self.bounds))],
-            'bounds': [list(bound) for bound in self.bounds]
-        }
-     
-        # Generate samples
-        print(f"Generating {no_of_samples} samples...")
-        samples = sampler(problem, no_of_samples)  
-        
-        # Evaluate model outputs
-        print("Evaluating objective function for each sample...")
-        outputs = []
-        for i, sample in tqdm(enumerate(samples)):
-            output = self.fitness(sample)
-            if len(output) > 1:
-                print('Warning: Choosing the first output')
-            outputs.append(output[0])
-        outputs = np.array(outputs).flatten()
+            'bounds': [list(bound) for bound in self.bounds],
+            "outputs": ["Y"]
+        })
 
-        # Perform analysis
-        print("Performing sensitivity analysis...")
-        results = analyzer(problem, samples, outputs, print_to_console=True)
+        # Select the sampling and analysis method based on the method argument
+        if method == 'sobol':
+            print(f"Sampling using Sobol with {base_no_of_samples} samples...")
+            sp.sample_sobol(base_no_of_samples)
+        elif method == 'efast':
+            print(f"Sampling using eFAST with {base_no_of_samples} samples...")
+            sp.sample_fast(base_no_of_samples)
+        elif method == 'morris':
+            print(f"Sampling using Morris with {base_no_of_samples} samples...")
+            sp.sample_morris(base_no_of_samples)
+        else:
+            raise ValueError("Unsupported method. Choose from 'sobol', 'efast', or 'morris'.")
+
+        # Function to evaluate model outputs
+        def evaluate(samples):
+            print("Evaluating objective function for each sample...")
+            outputs = []
+            for i, sample in tqdm(enumerate(samples)):
+                output = self.fitness(sample)
+                if len(output) > 1:
+                    print('Warning: Choosing the first output')
+                outputs.append(output[0])
+            outputs = np.array(outputs)
+            return outputs
+
+        # Evaluate samples
+        sp.evaluate(evaluate)
+
+        # Perform sensitivity analysis
+        print(f"Performing sensitivity analysis using {method}...")
+        if method == 'sobol':
+            results = sp.analyze_sobol(print_to_console=True)
+        elif method == 'efast':
+            results = sp.analyze_fast(print_to_console=True)
+        elif method == 'morris':
+            results = sp.analyze_morris(print_to_console=True)
+
         print(f"Sensitivity analysis completed.")
         return results
+            
+
+
+            
+
+            
+
         
-        
-
-
-         
-
-         
-
     
-   

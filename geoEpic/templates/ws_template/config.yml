@@ -26,14 +26,14 @@ weather:
 
 # Soil details
 soil:
-  soil_map: /home/chandrab/GeoEPIC_metadata/SSURGO.tif
+  soil_map: /home/smars/GeoEPIC_metadata/SSURGO.tif
   files_dir: ./soil/files
 
 # Info for Sit files
 site:
   dir: ./sites
-  slope: /home/chandrab/GeoEPIC_metadata/slope_us.tif
-  elevation: /home/chandrab/GeoEPIC_metadata/SRTM_1km_US_project.tif
+  slope: /home/smars/GeoEPIC_metadata/slope_us.tif
+  elevation: /home/smars/GeoEPIC_metadata/SRTM_1km_US_project.tif
   slope_length: ./soil/NE_slopelen.csv
 
 # OPC directory

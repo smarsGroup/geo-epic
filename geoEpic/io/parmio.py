@@ -114,6 +114,13 @@ class CropCom:
         Returns the constraints (min, max ranges) for the parameters.
         """
         return list(self.prms['Range'].values)*len(self.crops)
+    
+    def var_names(self):
+        names = []
+        for crop in self.crops:
+            temp = [f'{p}_{crop}' for p in list(self.prms['Parm'].values)]
+            names.extend(temp)
+        return names
 
 
 class ieParm:
@@ -234,3 +241,6 @@ class ieParm:
         Returns the constraints (min, max ranges) for the parameters.
         """
         return list(self.prms['Range'].values)
+    
+    def var_names(self):
+        return list(self.prms['Parm'].values)
