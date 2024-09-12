@@ -42,8 +42,9 @@ class Workspace:
         self.dataframes = {}
         self.delete_after_use = True
         self.model = EPICModel.from_config(config_path)
+        os.makedirs(os.path.join(self.base_dir, '.cache'), exist_ok=True)
         self._process_run_info(self.config['run_info'])
-        self.data_logger = DataLogger(os.path.join(self.base_dir, f"__cache__"))
+        self.data_logger = DataLogger(os.path.join(self.base_dir, f".cache"))
 
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
@@ -90,8 +91,8 @@ class Workspace:
             missing_count = initial_count - final_count
             warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
             warnings.warn(warning_msg, RuntimeWarning)
-        path = os.path.join(self.base_dir, 'info.csv')
-        data.to_csv(path)
+        path = os.path.join(self.base_dir, '.cache', 'info.csv')
+        data.to_csv(path, index = False)
         self.run_info = path
 
     def logger(self, func):

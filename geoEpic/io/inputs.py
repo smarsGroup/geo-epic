@@ -147,6 +147,13 @@ class OPC(pd.DataFrame):
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
             np.savetxt(ofile, self.values, fmt=fmt)
 
+    def auto_irrigation(self, on = True):
+        luc, irr = self.header[1][:4], self.header[1][4:]
+        if on:
+            self.header[1] = luc + '  72' + '\n'
+        else: 
+            self.header[1] = luc + '   0' + '\n'
+
     def edit_plantation_date(self, year_id, month, day, crop_code=None):
         """
         Edit the plantation date for a given year and optionally crop code.

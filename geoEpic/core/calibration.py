@@ -91,30 +91,13 @@ class PygmoProblem:
         Returns:
         - dict: Results of the sensitivity analysis.
         """
-        # Define the problem
-        problem = {
-            'num_vars': len(self.bounds),
-            'names': [f'param_{i}' for i in range(len(self.bounds))],
-            'bounds': [list(bound) for bound in self.bounds]
-        }
-     
-        # Generate samples
-        print(f"Generating {no_of_samples} samples...")
-        samples = sampler(problem, no_of_samples)  
         
-        # Evaluate model outputs
-        print("Evaluating objective function for each sample...")
-        outputs = []
-        for i, sample in tqdm(enumerate(samples)):
-            output = self.fitness(sample)
-            outputs.append(output)
-        outputs = np.array(outputs)
+        
 
-        # Perform analysis
-        print("Performing sensitivity analysis...")
-        results = analyzer(problem, samples, outputs, print_to_console=True)
-        print(f"Sensitivity analysis completed.")
-        return results
+
+         
+
+         
 
     
    

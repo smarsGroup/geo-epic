@@ -61,8 +61,9 @@ class CSVWriter:
             if not self.headers_written:
                 # Write the header based on dictionary keys
                 self.header = list(kwargs.keys())
-                self.writer.writerow(self.header)
-                self.headers_written = True
+                if os.stat(self.file_path).st_size == 0:
+                    self.writer.writerow(self.header)
+                    self.headers_written = True
             # Write the row based on dictionary values
             self.writer.writerow([kwargs[key] for key in self.header])
         else:
@@ -181,7 +182,7 @@ class SQLTableWriter:
             except sqlite3.OperationalError as e:
                 if "database is locked" in str(e):
                     wait_time = self.initial_wait * (2 ** retries) + random.uniform(0, 0.01)
-                    print(f"Database is locked. Retrying in {wait_time:.2f} seconds...")
+                    # print(f"Database is locked. Retrying in {wait_time:.2f} seconds...")
                     time.sleep(wait_time)
                     retries += 1
                 else:
@@ -242,7 +243,7 @@ class DataLogger:
                 os.remove(filename)
             return df
         else:
-            raise FileNotFoundError(f"No data found for name: {func_name}")
+            return pd.DataFrame()
         
 
     def log_dict(self, func_name, result):
@@ -260,4 +261,69 @@ class DataLogger:
             raise ValueError(f"{func_name} output must be a dictionary.")
         filename = os.path.join(self.output_folder, f"{func_name}.db")
         with SQLTableWriter(filename) as writer:
+            writer.write_row(**result)
+
+
+
+
+class CSVDataLogger:
+    """
+    A class to handle logging of data to CSV files. It supports logging dictionaries
+    and retrieving logged data.
+
+    Attributes:
+        output_folder (str): Directory where CSV files are stored.
+        delete_after_use (bool): Whether to delete the file after retrieving it.
+        dataframes (dict): Cache for dataframes loaded from CSV files.
+    """
+
+    def __init__(self, output_folder, delete_after_use=True):
+        """
+        Initialize the DataLogger with a specified output folder.
+
+        Args:
+            output_folder (str): Directory to store the CSV files.
+            delete_after_use (bool): Flag to indicate if the file should be deleted after use.
+        """
+        self.output_folder = output_folder
+        os.makedirs(output_folder, exist_ok=True)
+        self.dataframes = {}
+        self.delete_after_use = delete_after_use
+
+    def get(self, func_name):
+        """
+        Retrieve a DataFrame from a CSV file.
+
+        Args:
+            func_name (str): The name of the function whose data needs to be retrieved.
+
+        Returns:
+            pandas.DataFrame: The DataFrame containing the logged data.
+
+        Raises:
+            FileNotFoundError: If the corresponding CSV file does not exist.
+        """
+        filename = os.path.join(self.output_folder, f"{func_name}.csv")
+        # if func_name not in self.dataframes:
+        if os.path.isfile(filename):
+            return pd.read_csv(filename)
+        else:
+            raise FileNotFoundError(f"No data found for name: {func_name}")
+        
+
+    def log_dict(self, func_name, result):
+        """
+        Log a dictionary of results to a CSV file.
+
+        Args:
+            func_name (str): The name of the function to log the data for.
+            result (dict): Dictionary of results to log.
+
+        Raises:
+            ValueError: If the result is not a dictionary.
+        """
+        if not isinstance(result, dict):
+            raise ValueError(f"{func_name} output must be a dictionary.")
+        filename = os.path.join(self.output_folder, f"{func_name}.csv")
+        with CSVWriter(filename) as writer:
             writer.write_row(**result)
