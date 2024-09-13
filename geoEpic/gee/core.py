@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
 
 import ee
-from initialize import ee_Initialize
+from .initialize import ee_Initialize
 
 ee_Initialize()
 
