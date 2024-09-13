@@ -72,7 +72,7 @@ class PygmoProblem:
     def var_names(self):
         names = []
         for df in self.dfs:
-            names.extend(df.varnames())
+            names.extend(df.var_names())
         return names
 
 
@@ -101,7 +101,7 @@ class PygmoProblem:
         # Define the problem using ProblemSpec
         sp = ProblemSpec({
             'num_vars': len(self.bounds),
-            'names': [f'param_{i}' for i in range(len(self.bounds))],
+            'names': self.var_names,
             'bounds': [list(bound) for bound in self.bounds],
             "outputs": ["Y"]
         })
