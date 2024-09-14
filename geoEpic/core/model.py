@@ -198,7 +198,7 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) != 8:
+            if len(lines) < 6:
                 raise ValueError("File does not have enough lines to update irrigation parameters.")
             
             # Split existing line into list of values
@@ -233,7 +233,7 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) != 8:
+            if len(lines) < 6:
                 raise ValueError("File does not have enough lines to update nitrogen parameters.")
             
             # Split existing line into list of values
