@@ -46,11 +46,12 @@ else:
 def read_requirements():
     with open('requirements.txt', 'r') as file:
         return file.readlines()
+subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
 
 # Setup function
 setup(
     name='geo-epic',
-    version='0.1',
+    version='1.0',
     packages=find_packages(),
     install_requires=read_requirements(),
     include_package_data=True,
@@ -70,13 +71,13 @@ setup(
 )
 
 
-subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
+# subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
 
-from geoEpic.io.config_parser import ConfigParser
+# from geoEpic.io.config_parser import ConfigParser
 
-config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
+# config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
 
-config.update({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
-                'site': {'elevation': f'{home_dir}/GeoEPIC_metadata/SRTM_1km_US_project.tif',
-                         'slope': f'{home_dir}/GeoEPIC_metadata/slope_us.tif',
-    }, })
+# config.update({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
+#                 'site': {'elevation': f'{home_dir}/GeoEPIC_metadata/SRTM_1km_US_project.tif',
+#                          'slope': f'{home_dir}/GeoEPIC_metadata/slope_us.tif',
+#     }, })
