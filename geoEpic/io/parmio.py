@@ -178,7 +178,7 @@ class ieParm:
         for row in PARM2_data:
             for col in row:
                 if np.isnan(col): break
-                max_dec = 6 - len(str(int(col)))
+                max_dec = 7 - len(str(int(col)))
                 col = np.round(col, max_dec)
                 dec = 0 if col == int(col) else len(str(Decimal(str(col))).split(".")[1])
                 if dec <= 2: fmt = "%8.2f"
