@@ -2,46 +2,28 @@ import argparse
 import os
 import sys
 from core import *
-
-# def fetch_list(config_file, location, output_path):
-#     """
-#     Fetches weather data based on the input type which could be coordinates, a CSV file, or a shapefile.
-
-#     Args:
-#         config_file (str): Path to the configuration YAML file.
-#         input_data (str): Could be latitude and longitude as a string, path to a CSV file, or path to a shapefile.
-#         output_path (str): Directory or file path where the output should be saved.
-#     """
-#     if input_data.endswith('.csv'):
-#         # Handle fetching based on CSV file
-#         print(f"Fetching weather data for locations in CSV file: {input_data}")
-#         # Implementation would go here
-#     elif input_data.endswith('.shp'):
-#         # Handle fetching based on shapefile
-#         print(f"Fetching weather data for area in shape file: {input_data}")
-#         # Implementation would go here
-#     else:
-#         # Assuming the input is lat lon coordinates
-#         latitude, longitude = map(float, input_data.split())
-#         print(f"Fetching weather data for coordinates: Latitude {latitude}, Longitude {longitude}")
-#         # Implementation would go here
-    
-#     # Example print to simulate output file path
-#     print(f"Data will be saved to: {output_path}")
-
+from geoEpic.utils import parallel_executor
+import geopandas as gpd
 from time import time
+
+
 def fetch_data(config_file, location, output_path):
     start = time()
-
     collection = CompositeCollection(config_file)
-    print(len(collection.args))
     df = collection.extract([location])
     df.to_csv(f'{output_path}', index = False)
-
     end = time()
-    print(end - start)
+    print(end - start, 'seconds')
+
+def fetch_data_wrapper(row):
+    name = row['name']
+    output_dir = row['out']
+    collection = CompositeCollection(row['config_file'])
+    df = collection.extract(row['geometry'])
+    df.to_csv(f'{output_dir}/{name}.csv', index = False)
+        
     
-def fetch_list(config_file, input_data, output_dir, raw):
+def fetch_list(config_file, input_data, output_dir):
     """
     Fetches soil data based on the input type which could be coordinates, a CSV file, or a shapefile.
 
@@ -50,19 +32,36 @@ def fetch_list(config_file, input_data, output_dir, raw):
         output_dir (str): Directory or file path where the output should be saved.
         raw (bool): Whether to save the results as raw CSV or .SOL file.
     """
-    def fetch_data_wrapper(location):
-        collection = CompositeCollection(config_file)
-        df = collection.extract([location])
-        df.to_csv(f'{output_path}', index = False)
-        
+
     if input_data.endswith('.csv'):
         locations = pd.read_csv(input_data)
-        parallel_executor(fetch_data, locations['location'], output_dir, raw)
+        if 'SiteID' in locations.columns:
+            locations['name'] = locations['SiteID']
+        elif 'FieldID' in locations.columns:
+            locations['name'] = locations['FieldID']
+        else:
+            locations['name'] = list(range(len(locations)))
+        locations['out'] = output_dir
+        locations['config_file'] = config_file
+        locations['geometry'] = locations.apply(lambda x: [x['lat'], x['lon']], axis = 1)
+        locations_ls = locations.to_dict('records')
+        parallel_executor(fetch_data_wrapper, locations_ls, max_workers=20)
+
     elif input_data.endswith('.shp'):
         shapefile = gpd.read_file(input_data)
-        shapefile['centroid'] = shapefile.geometry.centroid
-        locations = shapefile['centroid'].apply(lambda x: f'point({x.x} {x.y})')
-        parallel_executor(fetch_data, locations, output_dir, raw)
+        if 'SiteID' in shapefile.columns:
+            shapefile['name'] = shapefile['SiteID']
+        elif 'FieldID' in shapefile.columns:
+            shapefile['name'] = shapefile['FieldID']
+        else:
+            shapefile['name'] = list(range(len(shapefile)))
+        shapefile['out'] = output_dir
+        shapefile['config_file'] = config_file
+        shapefile_ls = shapefile.to_dict('records')
+        parallel_executor(fetch_data_wrapper, shapefile_ls, max_workers=20)
+    
+    else:
+        print('Input file type not Supported')
         
 def main():
     parser = argparse.ArgumentParser(description="Fetch and output data from GEE")
@@ -72,16 +71,15 @@ def main():
     
     args = parser.parse_args()
     
-    # try:
-    if len(args.fetch) == 2:
-        latitude, longitude = map(float, args.fetch)
-        fetch_data(args.config_file, [latitude, longitude], args.output_path)
-        print(f'Data saved in {args.output_path}')
-        
-    else:
-        fetch_list(args.config_file, args.fetch[0], args.output_path)
-    # except:
-    #     parser.print_help()
+    try:
+        if len(args.fetch) == 2:
+            latitude, longitude = map(float, args.fetch)
+            fetch_data(args.config_file, [latitude, longitude], args.output_path)
+            print(f'Data saved in {args.output_path}')
+        else:
+            fetch_list(args.config_file, args.fetch[0], args.output_path)
+    except:
+        parser.print_help()
 
 
 if __name__ == '__main__':

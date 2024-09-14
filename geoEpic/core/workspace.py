@@ -175,12 +175,14 @@ class Workspace:
         info = filter_dataframe(main_info, select_str)
         info_ls = info.to_dict('records')
         del main_info
+        if progress_bar: 
+            self.run_simulation(info_ls[0])
+            info_ls = info_ls[1:]
         parallel_executor(self.run_simulation, info_ls, method='Process', 
                           max_workers=self.config["num_of_workers"], timeout=self.config["timeout"], bar = progress_bar)
         if self.objective_function is not None:
             return self.objective_function()
-        else:
-            return None
+        else: return None
     
     def clear(self):
         """
