@@ -108,9 +108,9 @@ class Workspace:
         @wraps(func)
         def wrapper(site):
             result = func(site)
-            if not isinstance(result, dict):
+            if result is None: return
+            elif not isinstance(result, dict):
                 raise ValueError(f"{func.__name__} must return a dictionary.")
-            elif result is None: return
             self.data_logger.log_dict(func.__name__, {'SiteID': site.site_id, **result})
             return result
 
