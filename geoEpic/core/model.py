@@ -198,11 +198,11 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) < 5:
+            if len(lines) != 8:
                 raise ValueError("File does not have enough lines to update irrigation parameters.")
             
             # Split existing line into list of values
-            values = lines[4].split(' ')
+            values = lines[4].split()
             # Update mandatory BIR and optional parameters if provided
             values[5] = f"{bir:6.2f}"
             if efi is not None:
@@ -215,7 +215,7 @@ class EPICModel:
                 values[9] = f"{armx:6.2f}"
             
             # Join back into a single string
-            lines[3] = ' '.join(values) + '\n'
+            lines[4] = '  ' + '  '.join([f"{float(v):6.2f}" for v in values]) + '\n'
             
             file.seek(0)
             file.writelines(lines)
@@ -233,11 +233,11 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) < 7:
+            if len(lines) != 8:
                 raise ValueError("File does not have enough lines to update nitrogen parameters.")
             
             # Split existing line into list of values
-            values = lines[5].split(' ')
+            values = lines[5].split()
             # Update mandatory BFT0 and optional parameters if provided
             values[0] = f"{bft0:6.2f}"
             if fnp is not None:
@@ -246,7 +246,7 @@ class EPICModel:
                 values[2] = f"{fmx:6.2f}"
             
             # Join back into a single string
-            lines[4] = ' '.join(values) + '\n'
+            lines[5] = '  ' + '  '.join([f"{float(v):6.2f}" for v in values]) + '\n'
             
             file.seek(0)
             file.writelines(lines)
