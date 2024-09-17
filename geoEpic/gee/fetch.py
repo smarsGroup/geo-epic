@@ -8,18 +8,15 @@ from time import time
 
 
 def fetch_data(config_file, location, output_path):
-    start = time()
     collection = CompositeCollection(config_file)
     df = collection.extract([location])
     df.to_csv(f'{output_path}', index = False)
-    end = time()
-    print(end - start, 'seconds')
 
 def fetch_data_wrapper(row):
     name = row['name']
     output_dir = row['out']
     collection = CompositeCollection(row['config_file'])
-    df = collection.extract(row['geometry'])
+    df = collection. extract(row['geometry'])
     df.to_csv(f'{output_dir}/{name}.csv', index = False)
         
     
@@ -43,7 +40,7 @@ def fetch_list(config_file, input_data, output_dir):
             locations['name'] = list(range(len(locations)))
         locations['out'] = output_dir
         locations['config_file'] = config_file
-        locations['geometry'] = locations.apply(lambda x: [x['lat'], x['lon']], axis = 1)
+        locations['geometry'] = locations.apply(lambda x: [[x['lon'], x['lat'] ]], axis = 1)
         locations_ls = locations.to_dict('records')
         parallel_executor(fetch_data_wrapper, locations_ls, max_workers=20)
 
@@ -68,17 +65,18 @@ def main():
     parser.add_argument('config_file', help='Path to the configuration file')
     parser.add_argument('--fetch', metavar='INPUT', nargs='+', help='Latitude and longitude as two floats, or a file path')
     parser.add_argument('--out', default='./', dest='output_path', help='Output directory or file path for the fetched data')
-    
+
     args = parser.parse_args()
     
     try:
         if len(args.fetch) == 2:
             latitude, longitude = map(float, args.fetch)
-            fetch_data(args.config_file, [latitude, longitude], args.output_path)
+            fetch_data(args.config_file, [longitude, latitude ], args.output_path)
             print(f'Data saved in {args.output_path}')
         else:
             fetch_list(args.config_file, args.fetch[0], args.output_path)
-    except:
+    except Exception as e:
+        print(e)
         parser.print_help()
 
 
