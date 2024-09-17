@@ -29,11 +29,17 @@ from core import *
 #     # Example print to simulate output file path
 #     print(f"Data will be saved to: {output_path}")
 
-
+from time import time
 def fetch_data(config_file, location, output_path):
+    start = time()
+
     collection = CompositeCollection(config_file)
+    print(len(collection.args))
     df = collection.extract([location])
     df.to_csv(f'{output_path}', index = False)
+
+    end = time()
+    print(end - start)
     
 def fetch_list(config_file, input_data, output_dir, raw):
     """
@@ -66,16 +72,14 @@ def main():
     
     args = parser.parse_args()
     
-    try:
-        if len(args.fetch) == 2:
-            latitude, longitude = map(float, args.fetch)
-            fetch_data(args.config_file, [latitude, longitude], args.output_path)
-            print(f'Data saved in {args.output_path}')
-            
-        else:
-            fetch_list(args.config_file, args.fetch[0], args.output_path)
-    except:
-        parser.print_help()
+    # try:
+    if len(args.fetch) == 2:
+        latitude, longitude = map(float, args.fetch)
+        fetch_data(args.config_file, [latitude, longitude], args.output_path)
+        print(f'Data saved in {args.output_path}')
+        
+    else:
+        fetch_list(args.config_file, args.fetch[0], args.output_path)
 
 
 if __name__ == '__main__':

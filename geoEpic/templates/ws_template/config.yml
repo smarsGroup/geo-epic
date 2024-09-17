@@ -28,14 +28,14 @@ weather:
 # Soil details
 soil:
   ssurgo_gdb: ./soil/gSSURGO_NE.gdb
-  soil_map: /home/chandrab/GeoEPIC_metadata/SSURGO.tif
+  soil_map: /home/rajr/GeoEPIC_metadata/SSURGO.tif
   files_dir:  #if soil files directory is specified, processing gdb file is skipped.
 
 # Info for Sit files
 site:
   dir: ./sites
-  slope: /home/chandrab/GeoEPIC_metadata/slope_us.tif
-  elevation: /home/chandrab/GeoEPIC_metadata/SRTM_1km_US_project.tif
+  slope: /home/rajr/GeoEPIC_metadata/slope_us.tif
+  elevation: /home/rajr/GeoEPIC_metadata/SRTM_1km_US_project.tif
   slope_length: ./soil/NE_slopelen.csv
 
 

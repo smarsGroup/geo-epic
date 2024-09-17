@@ -3,12 +3,25 @@ import pandas as pd
 from ruamel.yaml import YAML
 from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
-
+import requests
 import ee
 from initialize import ee_Initialize
+import os
 
 ee_Initialize()
 
+
+def check_image_has_data(image, roi):
+    # Get the mean value of the first band
+    mean = image.select(0).reduceRegion(
+        reducer=ee.Reducer.mean(),
+        geometry=roi,
+        scale=30,
+        maxPixels=1e9
+    ).values().get(0)
+    
+    # If the mean is not None (null in Earth Engine), the image has data
+    return ee.Algorithms.If(ee.Algorithms.IsEqual(mean, None), False, True)
 
 def extract_features(collection, aoi, date_range, resolution):
         
@@ -28,7 +41,10 @@ def extract_features(collection, aoi, date_range, resolution):
         })
     
     df['Date'] = pd.to_datetime(df['Date']).dt.date
+    if 'geo' in df.columns: df = df.drop(columns=['geo'])
+    df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
     return df
+
 
 class CompositeCollection:
     """
@@ -156,6 +172,79 @@ class CompositeCollection:
 
         return df_merged
     
+    def download(self,aoi_coords):
+        if isinstance(aoi_coords, (Polygon, MultiPolygon)):
+            aoi_coords = aoi_coords.exterior.coords[:]
+        if len(aoi_coords) == 1:
+            aoi = ee.Geometry.Point(aoi_coords[0])
+        else:
+            aoi = ee.Geometry.Polygon(aoi_coords)
+        
+        def download_image(args):
+            name, collection, date_range = args
+            filtered_collection = collection.filterDate(*date_range) \
+                .filterBounds(aoi)
+            images = filtered_collection.toList(filtered_collection.size())
+
+
+            for i in range(images.size().getInfo()):
+                image = ee.Image(images.get(i))
+                date = ee.Date(image.get('system:time_start'))
+                date_string = date.format('YYYY-MM-dd').getInfo()
+
+                # Check if the image has data
+                has_data = check_image_has_data(image, aoi).getInfo()
+                
+                if has_data:
+                    print(f"Data available for date: {date_string}")
+                    
+                    try:
+                        download_params = {
+                            'scale': self.resolution,  # Set the scale (in meters per pixel)
+                            'region': aoi,  # Region to download
+                            'format': 'GeoTIFF'
+                        }
+                        
+                        # Try to get the download URL
+                        url = image.getDownloadURL(download_params)
+                        print("Image is downloadable.")
+                        
+                        output_path =self.config['output_path']
+                        # Define the local path to save the image
+                        save_path = os.path.join(output_path, f'{name}_{date_string}.tiff')  # Replace with your desired save location
+                        
+                        # Download the image using the URL
+                        response = requests.get(url, stream=True)
+                        
+                        # Save the content to a file
+                        with open(save_path, 'wb') as file:
+                            for chunk in response.iter_content(chunk_size=1024):
+                                if chunk:
+                                    file.write(chunk)
+                        print(f"Image downloaded to {save_path}.")
+                        
+                    except Exception as e:
+                        # If an error occurs, it means the image is not downloadable
+                        print(f"Image is not downloadable. It is exported to google drive : geo_epic_exports folder ")
+                        export_params = {
+                            'description': f'{name}_{date_string}',
+                            'scale': 30,
+                            'region': aoi,
+                            'crs':'EPSG:4326',
+                            'fileFormat': 'GeoTIFF',
+                            'folder' : 'geo_epic_exports',
+                            'maxPixels': 1e9
+                        }
+
+                        # Start the export task
+                        task = ee.batch.Export.image.toDrive(image,**export_params)
+                        task.start()
+                     
+            
+        # Use ThreadPoolExecutor to parallelize the extraction process
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            executor.map(download_image, self.args)
+    
 
     def _safe_eval(self, expression, df):
         """
@@ -174,6 +263,38 @@ class CompositeCollection:
 
 
 
+class TimeSeries:
+
+    def __init__(self, collection, vars, date_range = None):
+        self.collection = collection.select(vars)
+        self.vars = vars
+        self.date_range = date_range
+    
+    def extract(self, aoi_coords, resolution = 30, date_range = None):
+        """
+        Extracts temporal data for a given Area of Interest (AOI).
+
+        Args:
+        aoi_coords (tuple/list): Coordinates representing the AOI, either as a Point or as vertices of a Polygon.
+
+        Returns:
+        pd.DataFrame: A pandas DataFrame containing the extracted data.
+        """
+        # Convert coordinates to AOI geometry
+        if isinstance(aoi_coords, (Polygon, MultiPolygon)):
+            aoi_coords = aoi_coords.exterior.coords[:]
+        if len(aoi_coords) == 1:
+            aoi = ee.Geometry.Point(aoi_coords[0])
+        else:
+            aoi = ee.Geometry.Polygon(aoi_coords)
+
+        if date_range is None:
+            date_range = self.date_range
+        df = extract_features(self.collection, aoi, date_range, resolution)
+        return df
+
+
+
 if __name__ == '__main__':
     # yaml_file = 'weather_config.yml'
     # composite_collection = CompositeCollection(yaml_file)
@@ -188,4 +309,11 @@ if __name__ == '__main__':
     
     col = CompositeCollection('./landsat_lai.yml')
     df = col.extract([[-98.114, 41.855]])
+    print(df)
+
+
+    start, end = '2010-01-01', '2022-12-31'
+    col =  ee.ImageCollection('LANDSAT/LE07/C02/T1_L2')#.filterDate(start, end)
+    tm = TimeSeries(col, ['SR_B4', 'SR_B5'])
+    df = tm.extract([[-98.114, 41.855]], date_range = [start, end])
     print(df)

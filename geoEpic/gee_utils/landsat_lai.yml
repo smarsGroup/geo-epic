@@ -39,9 +39,9 @@ collections:
       bands: ['cs_cdf']
     select:  b('cs_cdf') > 0.8
     variables:
-      nir: 1.001 * (b('B8')*0.0001) - 0.00029
-      red: 0.982 * (b('B4')*0.0001) + 0.00094
-      green: 1.005 * (b('B3')*0.0001) - 0.00093
+      nir: 0.9983 * (b('B8')*0.0001) - 0.0001
+      red: 0.9765 * (b('B4')*0.0001) + 0.0009
+      green: 1.005 * (b('B3')*0.0001) - 0.0009
 
 
 # Derived variables
