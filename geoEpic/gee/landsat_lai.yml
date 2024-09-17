@@ -7,14 +7,14 @@ global_scope:
 
 # Specify Earth Engine collections and their respective variables
 collections:
-  # lc05:
-  #   collection: LANDSAT/LT05/C02/T1_L2
-  #   select: (b('QA_PIXEL') >> 6) & 1
-  #   variables:
-  #     nir: b('SR_B4')*0.0000275 - 0.2
-  #     red: b('SR_B3')*0.0000275 - 0.2
-  #     green: b('SR_B2')*0.0000275 - 0.2
-  #     blue: b('SR_B1')*0.0000275 - 0.2
+  lc05:
+    collection: LANDSAT/LT05/C02/T1_L2
+    select: (b('QA_PIXEL') >> 6) & 1
+    variables:
+      nir: b('SR_B4')*0.0000275 - 0.2
+      red: b('SR_B3')*0.0000275 - 0.2
+      green: b('SR_B2')*0.0000275 - 0.2
+      blue: b('SR_B1')*0.0000275 - 0.2
       
   le07:
     collection: LANDSAT/LE07/C02/T1_L2
