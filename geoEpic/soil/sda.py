@@ -71,6 +71,24 @@ class SoilDataAccess:
         """
         result = SoilDataAccess.query(query)
         return result['mukey'].values[0]
+    
+    @staticmethod
+    def get_mukey_list(wkt):
+        """
+        Fetches the mukey for a given WKT location.
+
+        Args:
+        wkt (str): The WKT location.
+
+        Returns:
+        int: The mukey for the specified location.
+        """
+        query = f"""
+        SELECT mukey
+        FROM SDA_Get_Mukey_from_intersection_with_WktWgs84('{wkt}')
+        """
+        result = SoilDataAccess.query(query)
+        return result['mukey'].values
         
     @staticmethod
     def fetch_properties(input_value):
