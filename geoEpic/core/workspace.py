@@ -192,7 +192,7 @@ class Workspace:
         """
         try:
             shutil.rmtree(self.config['log_dir'])
-            shutil.rmtree(os.path.join(self.base_dir, 'EPICRUNS'))
+            shutil.rmtree(os.path.join(self.base_dir, '.cache', 'EPICRUNS'))
         except FileNotFoundError: pass 
 
     def clear_outputs(self):

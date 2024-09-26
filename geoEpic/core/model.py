@@ -40,20 +40,6 @@ class EPICModel:
         self.output_types = ['ACY']
         subprocess.Popen(f'chmod +x {self.executable}', shell=True).wait()
 
-        # Define the path to the RAM-backed filesystem
-        self.shm_path = '/dev/shm'  # On Linux systems
-
-        # Copy the model folder to /dev/shm during initialization
-        self.model_shm_path = os.path.join(self.shm_path, 'EPICModel')
-        if os.path.exists(self.model_shm_path):
-            shutil.rmtree(self.model_shm_path)
-        shutil.copytree(self.path, self.model_shm_path)
-
-        # Update paths to point to the copied folder in /dev/shm
-        self.executable = os.path.join(self.model_shm_path, self.executable_name)
-        self.path = self.model_shm_path
-
-
     def setup(self, config):
         """
         Set up the model run configurations based on provided settings.
@@ -120,17 +106,12 @@ class EPICModel:
             site (Site): A site instance containing site-specific configuration.
         """
         fid = site.site_id
-        # Use the model folder in /dev/shm as the source
-        source_dir = self.model_shm_path
-        # Destination directory within /dev/shm for this site
-        new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid))
-
+        new_dir = os.path.join(self.base_dir, '.cache', 'EPICRUNS', str(fid))
         if os.path.exists(new_dir):
             shutil.rmtree(new_dir)
-        shutil.copytree(source_dir, new_dir)
+        shutil.copytree(self.path, new_dir)
         os.chdir(new_dir)
 
-        
         dly = site.get_dly()
         dly.save(fid)
         dly.to_monthly(fid)
@@ -217,11 +198,11 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) < 6:
+            if len(lines) < 5:
                 raise ValueError("File does not have enough lines to update irrigation parameters.")
             
             # Split existing line into list of values
-            values = lines[4].split()
+            values = lines[4].split(' ')
             # Update mandatory BIR and optional parameters if provided
             values[5] = f"{bir:6.2f}"
             if efi is not None:
@@ -234,7 +215,7 @@ class EPICModel:
                 values[9] = f"{armx:6.2f}"
             
             # Join back into a single string
-            lines[4] = '  ' + '  '.join([f"{float(v):6.2f}" for v in values]) + '\n'
+            lines[3] = ' '.join(values) + '\n'
             
             file.seek(0)
             file.writelines(lines)
@@ -252,11 +233,11 @@ class EPICModel:
         file_path = os.path.join(self.path, 'EPICCONT.DAT')
         with open(file_path, 'r+') as file:
             lines = file.readlines()
-            if len(lines) < 6:
+            if len(lines) < 7:
                 raise ValueError("File does not have enough lines to update nitrogen parameters.")
             
             # Split existing line into list of values
-            values = lines[5].split()
+            values = lines[5].split(' ')
             # Update mandatory BFT0 and optional parameters if provided
             values[0] = f"{bft0:6.2f}"
             if fnp is not None:
@@ -265,7 +246,7 @@ class EPICModel:
                 values[2] = f"{fmx:6.2f}"
             
             # Join back into a single string
-            lines[5] = '  ' + '  '.join([f"{float(v):6.2f}" for v in values]) + '\n'
+            lines[4] = ' '.join(values) + '\n'
             
             file.seek(0)
             file.writelines(lines)
