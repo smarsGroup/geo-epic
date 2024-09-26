@@ -22,7 +22,7 @@ try:
     # Check if Redis is installed
     subprocess.run(["redis-server", "--version"], check=True)
     print("Redis is already installed.")
-except subprocess.CalledProcessError:
+except:
     print("Installing Redis...")
     # Install Redis using apt (for Debian/Ubuntu)
     subprocess.run(["sudo", "apt-get", "update"], check=True)
