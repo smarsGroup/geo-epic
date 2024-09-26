@@ -9,6 +9,7 @@ from .model import EPICModel
 from .site import Site
 import geopandas as gpd
 from glob import glob
+from random import randint
 
 class Workspace:
     """
@@ -91,7 +92,7 @@ class Workspace:
             missing_count = initial_count - final_count
             warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
             warnings.warn(warning_msg, RuntimeWarning)
-        path = os.path.join(self.base_dir, '.cache', 'info.csv')
+        path = os.path.join(self.base_dir, '.cache', f"info_{randint(100000, 999999)}.csv")
         data.to_csv(path, index = False)
         self.run_info = path
 
