@@ -9,12 +9,24 @@ if sys.platform.startswith('win'):
     print("Installation not supported for Windows.")
     sys.exit(1)
 
-# try:
-#     import osgeo
-#     print('GDAL already installed')
-# except:
-#     print('Installing GDAL...')
-#     subprocess.check_call(['conda', 'install', 'gdal','--no-update-deps'])
+
+try:
+    import osgeo
+    print('GDAL already installed')
+except:
+    print('Installing GDAL...')
+    subprocess.check_call(['conda', 'install', 'gdal','--no-update-deps'])
+
+
+try:
+    # Check if Redis is installed
+    subprocess.run(["redis-server", "--version"], check=True)
+    print("Redis is already installed.")
+except subprocess.CalledProcessError:
+    print("Installing Redis...")
+    # Install Redis using apt (for Debian/Ubuntu)
+    subprocess.run(["sudo", "apt-get", "update"], check=True)
+    subprocess.run(["sudo", "apt-get", "install", "-y", "redis-server"], check=True)
 
 
 
@@ -50,7 +62,7 @@ subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0
 
 # Setup function
 setup(
-    name='geo-epic',
+    name='geo_epic',
     version='1.0',
     packages=find_packages(),
     install_requires=read_requirements(),
@@ -65,7 +77,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'geo-epic=geoEpic.dispatcher:main',
+            'geo_epic=geoEpic.dispatcher:main',
         ],
     },
 )
