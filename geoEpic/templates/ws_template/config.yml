@@ -26,6 +26,7 @@ weather:
 
 # Soil details
 soil:
+  ssurgo_gdb : ./gSSURGO_KS.gdb
   soil_map: /home/chandrab/GeoEPIC_metadata/SSURGO.tif
   files_dir: ./soil/files
 
