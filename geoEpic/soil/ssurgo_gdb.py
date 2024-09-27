@@ -17,7 +17,7 @@ args = parser.parse_args()
 # Open the GDB
 config = ConfigParser(args.config)
 
-region = config['region']
+region = config['Region']
 soil_conf = config["soil"]
 gdb_path = soil_conf['ssurgo_gdb']
 output_path = soil_conf['files_dir']
@@ -57,7 +57,8 @@ idx = component.groupby('mukey')['comppct_r'].transform('max') == component['com
 soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 
-slopelen_1 = soil[['mukey', 'slope_length']]
+# print(soil.columns)
+slopelen_1 = soil[['mukey', 'slopelen_1']]
 slopelen_1.to_csv(os.path.dirname(gdb_path) + f'/{region}_slopelen.csv', index = False)
 
 soil = soil[['mukey', 'compname', 'hydgrp', 'cokey', 'albedo', 'comppct_r', 'MapUnitsym']]
