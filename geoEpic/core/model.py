@@ -43,15 +43,15 @@ class EPICModel:
         # Define the path to the RAM-backed filesystem
         self.shm_path = os.path.join(self.base_dir, '.cache')#'/dev/shm'  # On Linux systems
 
-        # Copy the model folder to /dev/shm during initialization
-        self.model_shm_path = os.path.join(self.shm_path, 'EPICModel')
-        if os.path.exists(self.model_shm_path):
-            shutil.rmtree(self.model_shm_path)
-        shutil.copytree(self.path, self.model_shm_path)
+        # # Copy the model folder to /dev/shm during initialization
+        # self.model_shm_path = os.path.join(self.shm_path, 'EPICModel')
+        # if os.path.exists(self.model_shm_path):
+        #     shutil.rmtree(self.model_shm_path)
+        # shutil.copytree(self.path, self.model_shm_path)
 
-        # Update paths to point to the copied folder in /dev/shm
-        self.executable = os.path.join(self.model_shm_path, self.executable_name)
-        self.path = self.model_shm_path
+        # # Update paths to point to the copied folder in /dev/shm
+        # self.executable = os.path.join(self.model_shm_path, self.executable_name)
+        # self.path = self.model_shm_path
 
 
     def setup(self, config):
@@ -121,7 +121,7 @@ class EPICModel:
         """
         fid = site.site_id
         # Use the model folder in /dev/shm as the source
-        source_dir = self.model_shm_path
+        source_dir = self.path
         # Destination directory within /dev/shm for this site
         new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid))
 
