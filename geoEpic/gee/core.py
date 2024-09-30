@@ -103,6 +103,26 @@ class CompositeCollection:
             self.vars[name] = vars
             self.args.append((name, self.collections[name], (start, end)))
     
+    def merged(self):
+        """
+        Merges all collections in self.collections into a single ImageCollection.
+
+        Returns:
+            ee.ImageCollection: A merged collection containing all images from all collections.
+        """
+        if not self.collections:
+            raise ValueError("No collections to merge. Make sure collections are initialized.")
+
+        # Convert the dictionary values (collections) to a list
+        collection_list = list(self.collections.values())
+
+        # Use the ee.ImageCollection.merge() method to merge all collections
+        merged_collection = collection_list[0]
+        for collection in collection_list[1:]:
+            merged_collection = merged_collection.merge(collection)
+
+        return merged_collection
+        
     def extract(self, aoi_coords):
         """
         Extracts temporal data for a given Area of Interest (AOI).
