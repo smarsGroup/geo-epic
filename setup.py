@@ -26,7 +26,7 @@ except:
     print("Installing Redis...")
     # Install Redis using apt (for Debian/Ubuntu)
     # subprocess.run(["sudo", "apt-get", "update"], check=True)
-    subprocess.run(["conda", "install", "-c", "conda-forge", "redis", "--no-update-deps", "-y"], check=True)
+    subprocess.run(["conda", "install", "-c", "conda-forge", "redis", "--no-update-deps"], check=True)
 
 
 
