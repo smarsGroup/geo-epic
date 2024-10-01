@@ -82,12 +82,12 @@ with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
 def write_site(row):
-    with open(os.path.join(out_dir, f"{int(row['FieldID'])}.sit"), 'w') as f:
+    with open(os.path.join(out_dir, f"{int(row['siteid'])}.sit"), 'w') as f:
         # Modify the template lines
         template[0] = 'USA crop simulations\n'
         template[1] = 'Prototype\n'
-        template[2] = f'ID: {int(row["FieldID"])}\n'
-        template[3] = f'{row["y"]:8.2f}{row["x"]:8.2f}{row["ele"]:8.2f}{template[3][24:]}'  # This will replace the first 24 characters
+        template[2] = f'ID: {int(row["siteid"])}\n'
+        template[3] = f'{row["lat"]:8.2f}{row["lon"]:8.2f}{row["ele"]:8.2f}{template[3][24:]}'  # This will replace the first 24 characters
         template[4] = f'{template[4][:48]}{row["slopelen_1"]:8.2f}{row["slope_steep"]:8.2f}{template[4][64:]}'  # This will replace characters 49 to 64
         template[6] = '                                                   \n'
         # Write the modified template to the new file
