@@ -63,3 +63,4 @@ SALib==1.5.1
 jupyter==1.0.0
 notebook==7.0.3
 redis
+shortuuid

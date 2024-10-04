@@ -9,9 +9,7 @@ from geoEpic.gee.initialize import ee_Initialize
 
 ee_Initialize()
 
-
 def extract_features(collection, aoi, date_range, resolution):
-        
     def map_function(image):
         # Function to reduce image region and extract data
         date = image.date().format()
@@ -32,7 +30,20 @@ def extract_features(collection, aoi, date_range, resolution):
     df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
     return df
 
-
+def apply_formula(image, var, formula, vars = None):
+    """
+    Apply a formula to an Earth Engine image and add the result as a new band.
+    """
+    var_dict = {}
+    if vars:
+        var_dict = {v: image.select(v) for v in vars}
+    try:
+        var_image = image.expression(formula, var_dict).rename(var).set('system:time_start', image.get('system:time_start'))
+        return image.addBands(var_image).toFloat()
+    except Exception as e:
+        print(f"Error processing image {image.id()}: {e}")
+        return image
+                    
 class CompositeCollection:
     """
     A class to handle composite collection of Earth Engine data.
@@ -87,16 +98,7 @@ class CompositeCollection:
             variables = config['variables']
             vars = []
             for var, formula in variables.items():
-                # Apply formulas to the collection to compute variables
-                def apply_formula(image):
-                    try:
-                        var_image = image.expression(formula).rename(var).set('system:time_start', image.get('system:time_start'))
-                        return image.addBands(var_image).toFloat()
-                    except Exception as e:
-                        print(f"Error processing image {image.id()}: {e}")
-                        return image
-
-                collection = collection.map(apply_formula)
+                collection = collection.map(lambda x: apply_formula(x, var, formula))
                 vars.append(var)
             
             self.collections[name] = collection.select(vars)
@@ -120,6 +122,15 @@ class CompositeCollection:
         merged_collection = collection_list[0]
         for collection in collection_list[1:]:
             merged_collection = merged_collection.merge(collection)
+        
+        try:
+            # Apply derived variables formulas if specified in the configuration
+            derived = self.config.get('derived_variables')
+            vars = merged_collection.first().bandNames().getInfo()
+            for var, formula in derived.items():
+                merged_collection = merged_collection.map(lambda x: apply_formula(x, var, formula, vars))
+        except Exception as e:
+            print(e)
 
         return merged_collection
         
