@@ -127,7 +127,7 @@ class GeoInterface:
         Returns:
             pandas.Series: The row from the DataFrame corresponding to the nearest point.
         """
-        query_point_rad = np.deg2rad(np.array([lat, lon]))
+        query_point_rad = np.deg2rad(np.array([[lat, lon]]))
         _, index = self.tree.query(query_point_rad, k=1)
         nearest_index = index[0][0]
         return self.df.iloc[nearest_index]
