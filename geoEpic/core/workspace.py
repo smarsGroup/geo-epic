@@ -10,6 +10,38 @@ from .site import Site
 import geopandas as gpd
 from glob import glob
 from random import randint
+from multiprocessing import Manager
+from shortuuid import uuid 
+import signal
+import atexit
+
+
+class DirectoryPool:
+    def __init__(self, base_shm_path = None, max_dirs = None):
+        self.base_shm_path = base_shm_path
+        self.max_dirs = max_dirs
+        self.manager = Manager()
+
+    def open(self):
+        self.pool = self.manager.Queue(maxsize=self.max_dirs)
+        os.makedirs(self.base_shm_path, exist_ok=True)
+        for i in range(self.max_dirs):
+            dir_name = f"{i}"
+            dir_path = os.path.join(self.base_shm_path, dir_name)
+            self.pool.put(dir_path)
+
+    def acquire(self):
+        return self.pool.get()
+
+    def release(self, dir_path):
+        self.pool.put(dir_path)
+
+    def close(self):
+        while not self.pool.empty():
+            dir_path = self.pool.get()
+            shutil.rmtree(dir_path)
+
+model_pool = DirectoryPool()
 
 class Workspace:
     """
@@ -28,12 +60,13 @@ class Workspace:
         run_info (pandas.DataFrame): DataFrame containing run information.
     """
 
-    def __init__(self, config_path):
+    def __init__(self, config_path, cache_path = None):
         """
         Initialize the Workspace with a configuration file.
 
         Args:
             config_path (str): Path to the configuration file.
+            cache_path (str): Path to store cahe, /dev/shm by default
         """
         config = ConfigParser(config_path)
         self.config = config.as_dict()
@@ -43,13 +76,30 @@ class Workspace:
         self.dataframes = {}
         self.delete_after_use = True
         self.model = EPICModel.from_config(config_path)
-        os.makedirs(os.path.join(self.base_dir, '.cache'), exist_ok=True)
+        if cache_path is None:
+            cache_path = '/dev/shm' 
+        self.cache = os.path.join(cache_path, 'geo_epic', uuid())
+        os.makedirs(self.cache, exist_ok=True)
         self._process_run_info(self.config['run_info'])
-        self.data_logger = DataLogger(os.path.join(self.base_dir, f".cache"))
-
+        self.data_logger = DataLogger(self.cache)
+        model_pool.max_dirs = self.config["num_of_workers"]*2
+        model_pool.base_shm_path = os.path.join(self.cache, "EPICRUNS")
+        
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
             warnings.warn(warning_msg, RuntimeWarning)
+        
+        atexit.register(self.cache_cleanup)
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, signum, frame):
+        '''Clean up cache while exiting'''
+        self.cache_cleanup()
+        exit(0)
+    
+    def cache_cleanup(self):
+        shutil.rmtree(self.cache)
     
     def _process_run_info(self, file_path):
         """
@@ -92,7 +142,7 @@ class Workspace:
             missing_count = initial_count - final_count
             warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
             warnings.warn(warning_msg, RuntimeWarning)
-        path = os.path.join(self.base_dir, '.cache', f"info_{randint(100000, 999999)}.csv")
+        path = os.path.join(self.cache, "info.csv")
         data.to_csv(path, index = False)
         self.run_info = path
 
@@ -153,12 +203,14 @@ class Workspace:
             site_info (dict): Dictionary containing site information.
         """
         site = Site.from_config(self.config, **site_info)
-        self.model.run(site)
+        dst_dir = model_pool.acquire()
+        self.model.run(site, dst_dir)
         for func in self.routines.values():
             func(site)
         if len(self.routines) > 0 and self.delete_after_use:
             for outs in site.outputs.values():
                 os.remove(outs)
+        model_pool.release(dst_dir)
 
     def run(self, select_str = None, progress_bar = True):
         """
@@ -177,11 +229,13 @@ class Workspace:
         info = filter_dataframe(main_info, select_str)
         info_ls = info.to_dict('records')
         del main_info
+        model_pool.open()
         if progress_bar: 
             self.run_simulation(info_ls[0])
             info_ls = info_ls[1:]
         parallel_executor(self.run_simulation, info_ls, method='Process', 
                           max_workers=self.config["num_of_workers"], timeout=self.config["timeout"], bar = int(progress_bar))
+        # model_pool.close()
         if self.objective_function is not None:
             return self.objective_function()
         else: return None
