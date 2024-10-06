@@ -137,7 +137,10 @@ class EPICModel:
                 if dest is None: shutil.rmtree(new_dir)
                 log_path = os.path.join(self.log_dir, f"{fid}.out")
                 raise Exception(f"Output file ({out_type}) not found. Check {log_path} for details")
-            dst = os.path.join(self.output_dir, out_path)
+            if dest is None:  
+                dst = os.path.join(self.output_dir, out_path)
+            else: 
+                dst = os.path.join(os.path.dirname(new_dir), out_path) 
             shutil.move(out_path, dst)
             site.outputs[out_type] = dst
 

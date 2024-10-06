@@ -15,7 +15,6 @@ from shortuuid import uuid
 import signal
 import atexit
 
-
 class DirectoryPool:
     def __init__(self, base_shm_path = None, max_dirs = None):
         self.base_shm_path = base_shm_path
@@ -89,6 +88,7 @@ class Workspace:
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
             warnings.warn(warning_msg, RuntimeWarning)
         
+        # Capture exit signals and clean up cahe
         atexit.register(self.cache_cleanup)
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
@@ -203,14 +203,22 @@ class Workspace:
             site_info (dict): Dictionary containing site information.
         """
         site = Site.from_config(self.config, **site_info)
+        # Acquire a worker from the model pool
         dst_dir = model_pool.acquire()
+        # Run the model and routines for the site
         self.model.run(site, dst_dir)
+        # Release the worker back to the model pool
+        model_pool.release(dst_dir)
         for func in self.routines.values():
             func(site)
-        if len(self.routines) > 0 and self.delete_after_use:
-            for outs in site.outputs.values():
-                os.remove(outs)
-        model_pool.release(dst_dir)
+        # Handle output files
+        for out_path in site.outputs.values():
+            if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
+                os.remove(out_path)
+            else:
+                dst = os.path.join(self.config['output_dir'], os.path.basename(out_path))
+                shutil.move(out_path, dst)
+                    
 
     def run(self, select_str = None, progress_bar = True):
         """
@@ -222,23 +230,35 @@ class Workspace:
         Returns:
             Any: The result of the objective function if set, otherwise None.
         """
+        # Warn if outputs wont be saved
+        if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
+            if progress_bar:
+                print("Warning: Output files won't be saved")
+
+        # Setup the model
         self.model.setup(self.config)
-        if select_str is None:
-            select_str = self.config["select"]
-        main_info = pd.read_csv(self.run_info)
-        info = filter_dataframe(main_info, select_str)
+        # Use provided select string or default from config
+        select_str = select_str or self.config["select"]
+        # Load and filter run information
+        info = filter_dataframe(pd.read_csv(self.run_info), select_str)
         info_ls = info.to_dict('records')
-        del main_info
+
+        # Open model pool
         model_pool.open()
-        if progress_bar: 
-            self.run_simulation(info_ls[0])
-            info_ls = info_ls[1:]
-        parallel_executor(self.run_simulation, info_ls, method='Process', 
-                          max_workers=self.config["num_of_workers"], timeout=self.config["timeout"], bar = int(progress_bar))
-        # model_pool.close()
-        if self.objective_function is not None:
-            return self.objective_function()
-        else: return None
+        # Run first simulation for error check, if progress bar is enabled
+        if progress_bar: self.run_simulation(info_ls.pop(0))
+        # Execute simulations in parallel
+        parallel_executor(
+            self.run_simulation, 
+            info_ls, 
+            method='Process',
+            max_workers=self.config["num_of_workers"],
+            timeout=self.config["timeout"],
+            bar=int(progress_bar)
+        )
+
+        # Return result of objective function if defined, else None
+        return self.objective_function() if self.objective_function else None
     
     def clear(self):
         """
@@ -256,4 +276,3 @@ class Workspace:
         try:
             shutil.rmtree(self.config['output_dir'])
         except FileNotFoundError: pass 
-
