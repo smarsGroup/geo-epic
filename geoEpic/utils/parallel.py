@@ -56,7 +56,12 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
     PoolExecutor = {'Process': ProcessPoolExecutor, 'Thread': ThreadPoolExecutor}[method]
     
     with PoolExecutor(max_workers=max_workers) as executor:
-        if bar: pbar = tqdm(total=len(args))
+        if bar: 
+            if isinstance(bar, int):
+                pbar = tqdm(total=len(args) + bar)
+                pbar.update(bar)
+            else:
+                pbar = tqdm(total=len(args))
 
         if method == 'Process' and timeout is not None:
             futures = {executor.submit(run_with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}

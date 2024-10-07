@@ -27,7 +27,7 @@ script_paths = {
         "run": "workspace/run.py",
         "listfiles": "workspace/listfiles.py",
         "new": "workspace/create_ws.py",
-        "add": "workspace/add.py",
+        "copy": "workspace/add.py",
         "post_process": "workspace/post_process.py",
         "visualize": "workspace/visualize.py"
     },
@@ -84,11 +84,11 @@ def dispatch(module, func, options_str, wait=True):
 
 def print_expected_usage():
     print('''
-Geo-EPIC Tool Kit CLI
+GeoEPIC Tool Kit CLI
           
-usage: geo-epic [module] [function] [options] 
+usage: geo_epic [module] [function] [options] 
 
-Refer Geo-EPIC documentation for available functionality''')
+Refer GeoEPIC documentation for available functionality''')
     
     
 def main():

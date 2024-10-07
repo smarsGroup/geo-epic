@@ -9,7 +9,11 @@ from .model import EPICModel
 from .site import Site
 import geopandas as gpd
 from glob import glob
-from random import randint
+from geoEpic.utils.redis import WorkerPool
+from shortuuid import uuid 
+import signal
+import atexit
+import subprocess
 
 class Workspace:
     """
@@ -28,12 +32,13 @@ class Workspace:
         run_info (pandas.DataFrame): DataFrame containing run information.
     """
 
-    def __init__(self, config_path):
+    def __init__(self, config_path, cache_path = None):
         """
         Initialize the Workspace with a configuration file.
 
         Args:
             config_path (str): Path to the configuration file.
+            cache_path (str): Path to store cahe, /dev/shm by default
         """
         config = ConfigParser(config_path)
         self.config = config.as_dict()
@@ -43,13 +48,34 @@ class Workspace:
         self.dataframes = {}
         self.delete_after_use = True
         self.model = EPICModel.from_config(config_path)
-        os.makedirs(os.path.join(self.base_dir, '.cache'), exist_ok=True)
+        if cache_path is None:
+            cache_path = '/dev/shm' 
+        self.uuid = uuid()
+        self.cache = os.path.join(cache_path, 'geo_epic', self.uuid)
+        os.makedirs(self.cache, exist_ok=True)
         self._process_run_info(self.config['run_info'])
-        self.data_logger = DataLogger(os.path.join(self.base_dir, f".cache"))
-
+        self.data_logger = DataLogger(self.cache)
+        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
+        model_pool.open(self.config["num_of_workers"]*2)
+        
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
             warnings.warn(warning_msg, RuntimeWarning)
+        
+        # Capture exit signals and clean up cahe
+        atexit.register(self.cache_cleanup)
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _signal_handler(self, signum, frame):
+        '''Clean up cache while exiting'''
+        self.cache_cleanup()
+        exit(0)
+    
+    def cache_cleanup(self):
+        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
+        model_pool.close()
+        shutil.rmtree(self.cache)
     
     def _process_run_info(self, file_path):
         """
@@ -92,7 +118,7 @@ class Workspace:
             missing_count = initial_count - final_count
             warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
             warnings.warn(warning_msg, RuntimeWarning)
-        path = os.path.join(self.base_dir, '.cache', f"info_{randint(100000, 999999)}.csv")
+        path = os.path.join(self.cache, "info.csv")
         data.to_csv(path, index = False)
         self.run_info = path
 
@@ -153,12 +179,23 @@ class Workspace:
             site_info (dict): Dictionary containing site information.
         """
         site = Site.from_config(self.config, **site_info)
-        self.model.run(site)
+        # Acquire a worker from the model pool
+        model_pool = WorkerPool(self.uuid)
+        dst_dir = model_pool.acquire()
+        # Run the model and routines for the site
+        self.model.run(site, dst_dir)
+        # Release the worker back to the model pool
+        model_pool.release(dst_dir)
         for func in self.routines.values():
             func(site)
-        if len(self.routines) > 0 and self.delete_after_use:
-            for outs in site.outputs.values():
-                os.remove(outs)
+        # Handle output files
+        for out_path in site.outputs.values():
+            if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
+                os.remove(out_path)
+            else:
+                dst = os.path.join(self.config['output_dir'], os.path.basename(out_path))
+                shutil.move(out_path, dst)
+                    
 
     def run(self, select_str = None, progress_bar = True):
         """
@@ -170,36 +207,44 @@ class Workspace:
         Returns:
             Any: The result of the objective function if set, otherwise None.
         """
-        self.model.setup(self.config)
-        if select_str is None:
-            select_str = self.config["select"]
-        main_info = pd.read_csv(self.run_info)
-        info = filter_dataframe(main_info, select_str)
+        # Warn if outputs wont be saved
+        if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
+            if progress_bar:
+                print("Warning: Output files won't be saved")
+
+        # Use provided select string or default from config
+        select_str = select_str or self.config["select"]
+        # Load and filter run information
+        info = filter_dataframe(pd.read_csv(self.run_info), select_str)
         info_ls = info.to_dict('records')
-        del main_info
-        if progress_bar: 
-            self.run_simulation(info_ls[0])
-            info_ls = info_ls[1:]
-        parallel_executor(self.run_simulation, info_ls, method='Process', 
-                          max_workers=self.config["num_of_workers"], timeout=self.config["timeout"], bar = progress_bar)
-        if self.objective_function is not None:
-            return self.objective_function()
-        else: return None
+
+        # Run first simulation for error check, if progress bar is enabled
+        if progress_bar: self.run_simulation(info_ls.pop(0))
+        # Execute simulations in parallel
+        parallel_executor(
+            self.run_simulation, 
+            info_ls, 
+            method='Process',
+            max_workers=self.config["num_of_workers"],
+            timeout=self.config["timeout"],
+            bar=int(progress_bar)
+        )
+
+        # Return result of objective function if defined, else None
+        return self.objective_function() if self.objective_function else None
     
-    def clear(self):
+    def clear_logs(self):
         """
         Clear all log files and temporary run directories.
         """
-        try:
-            shutil.rmtree(self.config['log_dir'])
-            shutil.rmtree(os.path.join(self.base_dir, '.cache', 'EPICRUNS'))
-        except FileNotFoundError: pass 
+        log_dir = self.config.get('log_dir')
+        if log_dir and os.path.exists(log_dir):
+            subprocess.run(f"rm -rf {os.path.join(log_dir, '*')}", shell=True, check=True)
 
     def clear_outputs(self):
         """
         Clear all output files.
         """
-        try:
-            shutil.rmtree(self.config['output_dir'])
-        except FileNotFoundError: pass 
-
+        output_dir = self.config.get('output_dir')
+        if output_dir and os.path.exists(output_dir):
+            subprocess.run(f"rm -rf {os.path.join(output_dir, '*')}", shell=True, check=True)
