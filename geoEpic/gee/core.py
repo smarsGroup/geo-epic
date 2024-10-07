@@ -26,10 +26,10 @@ def extract_features(collection, aoi, date_range, resolution):
             'expression': daily_data,
             'fileFormat': 'PANDAS_DATAFRAME'
         })
-    
-    df['Date'] = pd.to_datetime(df['Date']).dt.date
-    if 'geo' in df.columns: df = df.drop(columns=['geo'])
-    df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
+    if( not df.empty):
+        df['Date'] = pd.to_datetime(df['Date']).dt.date
+        if 'geo' in df.columns: df = df.drop(columns=['geo'])
+        df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
     return df
 
 
@@ -114,19 +114,32 @@ class CompositeCollection:
             pd.DataFrame: A pandas DataFrame containing the extracted data.
         """
         # Convert coordinates to AOI geometry
-        if isinstance(aoi_coords, (Polygon, MultiPolygon)):
+        if isinstance(aoi_coords, Polygon):
             aoi_coords = aoi_coords.exterior.coords[:]
-        if len(aoi_coords) == 1:
-            aoi = ee.Geometry.Point(aoi_coords[0])
-        else:
             aoi = ee.Geometry.Polygon(aoi_coords)
+        elif isinstance(aoi_coords, MultiPolygon):
+            polygons = []
+            for poly in aoi_coords.geoms:
+                exterior_coords = list(poly.exterior.coords)
+                interior_coords = [list(interior.coords) for interior in poly.interiors]
+                polygons.append([exterior_coords] + interior_coords)
+            aoi = ee.Geometry.MultiPolygon(polygons)
+        else:
+            aoi = ee.Geometry.Point(aoi_coords[0])
         
-        def extract_features_wrapper(args):
+        # def extract_features_wrapper(args):
+        #     name, collection, date_range = args
+        #     return extract_features(collection, aoi, date_range, self.resolution)
+        # # Use ThreadPoolExecutor to parallelize the extraction process
+        # with ThreadPoolExecutor(max_workers=20) as executor:
+        #     results = list(executor.map(extract_features_wrapper, self.args))
+
+        results = []
+        for args in self.args:
             name, collection, date_range = args
-            return extract_features(collection, aoi, date_range, self.resolution)
-        # Use ThreadPoolExecutor to parallelize the extraction process
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            results = list(executor.map(extract_features_wrapper, self.args))
+            result = extract_features(collection, aoi, date_range, self.resolution)
+            if not result.empty:
+                results.append(result)
 
         # Merge the results into a single DataFrame
         df_merged = results[0]
@@ -145,8 +158,9 @@ class CompositeCollection:
         try:
             # Apply derived variables formulas if specified in the configuration
             derived = self.config.get('derived_variables')
-            for var_name, formula in derived.items():
-                df_merged[var_name] = self._safe_eval(formula, df_merged)
+            if derived is not None:
+                for var_name, formula in derived.items():
+                    df_merged[var_name] = self._safe_eval(formula, df_merged)
         except Exception as e:
             print(e)
         
