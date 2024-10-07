@@ -15,31 +15,6 @@ import signal
 import atexit
 
 
-
-def _run_simulation(site_info, config, model, model_pool, routines, delete_after_use):
-    """
-    Run simulation for a given site.
-
-    Args:
-        site_info (dict): Dictionary containing site information.
-    """
-    site = Site.from_config(config, **site_info)
-    # Acquire a worker from the model pool
-    dst_dir = model_pool.acquire()
-    # Run the model and routines for the site
-    model.run(site, dst_dir)
-    # Release the worker back to the model pool
-    model_pool.release(dst_dir)
-    for func in routines.values():
-        func(site)
-    # Handle output files
-    for out_path in site.outputs.values():
-        if config['output_dir'] is None or (routines and delete_after_use):
-            os.remove(out_path)
-        else:
-            dst = os.path.join(config['output_dir'], os.path.basename(out_path))
-            shutil.move(out_path, dst)
-            
 class Workspace:
     """
     A class to manage the workspace for running simulations, handling configurations,
@@ -80,7 +55,8 @@ class Workspace:
         os.makedirs(self.cache, exist_ok=True)
         self._process_run_info(self.config['run_info'])
         self.data_logger = DataLogger(self.cache)
-        self.model_pool = WorkerPool(self.config["num_of_workers"]*2, self.uuid, os.path.join(self.cache, "EPICRUNS"))
+        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
+        model_pool.open(self.config["num_of_workers"]*2)
         
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
@@ -97,7 +73,8 @@ class Workspace:
         exit(0)
     
     def cache_cleanup(self):
-        self.model_pool.close()
+        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
+        model_pool.close()
         shutil.rmtree(self.cache)
     
     def _process_run_info(self, file_path):
@@ -193,6 +170,31 @@ class Workspace:
             pandas.DataFrame: DataFrame containing the logs for the specified function.
         """
         return self.data_logger.get(func)
+
+    def run_simulation(self, site_info):
+        """
+        Run simulation for a given site.
+
+        Args:
+            site_info (dict): Dictionary containing site information.
+        """
+        site = Site.from_config(self.config, **site_info)
+        # Acquire a worker from the model pool
+        model_pool = WorkerPool(self.uuid)
+        dst_dir = model_pool.acquire()
+        # Run the model and routines for the site
+        self.model.run(site, dst_dir)
+        # Release the worker back to the model pool
+        model_pool.release(dst_dir)
+        for func in self.routines.values():
+            func(site)
+        # Handle output files
+        for out_path in site.outputs.values():
+            if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
+                os.remove(out_path)
+            else:
+                dst = os.path.join(self.config['output_dir'], os.path.basename(out_path))
+                shutil.move(out_path, dst)
                     
 
     def run(self, select_str = None, progress_bar = True):
@@ -221,12 +223,10 @@ class Workspace:
         # Open model pool
         self.model_pool.open()
         # Run first simulation for error check, if progress bar is enabled
-        if progress_bar: _run_simulation(info_ls.pop(0), self.config, self.model, self.model_pool, 
-                                              self.routines, self.delete_after_use)
+        if progress_bar: self.run_simulation(info_ls.pop(0))
         # Execute simulations in parallel
         parallel_executor(
-            lambda x: _run_simulation(x, self.config, self.model, self.model_pool, 
-                                              self.routines, self.delete_after_use), 
+            self.run_simulation, 
             info_ls, 
             method='Process',
             max_workers=self.config["num_of_workers"],

@@ -5,22 +5,19 @@ import shortuuid
 
 
 class WorkerPool:
-    def __init__(self, max_resources, pool_key=None, base_dir=None, host='localhost', port=6379, db=0):
-        self.max_resources = max_resources
+    def __init__(self, pool_key=None, base_dir=None, host='localhost', port=6379, db=0):
         self.redis = redis.Redis(host=host, port=port, db=db)
         self.pool_key = pool_key or f"worker_pool_{shortuuid.uuid()}"
         self.base_dir = base_dir
 
-        if self.base_dir:
-            os.makedirs(self.base_dir, exist_ok=True)
-        self.open()
-
-    def open(self):
+    def open(self, max_resources):
         """Initialize resources and add them to the Redis queue."""
         self.redis.delete(self.pool_key)
+        if self.base_dir:
+            os.makedirs(self.base_dir, exist_ok=True)
 
         # Loop to create each resource and push to Redis
-        for i in range(self.max_resources):
+        for i in range(max_resources):
             if self.base_dir:
                 resource = os.path.join(self.base_dir, str(i))
                 os.makedirs(resource, exist_ok=True)
