@@ -1,8 +1,11 @@
 import ee
 import json
 import os
+from geoEpic.utils.redis import WorkerPool
 
 def ee_Initialize():
+    pool = WorkerPool('gee_global_lock')
+    if pool.queue_len() is None: pool.open(40)
     # Get the directory where the script is located
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     CONFIG_FILE = os.path.join(SCRIPT_DIR, 'config.json')

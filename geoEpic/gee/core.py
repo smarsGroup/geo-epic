@@ -3,6 +3,7 @@ import pandas as pd
 from ruamel.yaml import YAML
 from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
+from geoEpic.utils.redis import WorkerPool
 
 import ee
 from geoEpic.gee.initialize import ee_Initialize
@@ -10,20 +11,27 @@ from geoEpic.gee.initialize import ee_Initialize
 ee_Initialize()
 
 def extract_features(collection, aoi, date_range, resolution):
+    pool = WorkerPool('gee_global_lock')
+    
     def map_function(image):
         # Function to reduce image region and extract data
         date = image.date().format()
         reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
         reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
         return ee.Feature(None, reduction).set('Date', date)
+    
+    worker = pool.acquire()
 
-    filtered_collection = collection.filterBounds(aoi)
-    filtered_collection = filtered_collection.filterDate(*date_range)
-    daily_data = filtered_collection.map(map_function)
-    df = ee.data.computeFeatures({
-            'expression': daily_data,
-            'fileFormat': 'PANDAS_DATAFRAME'
-        })
+    try:
+        filtered_collection = collection.filterBounds(aoi)
+        filtered_collection = filtered_collection.filterDate(*date_range)
+        daily_data = filtered_collection.map(map_function)
+        df = ee.data.computeFeatures({
+                'expression': daily_data,
+                'fileFormat': 'PANDAS_DATAFRAME'
+            })
+    except Exception as e: raise e
+    finally: pool.release(worker)
     
     df['Date'] = pd.to_datetime(df['Date']).dt.date
     if 'geo' in df.columns: df = df.drop(columns=['geo'])
@@ -156,7 +164,7 @@ class CompositeCollection:
             name, collection, date_range = args
             return extract_features(collection, aoi, date_range, self.resolution)
         # Use ThreadPoolExecutor to parallelize the extraction process
-        with ThreadPoolExecutor(max_workers=20) as executor:
+        with ThreadPoolExecutor(max_workers=10) as executor:
             results = list(executor.map(extract_features_wrapper, self.args))
 
         # Merge the results into a single DataFrame
