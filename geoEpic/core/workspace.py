@@ -13,7 +13,7 @@ from geoEpic.utils.redis import WorkerPool
 from shortuuid import uuid 
 import signal
 import atexit
-
+import subprocess
 
 class Workspace:
     """
@@ -233,19 +233,18 @@ class Workspace:
         # Return result of objective function if defined, else None
         return self.objective_function() if self.objective_function else None
     
-    def clear(self):
+    def clear_logs(self):
         """
         Clear all log files and temporary run directories.
         """
-        try:
-            shutil.rmtree(self.config['log_dir'])
-            shutil.rmtree(os.path.join(self.base_dir, '.cache', 'EPICRUNS'))
-        except FileNotFoundError: pass 
+        log_dir = self.config.get('log_dir')
+        if log_dir and os.path.exists(log_dir):
+            subprocess.run(f"rm -rf {os.path.join(log_dir, '*')}", shell=True, check=True)
 
     def clear_outputs(self):
         """
         Clear all output files.
         """
-        try:
-            shutil.rmtree(self.config['output_dir'])
-        except FileNotFoundError: pass 
+        output_dir = self.config.get('output_dir')
+        if output_dir and os.path.exists(output_dir):
+            subprocess.run(f"rm -rf {os.path.join(output_dir, '*')}", shell=True, check=True)
