@@ -32,10 +32,10 @@ def extract_features(collection, aoi, date_range, resolution):
             })
     except Exception as e: raise e
     finally: pool.release(worker)
-    
-    df['Date'] = pd.to_datetime(df['Date']).dt.date
-    if 'geo' in df.columns: df = df.drop(columns=['geo'])
-    df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
+    if( not df.empty ):
+        df['Date'] = pd.to_datetime(df['Date']).dt.date
+        if 'geo' in df.columns: df = df.drop(columns=['geo'])
+        df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
     return df
 
 def apply_formula(image, var, formula, vars = None):
@@ -170,6 +170,8 @@ class CompositeCollection:
         # Merge the results into a single DataFrame
         df_merged = results[0]
         for df in results[1:]:
+            if df.empty:
+                continue
             df_merged = pd.merge(df_merged, df, on='Date', how='outer')
             columns = df_merged.columns
             # Iterate over columns to find and calculate the mean for columns with suffixes
