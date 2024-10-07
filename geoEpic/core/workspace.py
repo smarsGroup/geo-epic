@@ -71,6 +71,7 @@ class Workspace:
         exit(0)
     
     def cache_cleanup(self):
+        self.model_pool.close()
         shutil.rmtree(self.cache)
     
     def _process_run_info(self, file_path):

@@ -13,14 +13,11 @@ class WorkerPool:
 
         if self.base_dir:
             os.makedirs(self.base_dir, exist_ok=True)
+        self.open()
 
-        self.redis.delete(self.pool_key)  # Clear any existing entries in Redis
-        self.initialize_resources()
-
-    def initialize_resources(self):
+    def open(self):
         """Initialize resources and add them to the Redis queue."""
-        if self.base_dir:
-            os.makedirs(self.base_dir, exist_ok=True)
+        self.redis.delete(self.pool_key)
 
         # Loop to create each resource and push to Redis
         for i in range(self.max_resources):
