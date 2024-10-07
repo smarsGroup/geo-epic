@@ -103,14 +103,26 @@ class GeoInterface:
     def __init__(self, data_source):
         """Initialize the interface by loading the data source."""
         if isinstance(data_source, str):
-            if data_source.lower().endswith('.tif') or data_source.lower().endswith('.tiff'):
-                self.df = raster_to_dataframe(data_source).dropna()  # Handle raster file
+            if data_source.lower().endswith(('.tif', '.tiff')):
+                # Handle raster file
+                self.df = raster_to_dataframe(data_source).dropna()
+            elif data_source.lower().endswith('.csv'):
+                # Handle CSV file
+                self.df = pd.read_csv(data_source).dropna()
+            elif data_source.lower().endswith(('.shp', '.shapefile')):
+                # Handle shapefile
+                gdf = gpd.read_file(data_source)
+                # Ensure the GeoDataFrame has a latitude and longitude column
+                if 'lat' not in gdf.columns or 'lon' not in gdf.columns:
+                    # Assuming the geometry is in longitude, latitude
+                    gdf['lon'], gdf['lat'] = gdf['geometry'].x, gdf['geometry'].y
+                self.df = gdf.dropna(subset=['lat', 'lon'])
             else:
-                self.df = pd.read_csv(data_source).dropna()  # Handle CSV file
+                raise ValueError("Unsupported file format. The file must be a CSV, TIF/TIFF, or shapefile.")
         elif isinstance(data_source, pd.DataFrame):
             self.df = data_source.dropna()  # Handle DataFrame
         else:
-            raise ValueError("data_source must be a file path (CSV or TIF) or a pandas DataFrame.")
+            raise ValueError("data_source must be a file path (CSV, TIF, or shapefile) or a pandas DataFrame.")
         
         # Prepare data for haversine distance queries
         self.points_rad = np.deg2rad(self.df[['lat', 'lon']].values)
