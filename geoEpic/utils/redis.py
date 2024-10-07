@@ -41,3 +41,9 @@ class WorkerPool:
             resource = self.redis.lpop(self.pool_key).decode('utf-8')
             if self.base_dir and os.path.exists(resource):
                 shutil.rmtree(resource, ignore_errors=True)
+    
+    def queue_len(self):
+        if self.redis.exists(self.pool_key):
+            return self.redis.llen(self.pool_key)
+        else: return None
+    

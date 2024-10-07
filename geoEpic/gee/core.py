@@ -3,6 +3,7 @@ import pandas as pd
 from ruamel.yaml import YAML
 from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
+from geoEpic.utils.redis import WorkerPool
 
 import ee
 from geoEpic.gee.initialize import ee_Initialize
@@ -10,21 +11,28 @@ from geoEpic.gee.initialize import ee_Initialize
 ee_Initialize()
 
 def extract_features(collection, aoi, date_range, resolution):
+    pool = WorkerPool('gee_global_lock')
+    
     def map_function(image):
         # Function to reduce image region and extract data
         date = image.date().format()
         reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
         reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
         return ee.Feature(None, reduction).set('Date', date)
+    
+    worker = pool.acquire()
 
-    filtered_collection = collection.filterBounds(aoi)
-    filtered_collection = filtered_collection.filterDate(*date_range)
-    daily_data = filtered_collection.map(map_function)
-    df = ee.data.computeFeatures({
-            'expression': daily_data,
-            'fileFormat': 'PANDAS_DATAFRAME'
-        })
-    if( not df.empty):
+    try:
+        filtered_collection = collection.filterBounds(aoi)
+        filtered_collection = filtered_collection.filterDate(*date_range)
+        daily_data = filtered_collection.map(map_function)
+        df = ee.data.computeFeatures({
+                'expression': daily_data,
+                'fileFormat': 'PANDAS_DATAFRAME'
+            })
+    except Exception as e: raise e
+    finally: pool.release(worker)
+    if( not df.empty ):
         df['Date'] = pd.to_datetime(df['Date']).dt.date
         if 'geo' in df.columns: df = df.drop(columns=['geo'])
         df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
@@ -145,36 +153,25 @@ class CompositeCollection:
             pd.DataFrame: A pandas DataFrame containing the extracted data.
         """
         # Convert coordinates to AOI geometry
-        if isinstance(aoi_coords, Polygon):
+        if isinstance(aoi_coords, (Polygon, MultiPolygon)):
             aoi_coords = aoi_coords.exterior.coords[:]
-            aoi = ee.Geometry.Polygon(aoi_coords)
-        elif isinstance(aoi_coords, MultiPolygon):
-            polygons = []
-            for poly in aoi_coords.geoms:
-                exterior_coords = list(poly.exterior.coords)
-                interior_coords = [list(interior.coords) for interior in poly.interiors]
-                polygons.append([exterior_coords] + interior_coords)
-            aoi = ee.Geometry.MultiPolygon(polygons)
-        else:
+        if len(aoi_coords) == 1:
             aoi = ee.Geometry.Point(aoi_coords[0])
+        else:
+            aoi = ee.Geometry.Polygon(aoi_coords)
         
-        # def extract_features_wrapper(args):
-        #     name, collection, date_range = args
-        #     return extract_features(collection, aoi, date_range, self.resolution)
-        # # Use ThreadPoolExecutor to parallelize the extraction process
-        # with ThreadPoolExecutor(max_workers=20) as executor:
-        #     results = list(executor.map(extract_features_wrapper, self.args))
-
-        results = []
-        for args in self.args:
+        def extract_features_wrapper(args):
             name, collection, date_range = args
-            result = extract_features(collection, aoi, date_range, self.resolution)
-            if not result.empty:
-                results.append(result)
+            return extract_features(collection, aoi, date_range, self.resolution)
+        # Use ThreadPoolExecutor to parallelize the extraction process
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            results = list(executor.map(extract_features_wrapper, self.args))
 
         # Merge the results into a single DataFrame
         df_merged = results[0]
         for df in results[1:]:
+            if df.empty:
+                continue
             df_merged = pd.merge(df_merged, df, on='Date', how='outer')
             columns = df_merged.columns
             # Iterate over columns to find and calculate the mean for columns with suffixes
@@ -189,9 +186,8 @@ class CompositeCollection:
         try:
             # Apply derived variables formulas if specified in the configuration
             derived = self.config.get('derived_variables')
-            if derived is not None:
-                for var_name, formula in derived.items():
-                    df_merged[var_name] = self._safe_eval(formula, df_merged)
+            for var_name, formula in derived.items():
+                df_merged[var_name] = self._safe_eval(formula, df_merged)
         except Exception as e:
             print(e)
         
