@@ -115,8 +115,12 @@ class GeoInterface:
                 gdf = gpd.read_file(data_source)
                 # Ensure the GeoDataFrame has a latitude and longitude column
                 if 'lat' not in gdf.columns or 'lon' not in gdf.columns:
-                    # Assuming the geometry is in longitude, latitude
-                    gdf['lon'], gdf['lat'] = gdf['geometry'].x, gdf['geometry'].y
+                    # Calculate the centroids if the geometry column exists
+                    if 'geometry' in gdf.columns:
+                        gdf['lon'] = gdf['geometry'].centroid.x
+                        gdf['lat'] = gdf['geometry'].centroid.y
+                    else:
+                        raise ValueError("No geometry column found")
                 self.df = gdf.dropna(subset=['lat', 'lon'])
             else:
                 raise ValueError("Unsupported file format. The file must be a CSV, TIF/TIFF, or shapefile.")
