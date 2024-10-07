@@ -9,38 +9,10 @@ from .model import EPICModel
 from .site import Site
 import geopandas as gpd
 from glob import glob
-from random import randint
-from multiprocessing import Manager
+from geoEpic.utils.redis import WorkerPool
 from shortuuid import uuid 
 import signal
 import atexit
-
-class DirectoryPool:
-    def __init__(self, base_shm_path = None, max_dirs = None):
-        self.base_shm_path = base_shm_path
-        self.max_dirs = max_dirs
-        self.manager = Manager()
-
-    def open(self):
-        self.pool = self.manager.Queue(maxsize=self.max_dirs)
-        os.makedirs(self.base_shm_path, exist_ok=True)
-        for i in range(self.max_dirs):
-            dir_name = f"{i}"
-            dir_path = os.path.join(self.base_shm_path, dir_name)
-            self.pool.put(dir_path)
-
-    def acquire(self):
-        return self.pool.get()
-
-    def release(self, dir_path):
-        self.pool.put(dir_path)
-
-    def close(self):
-        while not self.pool.empty():
-            dir_path = self.pool.get()
-            shutil.rmtree(dir_path)
-
-model_pool = DirectoryPool()
 
 class Workspace:
     """
@@ -77,12 +49,12 @@ class Workspace:
         self.model = EPICModel.from_config(config_path)
         if cache_path is None:
             cache_path = '/dev/shm' 
-        self.cache = os.path.join(cache_path, 'geo_epic', uuid())
+        self.uuid = uuid()
+        self.cache = os.path.join(cache_path, 'geo_epic', self.uuid)
         os.makedirs(self.cache, exist_ok=True)
         self._process_run_info(self.config['run_info'])
         self.data_logger = DataLogger(self.cache)
-        model_pool.max_dirs = self.config["num_of_workers"]*2
-        model_pool.base_shm_path = os.path.join(self.cache, "EPICRUNS")
+        self.model_pool = WorkerPool(self.config["num_of_workers"]*2, self.uuid, os.path.join(self.cache, "EPICRUNS"))
         
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
@@ -204,11 +176,11 @@ class Workspace:
         """
         site = Site.from_config(self.config, **site_info)
         # Acquire a worker from the model pool
-        dst_dir = model_pool.acquire()
+        dst_dir = self.model_pool.acquire()
         # Run the model and routines for the site
         self.model.run(site, dst_dir)
         # Release the worker back to the model pool
-        model_pool.release(dst_dir)
+        self.model_pool.release(dst_dir)
         for func in self.routines.values():
             func(site)
         # Handle output files
@@ -244,7 +216,7 @@ class Workspace:
         info_ls = info.to_dict('records')
 
         # Open model pool
-        model_pool.open()
+        self.model_pool.open()
         # Run first simulation for error check, if progress bar is enabled
         if progress_bar: self.run_simulation(info_ls.pop(0))
         # Execute simulations in parallel
