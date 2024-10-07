@@ -212,16 +212,12 @@ class Workspace:
             if progress_bar:
                 print("Warning: Output files won't be saved")
 
-        # Setup the model
-        self.model.setup(self.config)
         # Use provided select string or default from config
         select_str = select_str or self.config["select"]
         # Load and filter run information
         info = filter_dataframe(pd.read_csv(self.run_info), select_str)
         info_ls = info.to_dict('records')
 
-        # Open model pool
-        self.model_pool.open()
         # Run first simulation for error check, if progress bar is enabled
         if progress_bar: self.run_simulation(info_ls.pop(0))
         # Execute simulations in parallel
