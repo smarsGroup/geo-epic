@@ -221,7 +221,8 @@ class Workspace:
         # Open model pool
         self.model_pool.open()
         # Run first simulation for error check, if progress bar is enabled
-        if progress_bar: self.run_simulation(info_ls.pop(0))
+        if progress_bar: _run_simulation(info_ls.pop(0), self.config, self.model, self.model_pool, 
+                                              self.routines, self.delete_after_use)
         # Execute simulations in parallel
         parallel_executor(
             lambda x: _run_simulation(x, self.config, self.model, self.model_pool, 
