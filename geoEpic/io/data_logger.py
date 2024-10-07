@@ -200,45 +200,23 @@ class SQLTableWriter:
         self.close()
 
 
+from geoEpic.utils.redis import connect_to_redis
+
 class RedisWriter:
     def __init__(self, table_name, host='localhost', port=6379, db=0):
         """Initialize the Redis class with connection parameters and a table name."""
         self.table_name = table_name
-        self.client = redis.Redis(host=host, port=port, db=db)
+        self.client = connect_to_redis(host='localhost', port=6379, db=0)
         self.connected = False
 
     def open(self):
         """Establish connection to Redis and initialize counter if needed."""
-        try:
-            self.client.ping()  # Check if the connection is alive
-            self.connected = True
-        except redis.ConnectionError:
-            # Attempt to start the Redis server if it's not running
-            print("Redis server not running. Attempting to start...")
-            self._start_redis_server()
-            # Wait briefly for Redis to start
-            time.sleep(2)  # Give some time for Redis to start
-            try:
-                self.client.ping()  # Re-check if the server started
-                self.connected = True
-                print("Connected to Redis server.")
-            except redis.ConnectionError:
-                raise Exception("Failed to connect to Redis server after attempting to start it.")
-        
+        self.connected = True
         # Initialize the counter if it doesn't exist
         counter_key = f"{self.table_name}:counter"
         if not self.client.exists(counter_key):
             # Set counter to -1 so that the first INCR gives 0
             self.client.set(counter_key, -1)
-
-    def _start_redis_server(self):
-        """Attempt to start the Redis server if it's not already running."""
-        try:
-            import subprocess
-            subprocess.Popen(["redis-server"])  # Start Redis in the background
-            print("Redis server started.")
-        except Exception as e:
-            raise Exception(f"Failed to start Redis server: {str(e)}")
 
     def write_row(self, row_id=None, **kwargs):
         """Write a row to Redis hash under the specified table name."""

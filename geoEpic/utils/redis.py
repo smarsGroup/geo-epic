@@ -2,11 +2,46 @@ import os
 import shutil
 import redis
 import shortuuid
+import time
+import subprocess
+
+def connect_to_redis(host='localhost', port=6379, db=0):
+    """
+    Establish connection to Redis, attempting to start the Redis server if needed.
+    
+    Args:
+        host (str): Redis server hostname.
+        port (int): Redis server port.
+        db (int): Redis database number.
+
+    Returns:
+        redis.Redis: A connected Redis client instance.
+    """
+    client = redis.Redis(host=host, port=port, db=db)
+
+    try:
+        # Check if the connection is alive by pinging the server
+        client.ping()
+    except redis.ConnectionError:
+        # If the connection fails, try to start the Redis server
+        print("Redis server not running. Attempting to start...")
+        try:
+            subprocess.Popen(["redis-server"])  # Start Redis in the background
+            print("Redis server started.")
+            # Wait briefly for the Redis server to start up
+            time.sleep(2)
+            # Re-check the connection after starting the server
+            client.ping()
+            print("Connected to Redis server.")
+        except Exception as e:
+            raise Exception(f"Failed to start Redis server: {str(e)}")
+
+    return client
 
 
 class WorkerPool:
     def __init__(self, pool_key=None, base_dir=None, host='localhost', port=6379, db=0):
-        self.redis = redis.Redis(host=host, port=port, db=db)
+        self.redis = connect_to_redis(host=host, port=port, db=db)
         self.pool_key = pool_key or f"worker_pool_{shortuuid.uuid()}"
         self.base_dir = base_dir
 
