@@ -26,7 +26,7 @@ args = parser.parse_args()
 config = ConfigParser(args.config)
 max_workers = args.max_workers
 weather = config["weather"]
-aoi = config["Fields_of_Interest"]
+aoi = config["Area_of_Interest"]
 start_date = weather["start_date"]
 end_date = weather["end_date"]
 working_dir = weather["dir"]
@@ -51,7 +51,7 @@ os.chdir(working_dir)
 dates = pd.date_range(start = start_date, end = end_date, freq = 'BME')
 
 
-lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
+# lat_min, lat_max, lon_min, lon_max = [39.8, 43.0, -104, -95.3]
 # Latitude and longitude ranges from command-line arguments
 lat_range = slice(lat_min, lat_max)
 lon_range = slice(lon_min, lon_max)
@@ -89,7 +89,11 @@ def download_func(date):
     Downloads 'ugrd10m' and 'vgrd10m' data for the given date, computes the wind speed,
     and saves it to an .npy file.
     """
+
     date_str = date.strftime('%Y-%m')
+
+    if( os.path.exists(f'NLDAS_data/{date_str}.npy') ):
+        return
     # Select the data for the given month
     month_data = data_set.sel(time=f'{date_str}')
 

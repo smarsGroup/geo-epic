@@ -27,7 +27,7 @@ config = ConfigParser(args.config)
 max_workers = int(args.max_workers)
 
 weather = config["weather"]
-aoi = config["Fields_of_Interest"]
+aoi = config["Area_of_Interest"]
 working_dir = weather["dir"]
 region_code = config["code"]
 start_date = weather["start_date"].strftime('%Y-%m-%d')

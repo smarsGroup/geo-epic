@@ -89,16 +89,16 @@ class Workspace:
         """
         if file_path.lower().endswith('.csv'):
             data = pd.read_csv(file_path)
-            required_columns_csv = {'siteid', 'soil', 'opc', 'dly', 'lat', 'lon'}
-            if not required_columns_csv.issubset(set(data.columns.str.lower())):
+            required_columns_csv = {'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'}
+            if not required_columns_csv.issubset(set(data.columns.str)):
                 raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'")
         elif file_path.lower().endswith('.shp'):
             data = gpd.read_file(file_path)
             data = data.to_crs(epsg=4326)  # Convert to latitude and longitude projection
             data['lat'] = data.geometry.centroid.y
             data['lon'] = data.geometry.centroid.x
-            required_columns_shp = {'siteid', 'soil', 'opc', 'dly'}
-            if not required_columns_shp.issubset(set(data.columns.str.lower())):
+            required_columns_shp = {'SiteID', 'soil', 'opc', 'dly'}
+            if not required_columns_shp.issubset(set(data.columns.str)):
                 raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil', 'opc', 'dly'")
             data.drop(columns=['geometry'], inplace=True)
         else:

@@ -28,20 +28,18 @@ elevation = site['elevation']
 slope = site['slope']
 slope_len = site['slope_length']
 
-
-
 if info_file.lower().endswith('.csv'):
     data = pd.read_csv(info_file)
-    required_columns_csv = {'siteid', 'soil', 'lat', 'lon'}
-    if not required_columns_csv.issubset(set(data.columns.str.lower())):
+    required_columns_csv = {'SiteID', 'soil', 'lat', 'lon'}
+    if not required_columns_csv.issubset(set(data.columns.str)):
         raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'lat', 'lon'")
 elif info_file.lower().endswith('.shp'):
     data = gpd.read_file(info_file)
     data = data.to_crs(epsg=4326)  # Convert to latitude and longitude projection
     data['lat'] = data.geometry.centroid.y
     data['lon'] = data.geometry.centroid.x
-    required_columns_shp = {'siteid', 'soil'}
-    if not required_columns_shp.issubset(set(data.columns.str.lower())):
+    required_columns_shp = {'SiteID', 'soil'}
+    if not required_columns_shp.issubset(set(data.columns.str)):
         raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil'")
     data.drop(columns=['geometry'], inplace=True)
 else:
@@ -82,7 +80,7 @@ with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
 def write_site(row):
-    with open(os.path.join(out_dir, f"{int(row['siteid'])}.sit"), 'w') as f:
+    with open(os.path.join(out_dir, f"{int(row['siteid'])}.SIT"), 'w') as f:
         # Modify the template lines
         template[0] = 'USA crop simulations\n'
         template[1] = 'Prototype\n'

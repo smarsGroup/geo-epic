@@ -5,6 +5,12 @@ import rasterio
 from osgeo import gdal, osr
 from pyproj import Transformer
 from sklearn.neighbors import BallTree
+from rasterio.mask import mask
+from collections import Counter
+from shapely.geometry import mapping
+from geoEpic.utils import parallel_executor
+from tqdm import tqdm
+
 
 
 def find_nearest(src, dst, metric = 'minkowski', k = 1):
@@ -44,6 +50,62 @@ def raster_to_dataframe(raster_file):
 
     return pd.DataFrame(data_dict)
 
+def sample_raster_aggregated(raster_file, geometries, crs="EPSG:4326", agg_type="mean"):
+    """
+    Sample a raster file based on geometries (polygons) and return aggregated pixel values.
+    
+    Args:
+        raster_file (str): Path to the raster file.
+        geometries (list): List of geometries (polygons) in GeoJSON-like format or Shapely geometries.
+        crs (str): The CRS of the geometries.
+        agg_type (str): Type of aggregation ('mean', 'median', or 'mode').
+        
+    Returns:
+        pd.DataFrame: A dataframe with geometry indices and aggregated pixel values.
+    """
+    agg_funcs = {
+        'mean': np.mean,
+        'median': np.median,
+        'mode': lambda x: Counter(x).most_common(1)[0][0]  # custom function to get the mode
+    }
+
+    if agg_type not in agg_funcs:
+        raise ValueError(f"Invalid aggregation type: {agg_type}. Choose 'mean', 'median', or 'mode'.")
+
+    # Ensure the geometries are in the raster's CRS
+    with rasterio.open(raster_file) as src:
+        if crs != src.crs:
+            geometries = [g.to_crs(src.crs) for g in geometries]
+        
+        band_names = src.descriptions or [f"band_{i}" for i in range(1, src.count + 1)]
+        
+        # Collect the results
+        results = []
+            
+        for i, geom in enumerate(tqdm(geometries, desc="Processing Geometries")):
+            geom = [mapping(geom)]  # Convert the geometry to GeoJSON format for rasterio masking
+            try:
+                out_image, out_transform = mask(src, geom, crop=True, filled=False)
+
+                # Flatten the raster values and filter out nodata values
+                # out_image is a masked array; use `out_image.data` to get valid values
+                flattened_values = out_image.data[~out_image.mask].flatten()
+
+                if flattened_values.size > 0:
+                    # Apply the chosen aggregation function
+                    agg_values = {band_names[j]: agg_funcs[agg_type](flattened_values[j::src.count])
+                                  for j in range(src.count)}
+                else:
+                    # No valid values within the geometry
+                    agg_values = {band_name: np.nan for band_name in band_names}
+
+                results.append(agg_values)
+
+            except Exception as e:
+                print(f"Error processing geometry {i}: {e}")
+                continue
+
+    return pd.DataFrame(results)
 
 
 def sample_raster_nearest(raster_file, coords, crs="EPSG:4326"):
@@ -172,67 +234,6 @@ class GeoInterface:
             return self.df.iloc[indices.flatten()]
         else:
             return [self.df.iloc[index] for index in indices]
-        
-
-class RasterInterface:
-    def __init__(self, tif_path):
-        self.tif_path = tif_path
-        self.load_metadata()
-
-    def load_metadata(self):
-        self.src = gdal.Open(self.tif_path)
-        if self.src is None:
-            raise Exception(f'Could not load GDAL file "{self.tif_path}"')
-        self.geo_transform = self.src.GetGeoTransform()
-        self.inv_geo_transform = gdal.InvGeoTransform(self.geo_transform)
-        self.band = self.src.GetRasterBand(1)
-        self.array = self.band.ReadAsArray()  # Load entire raster into memory for fast access
-
-    def get_corner_coords(self):
-        ulx, xres, xskew, uly, yskew, yres = self.geo_transform
-        lrx = ulx + (self.src.RasterXSize * xres)
-        lry = uly + (self.src.RasterYSize * yres)
-        return {
-            'TOP_LEFT': (ulx, uly),
-            'TOP_RIGHT': (lrx, uly),
-            'BOTTOM_LEFT': (ulx, lry),
-            'BOTTOM_RIGHT': (lrx, lry),
-        }
-
-    def lookup(self, lat, lon):
-        # Coordinate transformation (assuming WGS84 input)
-        spatial_ref = osr.SpatialReference()
-        spatial_ref.ImportFromEPSG(4326)  # WGS84
-        
-        target_ref = osr.SpatialReference()
-        target_ref.ImportFromWkt(self.src.GetProjection())
-        
-        transform = osr.CoordinateTransformation(spatial_ref, target_ref)
-        xgeo, ygeo, zgeo = transform.TransformPoint(lon, lat)
-
-        # Pixel coordinates
-        px, py = gdal.ApplyGeoTransform(self.inv_geo_transform, xgeo, ygeo)
-        px, py = int(px), int(py)
-
-        try:
-            value = self.array[py, px]  # Access the preloaded array directly
-        except IndexError:
-            value = None  # or np.nan, depending on how you want to handle lookup errors
-
-        return value
-
-    def close(self):
-        self.src = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-
-
-    
     
 def _lon_lat_coords(trans, shape):
     """
