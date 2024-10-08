@@ -5,6 +5,7 @@ import sys
 # Mapping of modules and functions to their respective relative paths
 script_paths = {
     "utility": {
+        "copy": 'utils/parallel_copy.py',
         "crop_csb": "utils/crop_csb.py",
         "gee": "gee/fetch.py"
     },

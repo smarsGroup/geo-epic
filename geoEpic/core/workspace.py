@@ -219,7 +219,7 @@ class Workspace:
         """
         evaluate = lambda func: func(site)
         results = parallel_executor(
-            evaluate , 
+            evaluate, 
             self.routines.values(), 
             method='Thread',
             timeout=10,
