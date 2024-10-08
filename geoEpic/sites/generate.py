@@ -31,7 +31,7 @@ slope_len = site['slope_length']
 if info_file.lower().endswith('.csv'):
     data = pd.read_csv(info_file)
     required_columns_csv = {'SiteID', 'soil', 'lat', 'lon'}
-    if not required_columns_csv.issubset(set(data.columns.str)):
+    if not required_columns_csv.issubset(set(data.columns)):
         raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'lat', 'lon'")
 elif info_file.lower().endswith('.shp'):
     data = gpd.read_file(info_file)
@@ -39,7 +39,7 @@ elif info_file.lower().endswith('.shp'):
     data['lat'] = data.geometry.centroid.y
     data['lon'] = data.geometry.centroid.x
     required_columns_shp = {'SiteID', 'soil'}
-    if not required_columns_shp.issubset(set(data.columns.str)):
+    if not required_columns_shp.issubset(set(data.columns)):
         raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil'")
     data.drop(columns=['geometry'], inplace=True)
 else:

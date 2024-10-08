@@ -43,7 +43,17 @@ class WorkerPool:
     def __init__(self, pool_key=None, base_dir=None, host='localhost', port=6379, db=0):
         self.redis = connect_to_redis(host=host, port=port, db=db)
         self.pool_key = pool_key or f"worker_pool_{shortuuid.uuid()}"
-        self.base_dir = base_dir
+
+        existing_base_dir = self.redis.get(f"{self.pool_key}_base_dir")
+        
+        if base_dir:
+            self.base_dir = base_dir
+            self.redis.set(f"{self.pool_key}_base_dir", self.base_dir)
+        elif existing_base_dir:
+            self.base_dir = existing_base_dir.decode('utf-8')  # Decode bytes to string
+        else:
+            self.base_dir = None
+            self.redis.set(f"{self.pool_key}_base_dir", "None")
 
     def open(self, max_resources):
         """Initialize resources and add them to the Redis queue."""
@@ -76,6 +86,7 @@ class WorkerPool:
             resource = self.redis.lpop(self.pool_key).decode('utf-8')
             if self.base_dir and os.path.exists(resource):
                 shutil.rmtree(resource, ignore_errors=True)
+        self.redis.delete(f"{self.pool_key}_base_dir")
     
     def queue_len(self):
         if self.redis.exists(self.pool_key):

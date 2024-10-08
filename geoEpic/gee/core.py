@@ -30,9 +30,10 @@ def extract_features(collection, aoi, date_range, resolution):
                 'expression': daily_data,
                 'fileFormat': 'PANDAS_DATAFRAME'
             })
-    except Exception as e: raise e
-    finally: pool.release(worker)
-    if( not df.empty ):
+    finally: 
+        pool.release(worker)
+
+    if not df.empty:
         df['Date'] = pd.to_datetime(df['Date']).dt.date
         if 'geo' in df.columns: df = df.drop(columns=['geo'])
         df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])

@@ -21,6 +21,7 @@ class Workspace:
     and logging results.
 
     Attributes:
+        uuid (str): Unique ID assigned to each workspace instance
         config (dict): Configuration data loaded from a config file.
         base_dir (str): Base directory for the workspace.
         routines (dict): Dictionary to store functions as routines.
@@ -29,7 +30,6 @@ class Workspace:
         delete_after_use (bool): Whether to delete temporary files after use.
         model (EPICModel): Instance of the EPIC model.
         data_logger (DataLogger): Instance of the DataLogger for logging data.
-        run_info (pandas.DataFrame): DataFrame containing run information.
     """
 
     def __init__(self, config_path, cache_path = None):
@@ -40,6 +40,7 @@ class Workspace:
             config_path (str): Path to the configuration file.
             cache_path (str): Path to store cahe, /dev/shm by default
         """
+        self.uuid = uuid() 
         config = ConfigParser(config_path)
         self.config = config.as_dict()
         self.base_dir = config.dir
@@ -48,16 +49,22 @@ class Workspace:
         self.dataframes = {}
         self.delete_after_use = True
         self.model = EPICModel.from_config(config_path)
-        if cache_path is None:
-            cache_path = '/dev/shm' 
-        self.uuid = uuid()
-        self.cache = os.path.join(cache_path, 'geo_epic', self.uuid)
+
+        # Create Cache folders on RAM
+        if cache_path is None: cache_path = '/dev/shm' 
+        username = os.getlogin()
+        self.cache = os.path.join(cache_path, f'geo_epic_{username}', self.uuid)
         os.makedirs(self.cache, exist_ok=True)
         self._process_run_info(self.config['run_info'])
+
+        # Initialise DataLogger
         self.data_logger = DataLogger(self.cache)
-        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
-        model_pool.open(self.config["num_of_workers"]*2)
+
+        # Initialise Model pool
+        epicruns_dir = os.path.join(self.cache, 'EPICRUNS')
+        WorkerPool(self.uuid, epicruns_dir).open(self.config["num_of_workers"]*2)
         
+        # Warning while use more workers
         if self.config["num_of_workers"] > os.cpu_count():
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
             warnings.warn(warning_msg, RuntimeWarning)
@@ -73,54 +80,9 @@ class Workspace:
         exit(0)
     
     def cache_cleanup(self):
-        model_pool = WorkerPool(self.uuid, os.path.join(self.cache, 'EPICRUNS'))
-        model_pool.close()
+        # Close worker pool and delete cache
+        WorkerPool(self.uuid).close()
         shutil.rmtree(self.cache)
-    
-    def _process_run_info(self, file_path):
-        """
-        Process the run information file, filtering and preparing data based on the file type.
-
-        Args:
-            file_path (str): Path to the CSV or SHP file containing run information.
-
-        Raises:
-            ValueError: If the file format is unsupported or required columns are missing.
-        """
-        if file_path.lower().endswith('.csv'):
-            data = pd.read_csv(file_path)
-            required_columns_csv = {'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'}
-            if not required_columns_csv.issubset(set(data.columns.str)):
-                raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'")
-        elif file_path.lower().endswith('.shp'):
-            data = gpd.read_file(file_path)
-            data = data.to_crs(epsg=4326)  # Convert to latitude and longitude projection
-            data['lat'] = data.geometry.centroid.y
-            data['lon'] = data.geometry.centroid.x
-            required_columns_shp = {'SiteID', 'soil', 'opc', 'dly'}
-            if not required_columns_shp.issubset(set(data.columns.str)):
-                raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil', 'opc', 'dly'")
-            data.drop(columns=['geometry'], inplace=True)
-        else:
-            raise ValueError("Unsupported file format. Please provide a '.csv' or '.shp' file.")
-        
-        # Check for OPC files
-        opc_files = glob(f'{self.config["opc_dir"]}/*.OPC')
-        present = [os.path.basename(f).split('.')[0] for f in opc_files]
-
-        # Filter data to include only rows where 'opc' value has a corresponding .OPC file
-        initial_count = len(data)
-        data = data.loc[data['opc'].astype(str).isin(present)]
-        final_count = len(data)
-
-        # Check if the count of valid OPC files is less than the initial count of data entries
-        if final_count < initial_count:
-            missing_count = initial_count - final_count
-            warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
-            warnings.warn(warning_msg, RuntimeWarning)
-        path = os.path.join(self.cache, "info.csv")
-        data.to_csv(path, index = False)
-        self.run_info = path
 
     def logger(self, func):
         """
@@ -171,23 +133,34 @@ class Workspace:
         """
         return self.data_logger.get(func)
 
-    def run_simulation(self, site_info):
+    def run_simulation(self, site_or_info):
         """
-        Run simulation for a given site.
+        Run simulation for a given site or site information.
 
         Args:
-            site_info (dict): Dictionary containing site information.
+            site_or_info (Site or dict): A Site object or a dictionary containing site information.
+
+        Returns:
+            dict: The results from the post-processing routines. Output files are saved based on the options selected
         """
-        site = Site.from_config(self.config, **site_info)
+        if isinstance(site_or_info, Site):
+            site = site_or_info
+        elif isinstance(site_or_info, dict):
+            site = Site.from_config(self.config, **site_or_info)
+        else:
+            raise ValueError("Input must be a Site object or a dictionary containing site information.")
+
         # Acquire a worker from the model pool
         model_pool = WorkerPool(self.uuid)
         dst_dir = model_pool.acquire()
-        # Run the model and routines for the site
-        self.model.run(site, dst_dir)
-        # Release the worker back to the model pool
-        model_pool.release(dst_dir)
-        for func in self.routines.values():
-            func(site)
+        try:
+            # Run the model and routines for the site
+            self.model.run(site, dst_dir)
+        finally:
+            # Release the worker back to the model pool
+            model_pool.release(dst_dir)
+        # Post Process Simulation outcomes
+        results = self.post_process(site)
         # Handle output files
         for out_path in site.outputs.values():
             if self.config['output_dir'] is None or (self.routines and self.delete_after_use):
@@ -195,6 +168,7 @@ class Workspace:
             else:
                 dst = os.path.join(self.config['output_dir'], os.path.basename(out_path))
                 shutil.move(out_path, dst)
+        return results
                     
 
     def run(self, select_str = None, progress_bar = True):
@@ -233,6 +207,27 @@ class Workspace:
         # Return result of objective function if defined, else None
         return self.objective_function() if self.objective_function else None
     
+    def post_process(self, site):
+        """
+        Execute routines in parallel and return their results in a dictionary.
+
+        Args:
+            site: The site object to be passed to each routine.
+
+        Returns:
+            dict: A dictionary with function names as keys and their returned values as values.
+        """
+        evaluate = lambda func: func(site)
+        results = parallel_executor(
+            evaluate , 
+            self.routines.values(), 
+            method='Thread',
+            timeout=10,
+            bar=False,
+        )
+        return dict(zip(self.routines.keys(), results))
+
+    
     def clear_logs(self):
         """
         Clear all log files and temporary run directories.
@@ -248,3 +243,49 @@ class Workspace:
         output_dir = self.config.get('output_dir')
         if output_dir and os.path.exists(output_dir):
             subprocess.run(f"rm -rf {os.path.join(output_dir, '*')}", shell=True, check=True)
+    
+
+    def _process_run_info(self, file_path):
+        """
+        Process the run information file, filtering and preparing data based on the file type.
+
+        Args:
+            file_path (str): Path to the CSV or SHP file containing run information.
+
+        Raises:
+            ValueError: If the file format is unsupported or required columns are missing.
+        """
+        if file_path.lower().endswith('.csv'):
+            data = pd.read_csv(file_path)
+            required_columns_csv = {'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'}
+            if not required_columns_csv.issubset(set(data.columns)):
+                raise ValueError("CSV file missing one or more required columns: 'SiteID', 'soil', 'opc', 'dly', 'lat', 'lon'")
+        elif file_path.lower().endswith('.shp'):
+            data = gpd.read_file(file_path)
+            data = data.to_crs(epsg=4326)  # Convert to latitude and longitude projection
+            data['lat'] = data.geometry.centroid.y
+            data['lon'] = data.geometry.centroid.x
+            required_columns_shp = {'SiteID', 'soil', 'opc', 'dly'}
+            if not required_columns_shp.issubset(set(data.columns)):
+                raise ValueError("Shapefile missing one or more required attributes: 'SiteID', 'soil', 'opc', 'dly'")
+            data.drop(columns=['geometry'], inplace=True)
+        else:
+            raise ValueError("Unsupported file format. Please provide a '.csv' or '.shp' file.")
+        
+        # Check for OPC files
+        opc_files = glob(f'{self.config["opc_dir"]}/*.OPC')
+        present = [os.path.basename(f).split('.')[0] for f in opc_files]
+
+        # Filter data to include only rows where 'opc' value has a corresponding .OPC file
+        initial_count = len(data)
+        data = data.loc[data['opc'].astype(str).isin(present)]
+        final_count = len(data)
+
+        # Check if the count of valid OPC files is less than the initial count of data entries
+        if final_count < initial_count:
+            missing_count = initial_count - final_count
+            warning_msg = f"Warning: {missing_count} sites will not run due to missing .OPC files."
+            warnings.warn(warning_msg, RuntimeWarning)
+        path = os.path.join(self.cache, "info.csv")
+        data.to_csv(path, index = False)
+        self.run_info = path
