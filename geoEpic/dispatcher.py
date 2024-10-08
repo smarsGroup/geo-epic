@@ -5,7 +5,6 @@ import sys
 # Mapping of modules and functions to their respective relative paths
 script_paths = {
     "utility": {
-        "copy": 'utils/parallel_copy.py',
         "crop_csb": "utils/crop_csb.py",
         "gee": "gee/fetch.py"
     },
@@ -28,7 +27,7 @@ script_paths = {
         "run": "workspace/run.py",
         "listfiles": "workspace/listfiles.py",
         "new": "workspace/create_ws.py",
-        "copy": "workspace/add.py",
+        "copy": "workspace/parallel_copy.py",
         "post_process": "workspace/post_process.py",
         "visualize": "workspace/visualize.py"
     },
