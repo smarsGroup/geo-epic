@@ -55,8 +55,19 @@ file_mapping = {
     ],
     'HLS.yml': [os.path.join(script_dir, "../gee/HLS.yml")],
     'daily_weather.yml': [os.path.join(script_dir, "../gee/daily_weather.yml")],
+    'ws_template': [os.path.join(script_dir, "../templates/ws_template/")]
 }
 
+def copy_mapped_files(key, destination, max_workers):
+    # Source is a key in the file mapping, use the mapped files
+    file_pairs = [
+        (src, os.path.join(destination, os.path.basename(src)))
+        for src in file_mapping[key]
+    ]
+    parallel_executor(rsync_copy, file_pairs, 
+                        method='Thread', max_workers=max_workers, 
+                        timeout=20, bar = False)
+        
 def main():
     # Set up argument parsing
     parser = argparse.ArgumentParser(description="Parallel file copy or add utilities to workspace.")
@@ -89,14 +100,7 @@ def main():
         rsync_copy((args.source, destination_path))
         print(f"Copied file '{args.source}' to '{args.destination}'.")
     elif args.source in file_mapping:
-        # Source is a key in the file mapping, use the mapped files
-        file_pairs = [
-            (src, os.path.join(args.destination, os.path.basename(src)))
-            for src in file_mapping[args.source]
-        ]
-        parallel_executor(rsync_copy, file_pairs, 
-                          method='Thread', max_workers=args.max_workers, 
-                          timeout=20, bar = False)
+        copy_mapped_files(args.source, args.destination, args.max_workers)
     else:
         print(f"Error: '{args.source}' is not a valid directory or file or recognized file mapping key.")
 
