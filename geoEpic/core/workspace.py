@@ -151,14 +151,14 @@ class Workspace:
             raise ValueError("Input must be a Site object or a dictionary containing site information.")
 
         # Acquire a worker from the model pool
-        model_pool = WorkerPool(self.uuid)
-        dst_dir = model_pool.acquire()
-        try:
+        # model_pool = WorkerPool(self.uuid)
+        # dst_dir = model_pool.acquire()
+        # try:
             # Run the model and routines for the site
-            self.model.run(site, dst_dir)
-        finally:
+        self.model.run(site)
+        # finally:
             # Release the worker back to the model pool
-            model_pool.release(dst_dir)
+            # model_pool.release(dst_dir)
         # Post Process Simulation outcomes
         results = self.post_process(site)
         # Handle output files
@@ -218,13 +218,14 @@ class Workspace:
             dict: A dictionary with function names as keys and their returned values as values.
         """
         evaluate = lambda func: func(site)
-        results = parallel_executor(
-            evaluate, 
-            self.routines.values(), 
-            method='Thread',
-            timeout=10,
-            bar=False,
-        )
+        results = [evaluate(func) for func in self.routines.values()]
+        # parallel_executor(
+        #     evaluate, 
+        #     self.routines.values(), 
+        #     method='Thread',
+        #     timeout=10,
+        #     bar=False,
+        # )
         return dict(zip(self.routines.keys(), results))
 
     

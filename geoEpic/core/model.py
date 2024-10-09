@@ -123,7 +123,7 @@ class EPICModel:
         """
         fid = site.site_id
         source_dir = self.path
-        new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid)) if dest is None else dest
+        new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid)) #if dest is None else dest
 
         # Set up run directory
         if os.path.exists(new_dir):
@@ -152,7 +152,6 @@ class EPICModel:
             if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
                 shutil.move(log_file, os.path.join(self.log_dir, f"{fid}.out"))
                 os.chdir(self.base_dir)
-                #if dest is None: 
                 shutil.rmtree(new_dir)
                 raise FileNotFoundError(f"Output file ({out_type}) not found or empty. Check {log_file} for details")
             dst = os.path.join(self.output_dir if dest is None else os.path.dirname(new_dir), out_path)
@@ -161,7 +160,6 @@ class EPICModel:
 
         # Clean up
         os.chdir(self.base_dir)
-        #if dest is None:
         shutil.rmtree(new_dir)
 
 
