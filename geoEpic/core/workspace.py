@@ -218,16 +218,15 @@ class Workspace:
         Returns:
             dict: A dictionary with function names as keys and their returned values as values.
         """
-        evaluate = lambda func: func(site)
-        results = [evaluate(func) for func in self.routines.values()]
-        # parallel_executor(
-        #     evaluate, 
-        #     self.routines.values(), 
-        #     method='Thread',
-        #     timeout=10,
-        #     bar=False,
-        # )
-        return dict(zip(self.routines.keys(), results))
+        evaluate = lambda name, func: (name, func(site))
+        results = parallel_executor(
+            evaluate, 
+            list(self.routines.items()), 
+            method='Thread',
+            timeout=10,
+            bar=False,
+        )
+        return dict(results)
 
     
     def clear_logs(self):

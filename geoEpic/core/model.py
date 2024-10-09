@@ -124,12 +124,8 @@ class EPICModel:
         fid = site.site_id
         new_dir = os.path.join(self.cache_path, 'EPICRUNS', str(fid)) #if dest is None else dest
 
-        # Set up run directory
-        if os.path.exists(new_dir):
-            shutil.rmtree(new_dir)
-
         # Copy all contents from source_dir to new_dir
-        shutil.copytree(self.path, new_dir)
+        subprocess.run(["rsync", "-a", "--delete", f"{self.path}/", new_dir], check=True)
         os.chdir(new_dir)
 
         # Prepare weather data
