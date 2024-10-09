@@ -227,6 +227,7 @@ class Workspace:
             bar=False,
             return_value=True
         )
+        print(results)
         return dict(results)
 
     
