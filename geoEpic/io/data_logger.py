@@ -318,19 +318,20 @@ class DataLogger:
             os.makedirs(self.output_folder, exist_ok=True)
         self.delete_after_use = delete_after_use
         self.backend_kwargs = kwargs  # Additional kwargs for the writer classes
+        self.uuid = uuid()
 
     def get_writer(self, func_name):
         """Get the appropriate writer based on the backend."""
         if self.backend == 'redis':
             # For Redis, func_name is used as the table_name
-            return RedisWriter(f'{uuid()}:{func_name}', **self.backend_kwargs)
+            return RedisWriter(f'{self.uuid}:{func_name}', **self.backend_kwargs)
         elif self.backend == 'sql':
-            # For SQL, construct the file path using func_name
-            filename = os.path.join(self.output_folder, func_name)
+            # For SQL, construct the file path using func_name and uuid
+            filename = os.path.join(self.output_folder, f"{self.uuid}_{func_name}")
             return SQLTableWriter(filename, **self.backend_kwargs)
         elif self.backend == 'csv':
-            # For CSV, construct the file path using func_name
-            filename = os.path.join(self.output_folder, func_name)
+            # For CSV, construct the file path using func_name and uuid
+            filename = os.path.join(self.output_folder, f"{self.uuid}_{func_name}")
             return CSVWriter(filename, **self.backend_kwargs)
         else:
             raise ValueError(f"Unsupported backend: {self.backend}")
