@@ -130,7 +130,6 @@ class EPICModel:
 
         # Copy all contents from source_dir to new_dir
         shutil.copytree(self.path, new_dir)
-        # subprocess.run(["rsync", "-a", "--delete", f"{source_dir}/", new_dir], check=True)
         os.chdir(new_dir)
 
         # Prepare weather data

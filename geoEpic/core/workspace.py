@@ -9,7 +9,7 @@ from .model import EPICModel
 from .site import Site
 import geopandas as gpd
 from glob import glob
-from geoEpic.utils.redis import WorkerPool
+# from geoEpic.utils.redis import WorkerPool
 from shortuuid import uuid 
 import signal
 import atexit
@@ -82,7 +82,7 @@ class Workspace:
     
     def cache_cleanup(self):
         # Close worker pool and delete cache
-        WorkerPool(self.uuid).close()
+        # WorkerPool(self.uuid).close()
         shutil.rmtree(self.cache)
 
     def logger(self, func):
