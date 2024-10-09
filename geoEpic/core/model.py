@@ -135,8 +135,8 @@ class EPICModel:
 
         # Prepare weather data
         dly = site.get_dly()
-        dly.save(123456)
-        dly.to_monthly(123456)
+        dly.save(fid)
+        dly.to_monthly(fid)
         
         # Write configuration files
         self.writeDATFiles(site)
