@@ -126,9 +126,7 @@ class EPICModel:
         new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid)) if dest is None else dest
 
         # Set up run directory
-        if dest is None and os.path.exists(new_dir):
-            shutil.rmtree(new_dir)
-        subprocess.run(["rsync", "-a", f"{source_dir}/", new_dir], check=True)
+        subprocess.run(["rsync", "-a", "--delete", f"{source_dir}/", new_dir], check=True)
         os.chdir(new_dir)
 
         # Prepare weather data
@@ -140,13 +138,14 @@ class EPICModel:
         self.writeDATFiles(site)
 
         # Run EPIC executable
-        log_file = os.path.join(self.log_dir, f"{fid}.out")
+        log_file = f"{fid}.out" #os.path.join(self.log_dir, f"{fid}.out")
         subprocess.run(f'./{self.executable_name} > {log_file} 2>&1', shell=True)
 
         # Process output files
         for out_type in self.output_types:
             out_path = f'{fid}.{out_type}'
             if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
+                shutil.move(log_file, os.path.join(self.log_dir, f"{fid}.out"))
                 os.chdir(self.base_dir)
                 if dest is None: 
                     shutil.rmtree(new_dir)
@@ -156,7 +155,6 @@ class EPICModel:
             site.outputs[out_type] = dst
 
         # Clean up
-        os.remove(log_file)
         os.chdir(self.base_dir)
         if dest is None:
             shutil.rmtree(new_dir)
