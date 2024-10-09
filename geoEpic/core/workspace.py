@@ -59,6 +59,7 @@ class Workspace:
 
         # Initialise DataLogger
         self.data_logger = DataLogger(self.cache)
+        self.model.cache_path = self.cache
 
         # Initialise Model pool
         # epicruns_dir = os.path.join(self.cache, 'EPICRUNS')

@@ -41,7 +41,7 @@ class EPICModel:
         subprocess.Popen(f'chmod +x {self.executable}', shell=True).wait()
 
         # Define the path to the RAM-backed filesystem
-        self.shm_path = os.path.join(self.base_dir, '.cache')#'/dev/shm'  # On Linux systems
+        self.cache_path = os.path.join(self.base_dir, '.cache')#'/dev/shm'  # On Linux systems
 
 
     def setup(self, config):
@@ -122,15 +122,14 @@ class EPICModel:
             Exception: If any output file is not generated or is empty.
         """
         fid = site.site_id
-        source_dir = self.path
-        new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid)) #if dest is None else dest
+        new_dir = os.path.join(self.cache_path, 'EPICRUNS', str(fid)) #if dest is None else dest
 
         # Set up run directory
         if os.path.exists(new_dir):
             shutil.rmtree(new_dir)
 
         # Copy all contents from source_dir to new_dir
-        shutil.copytree(source_dir, new_dir)
+        shutil.copytree(self.path, new_dir)
         # subprocess.run(["rsync", "-a", "--delete", f"{source_dir}/", new_dir], check=True)
         os.chdir(new_dir)
 
