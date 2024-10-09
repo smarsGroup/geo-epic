@@ -5,7 +5,7 @@ from glob import glob
 import numpy as np
 import pandas as pd
 from geoEpic.io import ConfigParser
-
+import fcntl
 
 class EPICModel:
     """
@@ -42,6 +42,36 @@ class EPICModel:
 
         # Define the path to the RAM-backed filesystem
         self.cache_path = os.path.join(self.base_dir, '.cache')#'/dev/shm'  # On Linux systems
+
+        # Define the path to the lock file
+        self.lock_file = os.path.join(self.path, '.model_lock')
+        self.lock_handle = None
+
+        # Automatically acquire the lock when the instance is created
+        self.acquire_lock()
+
+    def acquire_lock(self):
+        """Acquire a lock on the model's directory."""
+        self.lock_handle = open(self.lock_file, 'w')
+        try:
+            fcntl.flock(self.lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            # If the lock cannot be acquired, another process is using the lock
+            self.lock_handle.close()
+            raise RuntimeError(f"Unable to acquire lock for {self.path}. It is currently in use.")
+
+    def release_lock(self):
+        """Release the lock on the model's directory."""
+        if self.lock_handle:
+            fcntl.flock(self.lock_handle, fcntl.LOCK_UN)
+            self.lock_handle.close()
+            os.remove(self.lock_file)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.release_lock()
 
 
     def setup(self, config):
