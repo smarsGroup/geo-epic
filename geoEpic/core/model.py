@@ -106,47 +106,60 @@ class EPICModel:
         """
         Execute the model for the given site and manage outputs.
 
+        This method performs the following steps:
+        1. Set up the run directory
+        2. Prepare the daily weather data
+        3. Write necessary DAT files
+        4. Run the EPIC executable
+        5. Process and move output files
+        6. Clean up temporary files
+
         Args:
             site (Site): A site instance containing site-specific configuration.
+            dest (str, optional): Destination directory for the run. If None, a temporary directory is used.
+
+        Raises:
+            Exception: If any output file is not generated or is empty.
         """
         fid = site.site_id
         source_dir = self.path
-        if dest is not None:
-            new_dir = dest
-        else:
-            new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid))
-            if os.path.exists(new_dir):
-                shutil.rmtree(new_dir)
+        new_dir = os.path.join(self.shm_path, 'EPICRUNS', str(fid)) if dest is None else dest
 
-        
+        # Set up run directory
+        if dest is None and os.path.exists(new_dir):
+            shutil.rmtree(new_dir)
         subprocess.run(["rsync", "-a", f"{source_dir}/", new_dir], check=True)
         os.chdir(new_dir)
 
+        # Prepare weather data
         dly = site.get_dly()
         dly.save(123456)
         dly.to_monthly(123456)
         
+        # Write configuration files
         self.writeDATFiles(site)
-        command = f'nohup ./{self.executable_name} > {os.path.join(self.log_dir, f"{fid}.out")} 2>&1'
-        subprocess.Popen(command, shell=True).wait()
 
+        # Run EPIC executable
+        log_file = os.path.join(self.log_dir, f"{fid}.out")
+        subprocess.run(f'./{self.executable_name}', stdout=open(log_file, 'w'), stderr=subprocess.STDOUT, check=True)
+
+        # Process output files
         for out_type in self.output_types:
             out_path = f'{fid}.{out_type}'
-            if not (os.path.exists(out_path) and os.path.getsize(out_path) > 0):
+            if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
                 os.chdir(self.base_dir)
-                if dest is None: shutil.rmtree(new_dir)
-                log_path = os.path.join(self.log_dir, f"{fid}.out")
-                raise Exception(f"Output file ({out_type}) not found. Check {log_path} for details")
-            if dest is None:  
-                dst = os.path.join(self.output_dir, out_path)
-            else: 
-                dst = os.path.join(os.path.dirname(new_dir), out_path) 
+                if dest is None: 
+                    shutil.rmtree(new_dir)
+                raise FileNotFoundError(f"Output file ({out_type}) not found or empty. Check {log_file} for details")
+            dst = os.path.join(self.output_dir if dest is None else os.path.dirname(new_dir), out_path)
             shutil.move(out_path, dst)
             site.outputs[out_type] = dst
 
-        os.remove(os.path.join(self.log_dir, f"{fid}.out"))
+        # Clean up
+        os.remove(log_file)
         os.chdir(self.base_dir)
-        if dest is None: shutil.rmtree(new_dir)
+        if dest is None:
+            shutil.rmtree(new_dir)
 
 
     def writeDATFiles(self, site):
