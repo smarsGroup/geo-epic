@@ -218,7 +218,7 @@ class Workspace:
         Returns:
             dict: A dictionary with function names as keys and their returned values as values.
         """
-        evaluate = lambda name, func: (name, func(site))
+        evaluate = lambda name_func: (name_func[0], name_func[1](site))
         results = parallel_executor(
             evaluate, 
             list(self.routines.items()), 
