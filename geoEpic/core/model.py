@@ -141,8 +141,7 @@ class EPICModel:
 
         # Run EPIC executable
         log_file = os.path.join(self.log_dir, f"{fid}.out")
-        with open(log_file, 'w') as log:
-            subprocess.run([f"./{self.executable_name}"], stdout=log, stderr=log)
+        subprocess.run(f'./{self.executable_name} > {log_file} 2>&1', shell=True)
 
         # Process output files
         for out_type in self.output_types:
