@@ -182,11 +182,11 @@ class EPICModel:
             ofile.write(fmt)
 
         with open('./ieWedlst.DAT', 'w') as ofile:
-            fmt = '%8d    "./123456.DLY"\n' % (site.site_id)
+            fmt = '%8d    "./%s.DLY"\n' % (site.site_id, site.site_id)
             ofile.write(fmt)
 
         with open('./ieWealst.DAT', 'w') as ofile:
-            fmt = '%8d    "./123456.INP"   %.2f   %.2f  NB            XXXX\n' % (site.site_id, site.lon, site.lat)
+            fmt = '%8d    "./%s.INP"   %.2f   %.2f  NB            XXXX\n' % (site.site_id, site.site_id, site.lon, site.lat)
             ofile.write(fmt)
         
         with open('./ieOplist.DAT', 'w') as ofile:
