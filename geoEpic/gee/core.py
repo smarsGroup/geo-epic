@@ -8,10 +8,10 @@ from geoEpic.utils.redis import WorkerPool
 import ee
 from geoEpic.gee.initialize import ee_Initialize
 
-ee_Initialize()
+project_name = ee_Initialize()
 
 def extract_features(collection, aoi, date_range, resolution):
-    pool = WorkerPool('gee_global_lock')
+    pool = WorkerPool(f'gee_global_lock_{project_name}')
     
     def map_function(image):
         # Function to reduce image region and extract data

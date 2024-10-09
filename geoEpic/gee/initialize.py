@@ -4,8 +4,6 @@ import os
 from geoEpic.utils.redis import WorkerPool
 
 def ee_Initialize():
-    pool = WorkerPool('gee_global_lock')
-    if pool.queue_len() is None: pool.open(40)
     # Get the directory where the script is located
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
     CONFIG_FILE = os.path.join(SCRIPT_DIR, 'config.json')
@@ -35,6 +33,10 @@ def ee_Initialize():
         print("Authentication required")
         ee.Authenticate()
         ee.Initialize(project=project_name, opt_url='https://earthengine-highvolume.googleapis.com')
+    
+    pool = WorkerPool(f'gee_global_lock_{project_name}')
+    if pool.queue_len() is None: pool.open(40)
+    return project_name
 
 
 def ee_ReInitialize():
