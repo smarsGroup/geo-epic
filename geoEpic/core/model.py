@@ -56,16 +56,15 @@ class EPICModel:
         with open(self.lock_file, 'w') as f:
             f.write(f"Locked by process with PID {os.getpid()}")
 
-    def release_lock(self):
+    def close(self):
         """Release the lock on the model's directory by deleting the lock file."""
-        if os.path.exists(self.lock_file):
-            os.remove(self.lock_file)
+        os.remove(self.lock_file)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.release_lock()
+        self.close()
 
 
     def setup(self, config):

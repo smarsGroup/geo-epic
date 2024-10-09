@@ -83,6 +83,7 @@ class Workspace:
     def cache_cleanup(self):
         # Close worker pool and delete cache
         # WorkerPool(self.uuid).close()
+        self.model.close()
         shutil.rmtree(self.cache)
 
     def logger(self, func):
