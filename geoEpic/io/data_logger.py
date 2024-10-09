@@ -368,8 +368,3 @@ class DataLogger:
             if self.delete_after_use:
                 writer.delete_table()
         return df
-
-    def __del__(self):
-        """Close all open writers on deletion."""
-        for writer in self.writers:
-            writer.close()
