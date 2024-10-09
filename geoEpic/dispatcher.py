@@ -84,11 +84,11 @@ def dispatch(module, func, options_str, wait=True):
 
 def print_expected_usage():
     print('''
-GeoEPIC Tool Kit CLI
-          
-usage: geo_epic [module] [function] [options] 
+    GeoEPIC Tool Kit CLI
+            
+    usage: geo_epic [module] [function] [options] 
 
-Refer GeoEPIC documentation for available functionality''')
+    Refer GeoEPIC documentation for available functionality''')
     
     
 def main():
