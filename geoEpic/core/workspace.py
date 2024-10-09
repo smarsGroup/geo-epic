@@ -61,8 +61,8 @@ class Workspace:
         self.data_logger = DataLogger(self.cache)
 
         # Initialise Model pool
-        epicruns_dir = os.path.join(self.cache, 'EPICRUNS')
-        WorkerPool(self.uuid, epicruns_dir).open(self.config["num_of_workers"]*2)
+        # epicruns_dir = os.path.join(self.cache, 'EPICRUNS')
+        # WorkerPool(self.uuid, epicruns_dir).open(self.config["num_of_workers"]*2)
         
         # Warning while use more workers
         if self.config["num_of_workers"] > os.cpu_count():
