@@ -125,6 +125,7 @@ class EPICModel:
         new_dir = os.path.join(self.cache_path, 'EPICRUNS', str(fid)) #if dest is None else dest
 
         # Copy all contents from source_dir to new_dir
+        os.makedirs(new_dir, exist_ok=True)
         subprocess.run(["rsync", "-a", "--delete", f"{self.path}/", new_dir], check=True)
         os.chdir(new_dir)
 
