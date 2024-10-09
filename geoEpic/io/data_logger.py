@@ -289,6 +289,7 @@ class RedisWriter:
         self.close()
 
 
+from shortuuid import uuid 
 
 class DataLogger:
     """
@@ -322,7 +323,7 @@ class DataLogger:
         """Get the appropriate writer based on the backend."""
         if self.backend == 'redis':
             # For Redis, func_name is used as the table_name
-            return RedisWriter(f'{self.output_folder}:{func_name}', **self.backend_kwargs)
+            return RedisWriter(f'{uuid()}:{func_name}', **self.backend_kwargs)
         elif self.backend == 'sql':
             # For SQL, construct the file path using func_name
             filename = os.path.join(self.output_folder, func_name)

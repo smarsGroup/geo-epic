@@ -58,7 +58,7 @@ class Workspace:
         self._process_run_info(self.config['run_info'])
 
         # Initialise DataLogger
-        self.data_logger = DataLogger(self.cache, backend='sql')
+        self.data_logger = DataLogger(self.cache)
 
         # Initialise Model pool
         epicruns_dir = os.path.join(self.cache, 'EPICRUNS')
