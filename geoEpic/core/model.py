@@ -45,26 +45,20 @@ class EPICModel:
 
         # Define the path to the lock file
         self.lock_file = os.path.join(self.path, '.model_lock')
-        self.lock_handle = None
-
         # Automatically acquire the lock when the instance is created
         self.acquire_lock()
 
     def acquire_lock(self):
-        """Acquire a lock on the model's directory."""
-        self.lock_handle = open(self.lock_file, 'w')
-        try:
-            fcntl.flock(self.lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            # If the lock cannot be acquired, another process is using the lock
-            self.lock_handle.close()
-            raise RuntimeError(f"Unable to acquire lock for {self.path}. It is currently in use.")
+        """Acquire a lock on the model's directory by creating a lock file."""
+        if os.path.exists(self.lock_file):
+            raise RuntimeError(f"The model folder is currently in use by other process.")
+    
+        with open(self.lock_file, 'w') as f:
+            f.write(f"Locked by process with PID {os.getpid()}")
 
     def release_lock(self):
-        """Release the lock on the model's directory."""
-        if self.lock_handle:
-            fcntl.flock(self.lock_handle, fcntl.LOCK_UN)
-            self.lock_handle.close()
+        """Release the lock on the model's directory by deleting the lock file."""
+        if os.path.exists(self.lock_file):
             os.remove(self.lock_file)
 
     def __enter__(self):
