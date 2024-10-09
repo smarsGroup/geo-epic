@@ -225,6 +225,7 @@ class Workspace:
             method='Thread',
             timeout=10,
             bar=False,
+            return_value=True
         )
         return dict(results)
 
