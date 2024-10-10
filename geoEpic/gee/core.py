@@ -11,7 +11,7 @@ from geoEpic.gee.initialize import ee_Initialize
 project_name = ee_Initialize()
 
 def extract_features(collection, aoi, date_range, resolution):
-    pool = WorkerPool(f'gee_global_lock_{project_name}')
+    # pool = WorkerPool(f'gee_global_lock_{project_name}')
     
     def map_function(image):
         # Function to reduce image region and extract data
@@ -20,7 +20,7 @@ def extract_features(collection, aoi, date_range, resolution):
         reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
         return ee.Feature(None, reduction).set('Date', date)
     
-    worker = pool.acquire()
+    # worker = pool.acquire()
 
     try:
         filtered_collection = collection.filterBounds(aoi)
@@ -31,7 +31,8 @@ def extract_features(collection, aoi, date_range, resolution):
                 'fileFormat': 'PANDAS_DATAFRAME'
             })
     finally: 
-        pool.release(worker)
+        # pool.release(worker)
+        pass
 
     if not df.empty:
         df['Date'] = pd.to_datetime(df['Date']).dt.date
@@ -66,7 +67,7 @@ class CompositeCollection:
             Extracts temporal data for a given AOI and returns it as a pandas DataFrame.
     """
 
-    def __init__(self, yaml_file):
+    def __init__(self, yaml_file, start_date = None, end_date = None):
         # Initialize the CompositeCollection object
         self.global_scope = None
         with open(yaml_file, 'r') as file:
@@ -77,6 +78,11 @@ class CompositeCollection:
         self.vars = {}
         self.args = []
         self.resolution = self.global_scope['resolution']
+        # Override the global scope time range with the provided start and end dates
+        if start_date:
+            self.global_scope['time_range'][0] = start_date
+        if end_date:
+            self.global_scope['time_range'][1] = end_date
         self._initialize_collections()
 
     def _initialize_collections(self):

@@ -34,8 +34,8 @@ def ee_Initialize():
         ee.Authenticate()
         ee.Initialize(project=project_name, opt_url='https://earthengine-highvolume.googleapis.com')
     
-    pool = WorkerPool(f'gee_global_lock_{project_name}')
-    if pool.queue_len() is None: pool.open(40)
+    # pool = WorkerPool(f'gee_global_lock_{project_name}')
+    # if pool.queue_len() is None: pool.open(40)
     return project_name
 
 
