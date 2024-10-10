@@ -13,7 +13,8 @@ from glob import glob
 from shortuuid import uuid 
 import signal
 import atexit
-import subprocess
+# import subprocess
+# import platform
 
 class Workspace:
     """
@@ -50,16 +51,20 @@ class Workspace:
         self.delete_after_use = True
         self.model = EPICModel.from_config(config_path)
 
-        # Create Cache folders on RAM
-        if cache_path is None: cache_path = '/dev/shm' 
+        # Create Cache folders on RAM or local storage
         username = os.getlogin()
+        if cache_path is None: 
+            if os.path.exists('/dev/shm'): cache_path = '/dev/shm'
+            else: cache_path = os.path.join(self.base_dir, '.cache')
         self.cache = os.path.join(cache_path, f'geo_epic_{username}', self.uuid)
         os.makedirs(self.cache, exist_ok=True)
+        self.model.cache_path = self.cache
+
+        # Process run info
         self._process_run_info(self.config['run_info'])
 
         # Initialise DataLogger
         self.data_logger = DataLogger(self.cache)
-        self.model.cache_path = self.cache
 
         # Initialise Model pool
         # epicruns_dir = os.path.join(self.cache, 'EPICRUNS')
@@ -70,7 +75,7 @@ class Workspace:
             warning_msg = (f"Workers greater than number of CPU cores ({os.cpu_count()}).")
             warnings.warn(warning_msg, RuntimeWarning)
         
-        # Capture exit signals and clean up cahe
+        # Capture exit signals and clean up cache
         atexit.register(self.cache_cleanup)
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
@@ -237,7 +242,8 @@ class Workspace:
         """
         log_dir = self.config.get('log_dir')
         if log_dir and os.path.exists(log_dir):
-            subprocess.run(f"rm -rf {os.path.join(log_dir, '*')}", shell=True, check=True)
+            shutil.rmtree(log_dir)
+            os.makedirs(log_dir)
 
     def clear_outputs(self):
         """
@@ -245,7 +251,8 @@ class Workspace:
         """
         output_dir = self.config.get('output_dir')
         if output_dir and os.path.exists(output_dir):
-            subprocess.run(f"rm -rf {os.path.join(output_dir, '*')}", shell=True, check=True)
+            shutil.rmtree(output_dir)
+            os.makedirs(output_dir)
     
 
     def _process_run_info(self, file_path):

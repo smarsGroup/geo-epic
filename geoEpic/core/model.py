@@ -1,11 +1,11 @@
 import os
 import shutil
 import subprocess
-from glob import glob
+# from glob import glob
+# import pandas as pd
 import numpy as np
-import pandas as pd
 from geoEpic.io import ConfigParser
-import fcntl
+import platform
 
 class EPICModel:
     """
@@ -38,7 +38,10 @@ class EPICModel:
         self.output_dir = os.path.dirname(self.path)
         self.log_dir = os.path.dirname(self.path)
         self.output_types = ['ACY']
-        subprocess.Popen(f'chmod +x {self.executable}', shell=True).wait()
+
+        if platform.system() != "Windows":
+            # On Unix-like systems, use chmod to make the file executable
+            subprocess.Popen(f'chmod +x {self.executable}', shell=True).wait()
 
         # Define the path to the RAM-backed filesystem
         self.cache_path = os.path.join(self.base_dir, '.cache')#'/dev/shm'  # On Linux systems
@@ -148,8 +151,12 @@ class EPICModel:
         new_dir = os.path.join(self.cache_path, 'EPICRUNS', str(fid)) #if dest is None else dest
 
         # Copy all contents from source_dir to new_dir
-        os.makedirs(new_dir, exist_ok=True)
-        subprocess.run(["rsync", "-a", "--delete", f"{self.path}/", new_dir], check=True)
+        # os.makedirs(new_dir, exist_ok=True)
+        # subprocess.run(["rsync", "-a", "--delete", f"{self.path}/", new_dir], check=True)
+        if os.path.exists(new_dir):
+            shutil.rmtree(new_dir)
+
+        shutil.copytree(self.path, new_dir)
         os.chdir(new_dir)
 
         # Prepare weather data
@@ -161,8 +168,9 @@ class EPICModel:
         self.writeDATFiles(site)
 
         # Run EPIC executable
-        log_file = f"{fid}.out" #os.path.join(self.log_dir, f"{fid}.out")
-        subprocess.run(f'./{self.executable_name} > {log_file} 2>&1', shell=True)
+        log_file = f"{fid}.out"
+        with open(log_file, 'w') as log:
+            subprocess.run([self.executable], stdout=log, stderr=log, check=True)
 
         # Process output files
         for out_type in self.output_types:
