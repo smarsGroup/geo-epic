@@ -290,6 +290,7 @@ class RedisWriter:
 
 
 from shortuuid import uuid 
+import platform
 
 class DataLogger:
     """
@@ -312,6 +313,11 @@ class DataLogger:
             backend (str): The backend to use ('redis', 'csv', 'sql').
             **kwargs: Additional parameters for backend configuration.
         """
+        # Check the platform and adjust the backend if running on Windows
+        if platform.system() == 'Windows' and backend.lower() == 'redis':
+            print("Redis is not supported on Windows by default. Falling back to 'sql' backend.")
+            backend = 'sql'
+
         self.output_folder = output_folder or '.'
         self.backend = backend.lower()
         if self.backend != 'redis':
