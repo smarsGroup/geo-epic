@@ -10,6 +10,8 @@ if sys.platform.startswith('win'):
     sys.exit(1)
 
 
+subprocess.run(['conda', 'install', '-c', 'conda-forge', 'pygmo'], check=True)
+
 try:
     import osgeo
     print('GDAL already installed')
@@ -26,8 +28,7 @@ except:
     print("Installing Redis...")
     # Install Redis using apt (for Debian/Ubuntu)
     # subprocess.run(["sudo", "apt-get", "update"], check=True)
-    subprocess.run(["conda", "install", "-c", "conda-forge", "redis", "--no-update-deps"], check=True)
-
+    subprocess.run(["conda", "install", "-c", "conda-forge", "redis"], check=True)
 
 
 # Define metadata directory in the user's home folder
@@ -44,15 +45,12 @@ if not os.path.exists(metadata_dir):
         "https://smarslab-files.s3.amazonaws.com/epic-utils/SRTM_1km_US_project.tif",
         "https://smarslab-files.s3.amazonaws.com/epic-utils/SSURGO.tif"
     ]
-
     # Download the files to the metadata directory
     for file_url in files_to_download:
         filename = os.path.join(metadata_dir, os.path.basename(file_url))
         urllib.request.urlretrieve(file_url, filename)
 else:
     print(f"'{metadata_dir}' already exists, skipping file downloads.")
-
-
 
 # Function to read the requirements.txt file
 def read_requirements():

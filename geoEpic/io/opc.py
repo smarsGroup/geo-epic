@@ -8,8 +8,8 @@ class OPC(pd.DataFrame):
     _metadata = ['header', 'name', 'prms', 'start_year']
 
     # Class attributes for codes
-    plantation_codes = [2, 3]
-    harvest_code = 650
+    plantation_codes = [2, 3, 4]
+    harvest_codes = [650]
     fertilizer_code = 71
 
     @classmethod
@@ -104,7 +104,7 @@ class OPC(pd.DataFrame):
 
     def update_phu(self, dly, cropcom):
         """
-        Update the OPV1 value with the calculated PHU from the DLY data for all years.
+        Update the OPV1 value with the calculated PHU from the DLY data for all years and crops.
 
         Parameters:
         dly (DLY): DLY object containing weather data.
@@ -117,84 +117,108 @@ class OPC(pd.DataFrame):
         cropcom['#'] = cropcom['#'].astype(int)
         cropcom['TBS'] = cropcom['TBS'].astype(float)
 
-        years = self['Yid'].unique()
-        for year_id in years:
-            # Get plantation and harvest dates from the OPC file
-            plantation_date = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id)]
-            harvest_date = self[(self['CODE'] == self.harvest_code) & (self['Yid'] == year_id)]
-            if plantation_date.empty or harvest_date.empty:
-                continue
+        # Get all unique combinations of year_id and harvest codes
+        harvest_combinations = self[self['CODE'].isin(self.harvest_codes)][['Yid', 'CRP']].drop_duplicates()
 
-            plantation_date = plantation_date.iloc[0]
-            harvest_date = harvest_date.iloc[0]
-            
-            pd_year = self.start_year + int(plantation_date['Yid']) - 1
-            hd_year = self.start_year + int(harvest_date['Yid']) - 1
+        for _, row in harvest_combinations.iterrows():
+            year_id, crop_code = row['Yid'], row['CRP']
 
-            pd_date = datetime(pd_year, int(plantation_date['Mn']), int(plantation_date['Dy']))
-            hd_date = datetime(hd_year, int(harvest_date['Mn']), int(harvest_date['Dy']))
+            # Get harvest date
+            harvest_dates = self.get_harvest_date(year_id, crop_code)
+            if not harvest_dates: continue
+            harvest_date = list(harvest_dates.values())[0]['date']
 
-            # Get the crop code and TBS value
-            crop_code = int(plantation_date['CRP'])
+            # Get plantation date (considering winter wheat)
+            plantation_year_id = year_id - 1 if crop_code == 10 else year_id  # 10 is the code for winter wheat
+            plantation_dates = self.get_plantation_date(plantation_year_id, crop_code)
+            if not plantation_dates: continue
+            plantation_date = list(plantation_dates.values())[0]['date']
+
+            # Get the TBS value
             tbs = cropcom.loc[cropcom['#'] == crop_code, 'TBS'].values[0]
-
             # Filter data between planting date (PD) and harvesting date (HD)
-            dat1 = dly[(dly['date'] > pd_date) & (dly['date'] < hd_date)].copy()
-
+            dat1 = dly[(dly['date'] > plantation_date) & (dly['date'] < harvest_date)].copy()
             # Calculate Heat Units (HU) and PHU
             HU = (0.5 * (dat1['tmax'] + dat1['tmin'])) - tbs
             HU = HU.clip(lower=0)  # Replace negative values with 0
             phu = HU.sum()
 
             # Update OPV1 with PHU
-            self.loc[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id), 'OPV1'] = phu
-
-        
-    def _get_date(self, year_id, code, crop_code=None):
+            plantation_row_index = list(plantation_dates.values())[0]['index']
+            self.loc[plantation_row_index, 'OPV1'] = phu
+            
+    def get_plantation_date(self, year_id, crop_code=None):
         """
-        Retrieve the plantation date for a specific year.
+        Retrieve the plantation date(s) for a specific year.
 
         Parameters:
         year_id (int): Year identifier.
+        crop_code (int, optional): Crop code. Defaults to None.
 
         Returns:
-        datetime: The plantation date or None if not found.
+        dict: A dictionary of crop codes and their plantation dates with row indices.
         """
+        return self._get_date(year_id, self.plantation_codes, crop_code)
+
+    def get_harvest_date(self, year_id, crop_code=None):
+        """
+        Retrieve the harvest date(s) for a specific year.
+
+        Parameters:
+        year_id (int): Year identifier.
+        crop_code (int, optional): Crop code. Defaults to None.
+
+        Returns:
+        dict: A dictionary of crop codes and their harvest dates with row indices.
+        """
+        return self._get_date(year_id, self.harvest_codes, crop_code)
+        
+    def _get_date(self, year_id, codes, crop_code=None):
+        """
+        Retrieve the date(s) for a specific year and code(s).
+
+        Parameters:
+        year_id (int): Year identifier.
+        codes (list): List of codes to search for.
+        crop_code (int, optional): Crop code. Defaults to None.
+
+        Returns:
+        dict: A nested dictionary of crop codes, their corresponding dates, and row indices.
+        """
+        result = {}
         
         if crop_code is None:
-            cur_row = self[(self['Yid'] == year_id) & (self['CODE']==code)]
+            cur_rows = self[(self['Yid'] == year_id) & (self['CODE'].isin(codes))]
         else:
-            cur_row = self[(self['Yid'] == year_id) & (self['CODE']==code) & (self['CRP']==crop_code)]
+            cur_rows = self[(self['Yid'] == year_id) & (self['CODE'].isin(codes)) & (self['CRP'] == crop_code)]
             
-        if not cur_row.empty:
-            year = year_id+self.start_year-1
-            month = int(cur_row['Mn'].values[0])
-            day = int(cur_row['Dy'].values[0])
+        for _, row in cur_rows.iterrows():
+            year = year_id + self.start_year - 1
+            month = int(row['Mn'])
+            day = int(row['Dy'])
+            crop = int(row['CRP'])
             try:
-                return datetime(year=year, month=month, day=day), cur_row.index[0]
-            except:
-                print(self.name) 
-                print(year_id, month, day)
-        return None, None
+                date = datetime(year=year, month=month, day=day)
+                result[crop] = {'date': date, 'index': row.name}
+            except ValueError:
+                print(f"Invalid date for {self.name}: Year {year_id}, Month {month}, Day {day}")
+        
+        return result
     
-    def _adjust_pre_planting_operations(self, new_plant_date, year_id, crop_code=None):
+    def _adjust_pre_planting_operations(self, new_plant_date, year_id, crop_code):
         """
         Adjust dates for operations before planting for a specific year based on their index.
 
         Parameters:
         year_id (int): Year identifier.
+        crop_code (int): Crop code.
         """
-        plantation_date, plantation_idx = None, None
-        for pc in self.plantation_codes:
-            plantation_date, plantation_idx = self._get_date(year_id, pc, crop_code)
-            if plantation_date is not None:
-                break
-        if plantation_idx is not None:
-            # Filter for operations before the planting index
-            if crop_code is None:
-                pre_planting_ops = self[(self['Yid'] == year_id) & (self.index < plantation_idx)]
-            else:
-                pre_planting_ops = self[(self['Yid'] == year_id) & (self['CRP'] == crop_code) & (self.index < plantation_idx)]
+        plantation_dates = self.get_plantation_date(year_id, crop_code)
+        if crop_code in plantation_dates:
+            plantation_date = plantation_dates[crop_code]['date']
+            plantation_idx = plantation_dates[crop_code]['index']
+            
+            pre_planting_ops = self[(self['Yid'] == year_id) & (self['CRP'] == crop_code) & (self.index < plantation_idx)]
             
             for idx, row in pre_planting_ops.iterrows():
                 month = int(self.at[idx, 'Mn'])
@@ -205,21 +229,20 @@ class OPC(pd.DataFrame):
                 self.at[idx, 'Mn'] = adjusted_date.month
                 self.at[idx, 'Dy'] = adjusted_date.day
         
-    def _adjust_post_harvesting_operations(self, new_harvest_date, year_id, crop_code=None):
+    def _adjust_post_harvesting_operations(self, new_harvest_date, year_id, crop_code):
         """
-        Adjust dates for operations before planting for a specific year based on their index.
+        Adjust dates for operations after harvesting for a specific year based on their index.
 
         Parameters:
         year_id (int): Year identifier.
+        crop_code (int): Crop code.
         """
-        hc = self.harvest_code
-        harvest_date, harvest_idx = self._get_date(year_id,hc,crop_code)
-        if harvest_idx is not None:
-            # Filter for operations before the planting index
-            if crop_code is None:
-                post_harvest_ops = self[(self['Yid'] == year_id) & (self.index > harvest_idx)]
-            else:
-                post_harvest_ops = self[(self['Yid'] == year_id) & (self['CRP'] == crop_code) & (self.index > harvest_idx)]
+        harvest_dates = self.get_harvest_date(year_id, crop_code)
+        if crop_code in harvest_dates:
+            harvest_date = harvest_dates[crop_code]['date']
+            harvest_idx = harvest_dates[crop_code]['index']
+            
+            post_harvest_ops = self[(self['Yid'] == year_id) & (self['CRP'] == crop_code) & (self.index > harvest_idx)]
             
             for idx, row in post_harvest_ops.iterrows():
                 month = int(self.at[idx, 'Mn'])
@@ -230,57 +253,56 @@ class OPC(pd.DataFrame):
                 self.at[idx, 'Mn'] = adjusted_date.month
                 self.at[idx, 'Dy'] = adjusted_date.day
     
-    def _stretch_middle_operations(self, year_id, new_planting_date, new_harvest_date, crop_code=None):
-        prev_plantation_date, plantation_idx = None, None
-        for pc in self.plantation_codes:
-            prev_plantation_date, plantation_idx = self._get_date(year_id, pc, crop_code)
-            if prev_plantation_date is not None:
-                break
-        prev_harvest_date, harvest_idx = self._get_date(year_id,self.harvest_code,crop_code)
+    def _stretch_middle_operations(self, year_id, new_planting_date, new_harvest_date, crop_code):
+        plantation_dates = self.get_plantation_date(year_id, crop_code)
+        harvest_dates = self.get_harvest_date(year_id, crop_code)
         
-        original_range = (prev_harvest_date - prev_plantation_date).days
-        new_range = (new_harvest_date - new_planting_date).days
-        # Process rows between start_index and end_index
-        for idx in range(plantation_idx+1, harvest_idx):
-            if idx in self.index:
-                row = self.loc[idx]
-                # Calculate the scale of the current date
-                year = int(row['Yid'])+self.start_year-1
-                row_date = datetime(year, int(row['Mn']),int(row['Dy']))
-                days_from_start = (row_date - prev_plantation_date).days
-                scale = days_from_start / original_range
-                
-                
-                # Calculate the new date
-                new_days_from_start = int(scale * new_range)
-                new_date = row_date + timedelta(days=new_days_from_start)
-                
-                # Update the DataFrame in place
-                self.at[idx, 'Mn'] = new_date.month
-                self.at[idx, 'Dy'] = new_date.day
+        if crop_code in plantation_dates and crop_code in harvest_dates:
+            prev_plantation_date = plantation_dates[crop_code]['date']
+            plantation_idx = plantation_dates[crop_code]['index']
+            prev_harvest_date = harvest_dates[crop_code]['date']
+            harvest_idx = harvest_dates[crop_code]['index']
+            
+            original_range = (prev_harvest_date - prev_plantation_date).days
+            new_range = (new_harvest_date - new_planting_date).days
+            # Process rows between start_index and end_index
+            for idx in range(plantation_idx+1, harvest_idx):
+                if idx in self.index:
+                    row = self.loc[idx]
+                    # Calculate the scale of the current date
+                    year = int(row['Yid'])+self.start_year-1
+                    row_date = datetime(year, int(row['Mn']),int(row['Dy']))
+                    days_from_start = (row_date - prev_plantation_date).days
+                    scale = days_from_start / original_range
+                    # Calculate the new date
+                    new_days_from_start = int(scale * new_range)
+                    new_date = new_planting_date + timedelta(days=new_days_from_start)
+                    # Update the DataFrame in place
+                    self.at[idx, 'Mn'] = new_date.month
+                    self.at[idx, 'Dy'] = new_date.day
         
 
-    def edit_plantation_date(self, year, month, day, crop_code=None):
+    def edit_plantation_date(self, year, month, day, crop_code):
         """
-        Edit the plantation date for a given year.
+        Edit the plantation date for a given year and crop.
 
         Parameters:
-        year_id (int): Year identifier.
+        year (int): Year.
         month (int): Month of plantation.
         day (int): Day of plantation.
+        crop_code (int): Crop code.
         """
-        year_id = year-self.start_year+1
-        plantation_idx = None
-        if crop_code is None:
-            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id)].iloc[0].name      
-        else:
-            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].iloc[0].name
+        year_id = year - self.start_year + 1
+        plantation_dates = self.get_plantation_date(year_id, crop_code)
             
-        if plantation_idx is not None:
-            new_harvest_date, _ = self._get_date(year_id,self.harvest_code,crop_code)
+        if crop_code in plantation_dates:
+            harvest_dates = self.get_harvest_date(year_id, crop_code)
             new_planting_date = datetime(year,month,day)
-            self._stretch_middle_operations(year_id, new_planting_date,new_harvest_date,crop_code)
-            self._adjust_pre_planting_operations(new_planting_date,year_id,crop_code)
+            
+            plantation_idx = plantation_dates[crop_code]['index']
+            new_harvest_date = harvest_dates[crop_code]['date']
+            self._stretch_middle_operations(year_id, new_planting_date, new_harvest_date, crop_code)
+            self._adjust_pre_planting_operations(new_planting_date, year_id, crop_code)
             self.loc[plantation_idx, ['Mn', 'Dy']] = [month, day]
             return
     
@@ -289,102 +311,121 @@ class OPC(pd.DataFrame):
         Edit the operation date for a given year.
 
         Parameters:
-        year_id (int): Year identifier.
-        month (int): Month of harvest.
-        day (int): Day of harvest.
+        code (str): Operation code.
+        year (int): Year.
+        month (int): Month of operation.
+        day (int): Day of operation.
+        crop_code (int, optional): Crop code.
         """
-        year_id = year-self.start_year+1
-        if( crop_code is None ):
-            op_code_idx = self[(self['CODE'] == code) & (self['Yid'] == year_id)].index
-        else:
-            op_code_idx = self[(self['CODE'] == code) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].index
-        if not op_code_idx.empty:
-            self.loc[op_code_idx, ['Mn', 'Dy']] = [month, day]
+        year_id = year - self.start_year + 1
+        mask = (self['CODE'] == code) & (self['Yid'] == year_id)
+        if crop_code is not None:
+            mask &= (self['CRP'] == crop_code)
+        self.loc[mask, ['Mn', 'Dy']] = [month, day]
             
     def edit_operation_value(self, code, year, value, crop_code=None):
         """
-        Edit the operation date for a given year.
+        Edit the operation value for a given year.
 
         Parameters:
-        year_id (int): Year identifier.
-        month (int): Month of harvest.
-        day (int): Day of harvest.
+        code (str): Operation code.
+        year (int): Year.
+        value (float): New operation value.
+        crop_code (int, optional): Crop code.
         """
-        year_id = year-self.start_year+1
-        if( crop_code is None ):
-            op_code_idx = self[(self['CODE'] == code) & (self['Yid'] == year_id)].index
-        else:
-            op_code_idx = self[(self['CODE'] == code) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].index
-        if not op_code_idx.empty:
-            self.loc[op_code_idx, 'OPV1'] = value
+        year_id = year - self.start_year + 1
+        mask = (self['CODE'] == code) & (self['Yid'] == year_id)
+        if crop_code is not None:
+            mask &= (self['CRP'] == crop_code)
+        self.loc[mask, 'OPV1'] = value
 
-    def edit_harvest_date(self, year, month, day, crop_code=None):
+    def edit_harvest_date(self, year, month, day, crop_code):
         """
         Edit the harvest date for a given year.
 
         Parameters:
-        year_id (int): Year identifier.
+        year (int): Year.
         month (int): Month of harvest.
         day (int): Day of harvest.
+        crop_code (int, optional): Crop code.
         """
-        year_id = year-self.start_year+1
-        hc = self.harvest_code
-        harvest_idx
-        if crop_code is None:
-            harvest_idx = self[(self['CODE'] == hc) & (self['Yid'] == year_id)].index
-        else:
-            harvest_idx = self[(self['CODE'] == hc) & (self['Yid'] == year_id)  & (self['CRP'] == crop_code)].index
-        if not harvest_idx.empty:
-            new_planting_date, _ = self._get_date(year_id,hc,crop_code)
-            new_harvest_date = datetime(year,month,day)
-            self.stretch_middle_operations(year_id,new_planting_date,new_harvest_date,crop_code)
-            self._adjust_post_harvesting_operations(new_harvest_date,year_id,crop_code)
+        year_id = year - self.start_year + 1
+        harvest_dates = self.get_harvest_date(year_id, crop_code)
+        
+        if crop_code in harvest_dates:
+            plantation_dates = self.get_plantation_date(year_id, crop_code)
+            new_harvest_date = datetime(year, month, day)
+            harvest_idx = harvest_dates[crop_code]['index']
+            new_planting_date = plantation_dates[crop_code]['date']
+            self._stretch_middle_operations(year_id, new_planting_date, new_harvest_date, crop_code)
+            self._adjust_post_harvesting_operations(new_harvest_date, year_id, crop_code)
             self.loc[harvest_idx, ['Mn', 'Dy']] = [month, day]
+            return
             
     def edit_crop_dates(self, year, new_planting_date, new_harvest_date, crop_code=None):
-        year_id = year-self.start_year+1
-        hc = self.harvest_code
-        plantation_idx = None
+        """
+        Edit the planting and harvest dates for a given year and crop.
+
+        Parameters:
+        year (int): Year.
+        new_planting_date (datetime): New planting date.
+        new_harvest_date (datetime): New harvest date.
+        crop_code (int, optional): Crop code. If not provided, changes the first crop found.
+        """
+        year_id = year - self.start_year + 1
+        
+        # Get current plantation dates
+        plantation_dates = self.get_plantation_date(year_id, crop_code)
+
+        # Find the first crop if crop_code is not provided
         if crop_code is None:
-            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id)].index      
-        else:
-            plantation_idx = self[(self['CODE'].isin(self.plantation_codes)) & (self['Yid'] == year_id) & (self['CRP'] == crop_code)].index
-        
-        if crop_code is None:
-            harvest_idx = self[(self['CODE'] == hc) & (self['Yid'] == year_id)].index
-        else:
-            harvest_idx = self[(self['CODE'] == hc) & (self['Yid'] == year_id)  & (self['CRP'] == crop_code)].index
-           
-        if not plantation_idx.empty:
-            self._stretch_middle_operations(year_id, new_planting_date,new_harvest_date,crop_code)
-            self._adjust_pre_planting_operations(new_planting_date,year_id,crop_code)
+            if plantation_dates:
+                crop_code = next(iter(plantation_dates))
+            else:
+                raise ValueError(f"No crops found for year {year}")
+        elif crop_code not in plantation_dates:
+            raise ValueError(f"No planting operation found for crop {crop_code} in year {year}")
+        harvest_dates = self.get_harvest_date(year_id, crop_code)
+
+        if not plantation_dates or not harvest_dates:
+            raise ValueError(f"No planting or harvest operations found for crop {crop_code} in year {year}")
+
+        plantation_idx = plantation_dates[crop_code]['index']
+        harvest_idx = harvest_dates[crop_code]['index']
+
+        # Adjust operations
+        self._stretch_middle_operations(year_id, new_planting_date, new_harvest_date, crop_code)
+        self._adjust_pre_planting_operations(new_planting_date, year_id, crop_code)
+        self._adjust_post_harvesting_operations(new_harvest_date, year_id, crop_code)
+
+        # Update planting date and harvest date
+        self.loc[plantation_idx, ['Mn', 'Dy']] = [new_planting_date.month, new_planting_date.day]
+        self.loc[harvest_idx, ['Mn', 'Dy']] = [new_harvest_date.month, new_harvest_date.day]
             
-        if not harvest_idx.empty:
-            self._adjust_post_harvesting_operations(new_harvest_date,year_id,crop_code)
-        
-        if not plantation_idx.empty:
-            self.loc[plantation_idx, ['Mn', 'Dy']] = [new_planting_date.month, new_planting_date.day]
-            
-        if not harvest_idx.empty:
-            self.loc[harvest_idx, ['Mn', 'Dy']] = [new_harvest_date.month, new_harvest_date.day]
-        
-            
-    def append(self,second_opc):
+    def append(self, second_opc):
+        """
+        Append another OPC or DataFrame to the current OPC instance.
+        Args:
+            second_opc (pd.DataFrame or OPC): The data to append.
+        Returns:
+            OPC: A new OPC instance with combined data.
+        Raises:
+            ValueError: If second_opc is not a pandas DataFrame or OPC instance.
+        """
         if not isinstance(second_opc, (pd.DataFrame, OPC)):
-            raise ValueError("The 'other' parameter must be a pandas DataFrame or OPC instance.")
+            raise ValueError("The 'second_opc' parameter must be a pandas DataFrame or OPC instance.")
         last_yid = self['Yid'].max()
-        
+        # Create a copy to avoid modifying the original data
         second_opc_copy = second_opc.copy()
-        
-        if second_opc_copy['Yid'].min()!=0:
-            second_opc_copy['Yid'] = (second_opc_copy['Yid'] - second_opc_copy['Yid'].min() + 1)
-        second_opc_copy['Yid'] = second_opc_copy['Yid'] + last_yid
-        
+        # Adjust Yid values
+        if second_opc_copy['Yid'].min() != 0:
+            second_opc_copy['Yid'] -= second_opc_copy['Yid'].min() - 1
+        second_opc_copy['Yid'] += last_yid
+        # Combine data
         combined_data = pd.concat([self, second_opc_copy], ignore_index=True)
-        
+        # Create new OPC instance
         combined_opc = OPC(combined_data)
         combined_opc.header = self.header
         combined_opc.start_year = self.start_year
         combined_opc.name = self.name
-
         return combined_opc
