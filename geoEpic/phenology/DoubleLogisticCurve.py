@@ -34,7 +34,7 @@ class DoubleLogisticCurve:
             # Compute the residuals
             res = self.double_logistic(xdata, *args) - ydata
             # Penalize underestimations more than overestimations
-            res[res < 0] *= 10  # Adjust the factor as needed
+            res[res < 0] *= 5  # Adjust the factor as needed
             return res
         
         # Perform least squares optimization with the custom residuals
