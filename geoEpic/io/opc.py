@@ -19,6 +19,7 @@ class OPC(pd.DataFrame):
         
         Parameters:
         path (str): Path to the OPC file.
+        start_year (int, optional): Start year for the OPC file. If not provided, it will be read from the file header.
 
         Returns:
         OPC: An instance of the OPC class containing the loaded data.
@@ -41,7 +42,7 @@ class OPC(pd.DataFrame):
                     start_year_line = inst.header[0].strip().split(':')[1].strip()
                     inst.start_year = int(start_year_line)
                 except (IndexError, ValueError):
-                    raise ValueError("Bad Input: start_year must be a specified either in file or as param.")
+                    raise ValueError("Bad Input: start_year must be specified either in file or as param.")
             inst.header[0] = inst.header[0].split(':')[0].strip() + ' : ' + str(inst.start_year) + '\n'
             
         inst.name = path.split('/')[-1]
@@ -56,15 +57,29 @@ class OPC(pd.DataFrame):
         """
         # Check if the path is a directory
         if os.path.isdir(path):
-            path = os.path.join(path,self.name)
-    
-        final_data = self[self['Yid']>=1]
-        with open(f'{path}', 'w') as ofile:
+            path = os.path.join(path, self.name)
+        
+        with open(path, 'w') as ofile:
             ofile.write(''.join(self.header))
+            
+            final_data = self[self['Yid'] >= 1]
+            columns = ['Yid', 'Mn', 'Dy', 'CODE', 'TRAC', 'CRP', 'XMTU', 'OPV1', 'OPV2', 'OPV3',
+                       'OPV4', 'OPV5', 'OPV6', 'OPV7', 'OPV8']
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
-            np.savetxt(ofile, final_data.values, fmt=fmt)
+            np.savetxt(ofile, final_data[columns].values, fmt=fmt)
 
-    def auto_irrigation(self, on = True):
+    def auto_irrigation(self, on=True):
+        """
+        Set or unset auto-irrigation in the OPC file header.
+
+        This method modifies the second line of the header to enable or disable
+        auto-irrigation based on the input parameter.
+
+        Parameters:
+        on (bool): If True, sets auto-irrigation to 72 (enabled).
+                   If False, sets auto-irrigation to 0 (disabled).
+                   Defaults to True.
+        """
         luc, _ = self.header[1][:4], self.header[1][4:]
         if on:
             self.header[1] = luc + '  72' + '\n'
@@ -78,19 +93,17 @@ class OPC(pd.DataFrame):
         Parameters:
         rate (float): Fertilizer rate to be set.
         year_id (int, optional): Year identifier. Defaults to 15.
-        month (int, optional): Month for the fertilizer rate application.  If not provided, the first instance is changed.
+        month (int, optional): Month for the fertilizer rate application. If not provided, the first instance is changed.
         day (int, optional): Day for the fertilizer rate application. Defaults to None.
         """
         condition = (self['CODE'] == self.fertilizer_code) & (self['Yid'] == year_id)
         if month is not None and day is not None:
             condition &= (self['Mn'] == month) & (self['Dy'] == day)
-            if condition.any():
-                last_index = self[condition].index[-1]
-                self.loc[last_index, 'OPV1'] = 0.2 if rate == 0 else rate
-        else:
-            if condition.any():
-                last_index = self[condition].index[-1]
-                self.loc[last_index, 'OPV1'] = 0.2 if rate == 0 else rate
+        
+        matching_rows = self[condition]
+        if not matching_rows.empty:
+            last_index = matching_rows.index[-1]
+            self.at[last_index, 'OPV1'] = 0.2 if rate == 0 else rate
 
     def edit_nrates(self, nrates):
         """
@@ -104,7 +117,7 @@ class OPC(pd.DataFrame):
 
     def update_phu(self, dly, cropcom):
         """
-        Update the OPV1 value with the calculated PHU from the DLY data for all years and crops.
+        Update the OPV1 value with the calculated PHU from the DLY data for all plantation dates.
 
         Parameters:
         dly (DLY): DLY object containing weather data.
@@ -117,35 +130,45 @@ class OPC(pd.DataFrame):
         cropcom['#'] = cropcom['#'].astype(int)
         cropcom['TBS'] = cropcom['TBS'].astype(float)
 
-        # Get all unique combinations of year_id and harvest codes
-        harvest_combinations = self[self['CODE'].isin(self.harvest_codes)][['Yid', 'CRP']].drop_duplicates()
+        # Add date column to self
+        self['date'] = pd.to_datetime(
+            (self['Yid'] + self.start_year - 1).astype(str) + '-' + 
+            self['Mn'].astype(str) + '-' + 
+            self['Dy'].astype(str)
+        )
 
-        for _, row in harvest_combinations.iterrows():
-            year_id, crop_code = row['Yid'], row['CRP']
+        # Get all plantation and harvest dates
+        plantation_dates = self[self['CODE'].isin(self.plantation_codes)].sort_values('date')
+        harvest_dates = self[self['CODE'].isin(self.harvest_codes)].sort_values('date')
 
-            # Get harvest date
-            harvest_dates = self.get_harvest_date(year_id, crop_code)
-            if not harvest_dates: continue
-            harvest_date = list(harvest_dates.values())[0]['date']
+        for _, plantation_row in plantation_dates.iterrows():
+            crop_code = plantation_row['CRP']
+            plantation_date = plantation_row['date']
 
-            # Get plantation date (considering winter wheat)
-            plantation_year_id = year_id - 1 if crop_code == 10 else year_id  # 10 is the code for winter wheat
-            plantation_dates = self.get_plantation_date(plantation_year_id, crop_code)
-            if not plantation_dates: continue
-            plantation_date = list(plantation_dates.values())[0]['date']
+            # Find the immediate harvest date after this plantation date
+            harvest_rows = harvest_dates[
+                (harvest_dates['date'] > plantation_date) & 
+                (harvest_dates['CRP'] == crop_code)
+            ]
+            
+            if harvest_rows.empty:
+                raise ValueError(f"No harvest date found for crop code {crop_code} planted on {plantation_date}")
+            
+            harvest_row = harvest_rows.iloc[0]
+            harvest_date = harvest_row['date']
 
             # Get the TBS value
             tbs = cropcom.loc[cropcom['#'] == crop_code, 'TBS'].values[0]
             # Filter data between planting date (PD) and harvesting date (HD)
-            dat1 = dly[(dly['date'] > plantation_date) & (dly['date'] < harvest_date)].copy()
-            # Calculate Heat Units (HU) and PHU
-            HU = (0.5 * (dat1['tmax'] + dat1['tmin'])) - tbs
-            HU = HU.clip(lower=0)  # Replace negative values with 0
-            phu = HU.sum()
+            dat1 = dly[(dly['date'] > plantation_date) & (dly['date'] < harvest_date)]
 
+            # Calculate Heat Units (HU) and PHU
+            HU = (0.5 * (dat1['tmax'] + dat1['tmin']) - tbs).clip(lower=0)
             # Update OPV1 with PHU
-            plantation_row_index = list(plantation_dates.values())[0]['index']
-            self.loc[plantation_row_index, 'OPV1'] = phu
+            self.loc[plantation_row.name, 'OPV1'] = HU.sum()
+
+        # Drop the temporary date column
+        self.drop('date', axis=1, inplace=True)
             
     def get_plantation_date(self, year_id, crop_code=None):
         """
