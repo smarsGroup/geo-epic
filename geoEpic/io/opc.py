@@ -1,7 +1,7 @@
-import pandas as pd
 import os
 import numpy as np
-from datetime import datetime,timedelta
+import pandas as pd
+from datetime import datetime, timedelta
 from geoEpic.io import DLY
 
 class OPC(pd.DataFrame):
@@ -132,9 +132,9 @@ class OPC(pd.DataFrame):
 
         # Add date column to self
         self['date'] = pd.to_datetime(
-            (self['Yid'] + self.start_year - 1).astype(str) + '-' + 
-            self['Mn'].astype(str) + '-' + 
-            self['Dy'].astype(str)
+            (self['Yid'] + self.start_year - 1).astype(int).astype(str) + '-' + 
+            self['Mn'].astype(int).astype(str) + '-' + 
+            self['Dy'].astype(int).astype(str)
         )
 
         # Get all plantation and harvest dates
@@ -385,7 +385,7 @@ class OPC(pd.DataFrame):
             self.loc[harvest_idx, ['Mn', 'Dy']] = [month, day]
             return
             
-    def edit_crop_dates(self, year, new_planting_date, new_harvest_date, crop_code=None):
+    def edit_crop_season(self, year, new_planting_date, new_harvest_date, crop_code=None):
         """
         Edit the planting and harvest dates for a given year and crop.
 
@@ -396,10 +396,9 @@ class OPC(pd.DataFrame):
         crop_code (int, optional): Crop code. If not provided, changes the first crop found.
         """
         year_id = year - self.start_year + 1
-        
         # Get current plantation dates
         plantation_dates = self.get_plantation_date(year_id, crop_code)
-
+        
         # Find the first crop if crop_code is not provided
         if crop_code is None:
             if plantation_dates:
@@ -407,11 +406,11 @@ class OPC(pd.DataFrame):
             else:
                 raise ValueError(f"No crops found for year {year}")
         elif crop_code not in plantation_dates:
-            raise ValueError(f"No planting operation found for crop {crop_code} in year {year}")
+            return
         harvest_dates = self.get_harvest_date(year_id, crop_code)
 
-        if not plantation_dates or not harvest_dates:
-            raise ValueError(f"No planting or harvest operations found for crop {crop_code} in year {year}")
+        if not harvest_dates:
+            raise ValueError(f"Harvest operations found for crop {crop_code} in year {year}")
 
         plantation_idx = plantation_dates[crop_code]['index']
         harvest_idx = harvest_dates[crop_code]['index']
