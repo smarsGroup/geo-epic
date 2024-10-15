@@ -33,7 +33,7 @@ def run_with_timeout(func, timeout, *args, **kwargs):
     return result
     
     
-def parallel_executor(func, args, method='Process', max_workers=10, return_value=False, bar=True, timeout=None):
+def parallel_executor(func, args, method='Process', max_workers=10, return_value=False, bar=True, timeout=None, verbose_errors=False):
     """
     Executes a function across multiple processes and collects the results.
 
@@ -44,6 +44,7 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
         max_workers: The maximum number of processes to use.
         return_value: A boolean indicating whether the function returns a value.
         timeout: Number of seconds to wait for a process to complete
+        verbose_errors: A boolean indicating whether to print full error traceback or just the exception
 
     Returns:
         results: If return_value is True, a list of results from the function executions sorted according to 
@@ -69,11 +70,18 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
             futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
         
         try:
+            import traceback
+
             for future in as_completed(futures):
                 ind = futures[future]
-                if future.exception() is not None:
+                exc = future.exception()
+                if exc is not None:
                     print(f'\nExecution failed for args:\n {args[ind]}')
-                    print(f'Exception: {future.exception()}.\n')
+                    if verbose_errors:
+                        tb = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+                        print(f'Error details:\n{tb}\n')
+                    else:
+                        print(f'Exception: {exc}\n')
                     failed_indices.append(ind)
                 elif return_value:
                     results[ind] = future.result()
