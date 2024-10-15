@@ -47,6 +47,15 @@ class SoilDataAccess:
     
     @staticmethod
     def _mukey_condition(input_value):
+        """
+        Generate the appropriate SQL condition for mukey based on the input type.
+
+        Args:
+        input_value (int or str): The input value representing either a mukey (int) or a WKT location (str).
+
+        Returns:
+        str: A SQL condition string for use in queries.
+        """
         if isinstance(input_value, int):
             return f"'{input_value}'"
         elif isinstance(input_value, str):
@@ -147,10 +156,14 @@ class SoilDataAccess:
         'slope_length': merged['slopelenusle_r'],
         'hydgrp_conv': merged['Hydgrp_conv']
         })
-        # soil_df = soil_df.groupby('Layer_depth').mean()
-        
+
+        # Add new rounded_layer column
+        soil_df['rounded_layer'] = (soil_df['Layer_depth'] * 10).round() / 10
+        # Group by mukey and rounded_layer, then take median of all values
+        soil_df = soil_df.groupby(['mukey', 'rounded_layer']).median().reset_index()
+        # Remove the rounded_layer column
+        soil_df = soil_df.drop(columns=['rounded_layer'])
         soil_df['mukey'] = soil_df['mukey'].astype(int)
-        
         return soil_df.round(4)
     
     @staticmethod
@@ -171,3 +184,24 @@ class SoilDataAccess:
         """
         result = SoilDataAccess.query(query)
         return result['slopelenusle_r'].values[0]
+
+    @staticmethod
+    def fetch_value(input_value, value, table):
+        """
+        Fetches a specific value from a given table for a given input value.
+
+        Args:
+        input_value (int or str): The input value representing either a mukey (int) or a WKT location (str).
+        value (str): The column name of the value to fetch.
+        table (str): The name of the table to query.
+
+        Returns:
+        Any: The fetched value for the specified input value.
+        """
+        query = f"""
+        SELECT {value}
+        FROM {table}
+        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
+        """
+        result = SoilDataAccess.query(query)
+        return result
