@@ -10,7 +10,7 @@ if sys.platform.startswith('win'):
     sys.exit(1)
 
 
-subprocess.run(['conda', 'install', '-c', 'conda-forge', 'pygmo'], check=True)
+# subprocess.run(['conda', 'install', '-c', 'conda-forge', 'pygmo'], check=True)
 
 try:
     import osgeo
