@@ -51,8 +51,8 @@ class EPICModel:
         # Automatically acquire the lock when the instance is created
         self.acquire_lock()
 
-        # register the model lock to release it when the instance is deleted
-        atexit.register(self.release_lock)
+        # register close to release it when the instance is deleted
+        atexit.register(self.close)
 
     def acquire_lock(self):
         """Acquire a lock on the model's directory by creating a lock file."""
