@@ -6,7 +6,7 @@ import subprocess
 import numpy as np
 from geoEpic.io import ConfigParser
 import platform
-
+import atexit
 class EPICModel:
     """
     A model class to handle the setup and execution of the EPIC model simulations.
@@ -50,6 +50,9 @@ class EPICModel:
         self.lock_file = os.path.join(self.path, '.model_lock')
         # Automatically acquire the lock when the instance is created
         self.acquire_lock()
+
+        # register the model lock to release it when the instance is deleted
+        atexit.register(self.release_lock)
 
     def acquire_lock(self):
         """Acquire a lock on the model's directory by creating a lock file."""
