@@ -98,6 +98,40 @@ class SoilDataAccess:
         """
         result = SoilDataAccess.query(query)
         return result['mukey'].values
+    
+    @staticmethod
+    def get_cokey_from_wkt(wkt_string):
+        """
+        Fetches a list of cokey (Component Key) values based on a WKT spatial location.
+
+        Args:
+        wkt_string (str): A WKT string representing the spatial location (e.g., POLYGON, POINT).
+
+        Returns:
+        List[int]: A list of cokey values corresponding to the input WKT location.
+        """
+
+        # Step 1: Query the mapunit table to get mukey values based on WKT
+        mukey_list = SoilDataAccess.get_mukey_list(wkt_string)
+
+        if len(mukey_list)==0:
+            raise ValueError("No map units found for the given WKT location.")
+
+        # Step 2: Query the component table to get cokey values for the corresponding mukey values
+        cokey_query = f"""
+        SELECT mukey, cokey
+        FROM component
+        WHERE mukey IN ({', '.join(map(str, mukey_list))})
+        """
+
+        # Run the query and get the list of cokey values
+        print(f"Running cokey query: {cokey_query}")
+
+        result = SoilDataAccess.query(cokey_query)
+        if result.empty:
+            raise ValueError("No components found for the map units corresponding to the WKT location.")
+        return result
+
         
     @staticmethod
     def fetch_properties(input_value):
@@ -186,22 +220,63 @@ class SoilDataAccess:
         return result['slopelenusle_r'].values[0]
 
     @staticmethod
-    def fetch_value(input_value, value, table):
+    def fetch_value(input_value, values, table):
         """
-        Fetches a specific value from a given table for a given input value.
+        Fetches specific values from a given table for a given input value.
 
         Args:
         input_value (int or str): The input value representing either a mukey (int) or a WKT location (str).
-        value (str): The column name of the value to fetch.
+        values (List[str]): A list of column names for the values to fetch.
         table (str): The name of the table to query.
 
         Returns:
-        Any: The fetched value for the specified input value.
+        List[Dict[str, Any]]: A list of dictionaries containing the key (mukey, cokey, etc.) and fetched values.
         """
-        query = f"""
-        SELECT {value}
-        FROM {table}
-        WHERE mukey in ({SoilDataAccess._mukey_condition(input_value)})
-        """
+
+        # Define key columns for different tables
+        key_columns = {
+            'mapunit': 'mukey',
+            'component': 'mukey',
+            'chorizon': 'cokey',
+            'cointerp': 'cokey',
+            # Add other tables and their respective key columns as necessary
+        }
+
+        # Get the correct key column based on the table
+        key_column = key_columns.get(table)
+        if not key_column:
+            raise ValueError(f"Key column for table '{table}' not found or not supported.")
+        
+        # Get the list of mukey values based on input_value
+        key_list = SoilDataAccess.get_mukey_list(input_value)
+        if len(key_list) == 0:
+            raise ValueError(f"No keys found for the given input in table '{table}'.")
+
+        # Convert the list of values (columns) to a comma-separated string
+        values_str = ', '.join(values)
+
+        # Construct query based on the key column
+        if key_column == 'mukey':
+            # Query using mukey directly
+            query = f"""
+            SELECT {key_column}, {values_str}
+            FROM {table}
+            WHERE {key_column} IN ({', '.join(map(str, key_list))})
+            """
+        
+        elif key_column == 'cokey':
+            # Query the component or chorizon table based on cokey, but also return mukey
+            query = f"""
+            SELECT component.mukey, component.cokey, {values_str}
+            FROM {table}
+            JOIN component ON component.cokey = {table}.cokey
+            WHERE component.mukey IN ({', '.join(map(str, key_list))})
+            """
+
+        # Assuming there's a method to run the query against the database
         result = SoilDataAccess.query(query)
+        
+        # Return the result (this could be a list of dictionaries with key_column and values)
         return result
+
+
