@@ -7,6 +7,9 @@ import numpy as np
 from geoEpic.io import ConfigParser
 import platform
 import atexit
+import signal
+
+
 class EPICModel:
     """
     A model class to handle the setup and execution of the EPIC model simulations.
@@ -53,6 +56,12 @@ class EPICModel:
 
         # register close to release it when the instance is deleted
         atexit.register(self.close)
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+    
+    def _signal_handler(self, signum, frame):
+        '''Release lock on exit'''
+        self.close()
 
     def acquire_lock(self):
         """Acquire a lock on the model's directory by creating a lock file."""
