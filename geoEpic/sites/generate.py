@@ -80,7 +80,7 @@ with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
 def write_site(row):
-    with open(os.path.join(out_dir, f"{int(row['siteid'])}.SIT"), 'w') as f:
+    with open(os.path.join(out_dir, f"{int(row['SiteID'])}.SIT"), 'w') as f:
         # Modify the template lines
         template[0] = 'USA crop simulations\n'
         template[1] = 'Prototype\n'
