@@ -158,5 +158,5 @@ def check_disk_space(output_dir, est, safety_margin=0.1):
     # Check if there is sufficient free disk space
     if free_gib < estimated_required_gib:
         message = (f"Insufficient disk space in '{output_dir}'. Estimated required: {est} GiB, "
-                   f"Available: {free_gib} GiB. Consider using the 'Process Outputs' option.")
+                   f"Available: {free_gib} GiB. Consider logging only required data.")
         raise Exception(message)

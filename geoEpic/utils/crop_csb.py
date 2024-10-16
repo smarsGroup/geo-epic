@@ -3,6 +3,8 @@ import subprocess
 import numpy as np
 import os
 from us import states
+from shapely.geometry import MultiPolygon
+import geopandas as gpd
 
 def get_state_fips(state_name):
     state = states.lookup(state_name)
@@ -56,7 +58,28 @@ def run_ogr2ogr(args):
     full_command = f"{base_command} {clip_option} {output_file} {input_file}"
     print("You might have to wait longer based on the query")
     print('Executing command:', full_command)
-    subprocess.run(full_command, shell=True)
+    subprocess.run(full_command, shell=True).check_returncode()
+    print("CSB file cropped")
+    print("Processing CSB file")
+
+    gdf = gpd.read_file(output_file)
+    # Convert MultiPolygon geometries to single Polygon
+    gdf['geometry'] = gdf['geometry'].apply(lambda geom: max(geom.geoms, key=lambda g: g.area) if isinstance(geom, MultiPolygon) else geom)
+
+    prefix = gdf['CSBID'].astype(str).str[:2].mode().values[0]
+    all_same_prefix = gdf['CSBID'].astype(str).str.startswith(prefix).all()
+    print(all_same_prefix)
+
+    gdf['SiteId'] = gdf['CSBID'].astype(str).str[len(prefix):].astype(int)
+    gdf['lon'] = gdf.geometry.centroid.x
+    gdf['lat'] = gdf.geometry.centroid.y
+
+    # Save the processed GeoDataFrame back to a shapefile
+    gdf.to_file(output_file, driver='ESRI Shapefile')
+    print("All Done!")
+
+    
+
     
 
 parser = argparse.ArgumentParser(description='Filter CSB GDB file to a specific region.')

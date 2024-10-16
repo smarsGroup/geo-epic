@@ -2,7 +2,7 @@ import signal
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
-def run_with_timeout(func, timeout, *args, **kwargs):
+def _run_with_timeout(func, timeout, *args, **kwargs):
     """
     Executes a function with a timeout using signals (not recommended).
 
@@ -65,7 +65,7 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
                 pbar = tqdm(total=len(args))
 
         if method == 'Process' and timeout is not None:
-            futures = {executor.submit(run_with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}
+            futures = {executor.submit(_run_with_timeout, func, timeout, arg): i for i, arg in enumerate(args)}
         else:
             futures = {executor.submit(func, arg): i for i, arg in enumerate(args)}
         
