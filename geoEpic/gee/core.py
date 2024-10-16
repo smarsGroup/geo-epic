@@ -3,15 +3,18 @@ import pandas as pd
 from ruamel.yaml import YAML
 from concurrent.futures import ThreadPoolExecutor
 from shapely.geometry import Polygon, MultiPolygon
-from geoEpic.utils.redis import WorkerPool
+from geoEpic.utils.workerpool import WorkerPool
 
 import ee
 from geoEpic.gee.initialize import ee_Initialize
 
 project_name = ee_Initialize()
 
+pool = WorkerPool(f'gee_global_lock_{project_name}')
+# pool.open(40)
+
 def extract_features(collection, aoi, date_range, resolution):
-    pool = WorkerPool(f'gee_global_lock_{project_name}')
+    # pool = WorkerPool(f'gee_global_lock_{project_name}')
     
     def map_function(image):
         # Function to reduce image region and extract data
@@ -170,15 +173,15 @@ class CompositeCollection:
         def extract_features_wrapper(args):
             name, collection, date_range = args
             return extract_features(collection, aoi, date_range, self.resolution)
-        # Use ThreadPoolExecutor to parallelize the extraction process
+        
         with ThreadPoolExecutor(max_workers=10) as executor:
             results = list(executor.map(extract_features_wrapper, self.args))
 
+        #filter results
+        results = [df for df in results if not df.empty]
         # Merge the results into a single DataFrame
         df_merged = results[0]
         for df in results[1:]:
-            if df.empty:
-                continue
             df_merged = pd.merge(df_merged, df, on='Date', how='outer')
             columns = df_merged.columns
             # Iterate over columns to find and calculate the mean for columns with suffixes

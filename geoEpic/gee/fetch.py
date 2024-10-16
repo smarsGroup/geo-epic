@@ -13,8 +13,11 @@ def fetch_data(config_file, location, output_path):
     df.to_csv(f'{output_path}', index = False)
 
 def fetch_data_wrapper(row):
+
     name = row['name']
     output_dir = row['out']
+    if os.path.exists(f'{output_dir}/{name}.csv'):
+        return
     collection = CompositeCollection(row['config_file'])
     df = collection. extract(row['geometry'])
     df.to_csv(f'{output_dir}/{name}.csv', index = False)
@@ -42,7 +45,7 @@ def fetch_list(config_file, input_data, output_dir):
         locations['config_file'] = config_file
         locations['geometry'] = locations.apply(lambda x: [[x['lon'], x['lat'] ]], axis = 1)
         locations_ls = locations.to_dict('records')
-        parallel_executor(fetch_data_wrapper, locations_ls, max_workers=20)
+        parallel_executor(fetch_data_wrapper, locations_ls, max_workers=40)
 
     elif input_data.endswith('.shp'):
         shapefile = gpd.read_file(input_data)
@@ -55,7 +58,7 @@ def fetch_list(config_file, input_data, output_dir):
         shapefile['out'] = output_dir
         shapefile['config_file'] = config_file
         shapefile_ls = shapefile.to_dict('records')
-        parallel_executor(fetch_data_wrapper, shapefile_ls, max_workers=20)
+        parallel_executor(fetch_data_wrapper, shapefile_ls, max_workers=40)
     
     else:
         print('Input file type not Supported')
