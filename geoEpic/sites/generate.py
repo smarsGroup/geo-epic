@@ -46,7 +46,7 @@ else:
     raise ValueError("Unsupported file format. Please provide a '.csv' or '.shp' file.")
 
 info = data
-coords = info[['lat', 'lon']].values
+coords = info[['lon', 'lat']].values
 
 prefix = f'{os.path.dirname(__file__)}'
 
@@ -56,7 +56,8 @@ info['slope'] = sample_raster_nearest(slope, coords)['band_1']
 info = info.fillna(0)
 info['ssu'] = info['soil'].astype(int)
 info['slope_steep'] = round(info['slope'] / 100, 2)
-
+info['ele'] = round(info['ele'], 2)
+# print()
 # Check if slope_len is a TIFF file or a CSV file
 if slope_len.lower().endswith('.tif') or slope_len.lower().endswith('.tiff'):
     # Sample raster data for slope length
@@ -80,13 +81,13 @@ with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
 
-out_dir = os.makedirs(out_dir, exist_ok=True)
+os.makedirs(out_dir, exist_ok=True)
 def write_site(row):
     with open(os.path.join(out_dir, f"{int(row['SiteID'])}.SIT"), 'w') as f:
         # Modify the template lines
         template[0] = 'USA crop simulations\n'
         template[1] = 'Prototype\n'
-        template[2] = f'ID: {int(row["siteid"])}\n'
+        template[2] = f'ID: {int(row["SiteID"])}\n'
         template[3] = f'{row["lat"]:8.2f}{row["lon"]:8.2f}{row["ele"]:8.2f}{template[3][24:]}'  # This will replace the first 24 characters
         template[4] = f'{template[4][:48]}{row["slopelen_1"]:8.2f}{row["slope_steep"]:8.2f}{template[4][64:]}'  # This will replace characters 49 to 64
         template[6] = '                                                   \n'
@@ -95,5 +96,6 @@ def write_site(row):
 
 info_ls = info.to_dict('records')
 # print(info_ls)
+# write_site(info_ls[0])
 
 parallel_executor(write_site, info_ls, max_workers = 80)
