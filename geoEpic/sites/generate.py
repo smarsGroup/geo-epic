@@ -79,6 +79,8 @@ print("writing site files")
 with open(f"{prefix}/template.sit", 'r') as f:
     template = f.readlines()
 
+
+out_dir = os.makedirs(out_dir, exist_ok=True)
 def write_site(row):
     with open(os.path.join(out_dir, f"{int(row['SiteID'])}.SIT"), 'w') as f:
         # Modify the template lines
