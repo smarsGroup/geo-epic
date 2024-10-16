@@ -53,6 +53,7 @@ class EPICModel:
         self.lock_file = os.path.join(self.path, '.model_lock')
         # Automatically acquire the lock when the instance is created
         self.acquire_lock()
+        self.delete_after_run = True
 
         # register close to release it when the instance is deleted
         atexit.register(self.close)
@@ -190,7 +191,8 @@ class EPICModel:
             if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
                 shutil.move(log_file, os.path.join(self.log_dir, f"{fid}.out"))
                 os.chdir(self.base_dir)
-                shutil.rmtree(new_dir)
+                if self.delete_after_run or self.cache_path == '/dev/shm':
+                    shutil.rmtree(new_dir)
                 raise FileNotFoundError(f"Output file ({out_type}) not found or empty. Check {log_file} for details")
             dst = os.path.join(self.output_dir if dest is None else os.path.dirname(new_dir), out_path)
             shutil.move(out_path, dst)
@@ -198,7 +200,8 @@ class EPICModel:
 
         # Clean up
         os.chdir(self.base_dir)
-        shutil.rmtree(new_dir)
+        if self.delete_after_run or self.cache_path == '/dev/shm':
+            shutil.rmtree(new_dir)  
 
 
     def writeDATFiles(self, site):
