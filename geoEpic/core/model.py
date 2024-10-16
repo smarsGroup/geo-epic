@@ -203,10 +203,10 @@ class EPICModel:
 
     def writeDATFiles(self, site):
         """
-        Write configuration data files required for the model run for multiple sites.
+        Write configuration data files required for the model run.
 
         Args:
-            sites (list): A list of Site objects for which data files are being prepared.
+            site (Site): A Site object for which data files are being prepared.
         """
         with open('./EPICRUN.DAT', 'w') as ofile:
             fmt = '%8d %8d %8d 0 1 %8d  %8d  %8d  0   0  %2d   %4d   10.00   2.50  2.50  0.1/'
