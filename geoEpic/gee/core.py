@@ -11,7 +11,7 @@ from geoEpic.gee.initialize import ee_Initialize
 project_name = ee_Initialize()
 
 def extract_features(collection, aoi, date_range, resolution):
-    # pool = WorkerPool(f'gee_global_lock_{project_name}')
+    pool = WorkerPool(f'gee_global_lock_{project_name}')
     
     def map_function(image):
         # Function to reduce image region and extract data
@@ -20,7 +20,7 @@ def extract_features(collection, aoi, date_range, resolution):
         reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
         return ee.Feature(None, reduction).set('Date', date)
     
-    # worker = pool.acquire()
+    worker = pool.acquire()
 
     try:
         filtered_collection = collection.filterBounds(aoi)
@@ -31,8 +31,8 @@ def extract_features(collection, aoi, date_range, resolution):
                 'fileFormat': 'PANDAS_DATAFRAME'
             })
     finally: 
-        # pool.release(worker)
-        pass
+        pool.release(worker)
+        # pass
 
     if not df.empty:
         df['Date'] = pd.to_datetime(df['Date']).dt.date

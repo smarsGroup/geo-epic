@@ -170,7 +170,7 @@ class EPICModel:
         # Run EPIC executable
         log_file = f"{fid}.out"
         with open(log_file, 'w') as log:
-            subprocess.run([self.executable], stdout=log, stderr=log, check=True)
+            subprocess.run([self.executable], stdout=log, stderr=log)
 
         # Process output files
         for out_type in self.output_types:
