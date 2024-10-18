@@ -4,32 +4,33 @@ from setuptools import setup, find_packages
 import subprocess
 import urllib.request
 
-# Check if the OS is Windows and exit if true
-if sys.platform.startswith('win'):
-    print("Installation not supported for Windows.")
-    sys.exit(1)
+# Check if the OS is Windows and use appropriate commands
+is_windows = sys.platform.startswith('win')
 
-
-# subprocess.run(['conda', 'install', '-c', 'conda-forge', 'pygmo'], check=True)
+# Function to run commands based on the OS
+def run_command(command):
+    if is_windows:
+        return subprocess.run(command, shell=True, check=True)
+    else:
+        return subprocess.run(command, check=True)
 
 try:
     import osgeo
     print('GDAL already installed')
 except:
     print('Installing GDAL...')
-    subprocess.check_call(['conda', 'install', 'gdal','--no-update-deps'])
-
+    run_command('conda install -c conda-forge gdal --no-update-deps')
 
 try:
     # Check if Redis is installed
-    subprocess.run(["redis-server", "--version"], check=True)
+    if is_windows:
+        run_command('redis-cli --version')
+    else:
+        run_command(["redis-server", "--version"])
     print("Redis is already installed.")
 except:
     print("Installing Redis...")
-    # Install Redis using apt (for Debian/Ubuntu)
-    # subprocess.run(["sudo", "apt-get", "update"], check=True)
-    subprocess.run(["conda", "install", "-c", "conda-forge", "redis"], check=True)
-
+    run_command(['conda', 'install', '-c', 'conda-forge', 'redis'])
 
 # Define metadata directory in the user's home folder
 home_dir = os.path.expanduser("~")
@@ -56,7 +57,8 @@ else:
 def read_requirements():
     with open('requirements.txt', 'r') as file:
         return file.readlines()
-subprocess.check_call(['pip', 'install', '--no-binary', ':all:', 'ruamel.yaml==0.16.2'])
+
+run_command('pip install --no-binary :all: ruamel.yaml==0.16.2')
 
 # Setup function
 setup(
@@ -66,10 +68,10 @@ setup(
     install_requires=read_requirements(),
     include_package_data=True,
     package_data={
-        'geoEpic': ['templates/**/**/*',
+        'geoEpic': ['assets/**/**/*',
                     'soil/template.sol',
                     'sites/template.sit',
-                    'templates/EPICeditor.xlsm',
+                    'assets/EPICeditor.xlsm',
                     'gee_utils/config.json',
                     ],
     },
@@ -85,7 +87,7 @@ setup(
 
 # from geoEpic.io.config_parser import ConfigParser
 
-# config = ConfigParser('./geoEpic/templates/ws_template/config.yml')
+# config = ConfigParser('./geoEpic/assets/ws_template/config.yml')
 
 # config.update({'soil' : {'soil_map': f'{home_dir}/GeoEPIC_metadata/SSURGO.tif',},
 #                 'site': {'elevation': f'{home_dir}/GeoEPIC_metadata/SRTM_1km_US_project.tif',

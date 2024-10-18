@@ -4,12 +4,19 @@ import argparse
 import subprocess
 from geoEpic.utils import parallel_executor
 from tqdm import tqdm
+import platform
 
 def rsync_copy(src_dst):
     os.makedirs(os.path.dirname(src_dst[1]), exist_ok=True)
-    rsync_command = ["rsync", "-a"]  # Use archive mode for preserving attributes
-    rsync_command.extend(src_dst)
-    subprocess.run(rsync_command, check=True)
+    if platform.system() == "Windows":
+        # Use robocopy for Windows
+        robocopy_command = ["robocopy", os.path.dirname(src_dst[0]), os.path.dirname(src_dst[1]), os.path.basename(src_dst[0]), "/E", "/DCOPY:DA", "/COPY:DAT", "/R:3", "/W:3"]
+        subprocess.run(robocopy_command, check=True)
+    else:
+        # Use rsync for Linux and other Unix-like systems
+        rsync_command = ["rsync", "-a"]  # Use archive mode for preserving attributes
+        rsync_command.extend(src_dst)
+        subprocess.run(rsync_command, check=True)
 
 def parallel_copy(source_dir, destination_dir, max_workers=4, extension=None, level_one=False, exclude_dirs=False, progress_bar=True):
     """
@@ -30,7 +37,7 @@ def parallel_copy(source_dir, destination_dir, max_workers=4, extension=None, le
         pattern = os.path.join(source_dir, '*')
     else:
         # Recursively get all files and directories
-        pattern = os.path.join(source_dir, '**')
+        pattern = os.path.join(source_dir, '**', '*')
 
     # Use glob to find matching files based on the pattern
     file_paths = glob.glob(pattern, recursive=not level_one)
@@ -48,14 +55,14 @@ def parallel_copy(source_dir, destination_dir, max_workers=4, extension=None, le
 # Define the dictionary mapping keys to lists of items
 script_dir = os.path.dirname(os.path.abspath(__file__))
 file_mapping = {
-    'epic_editor': [os.path.join(script_dir, "../templates/EPICeditor.xlsm")],
+    'epic_editor': [os.path.join(script_dir, "../assets/EPICeditor.xlsm")],
     'calibration_utils': [
-        os.path.join(script_dir, "../templates/calibration/calibration.py"),
-        os.path.join(script_dir, "../templates/calibration/parms")
+        os.path.join(script_dir, "../assets/calibration/calibration.py"),
+        os.path.join(script_dir, "../assets/calibration/parms")
     ],
     'HLS.yml': [os.path.join(script_dir, "../gee/HLS.yml")],
     'daily_weather.yml': [os.path.join(script_dir, "../gee/daily_weather.yml")],
-    'ws_template': [os.path.join(script_dir, "../templates/ws_template/")]
+    'ws_template': [os.path.join(script_dir, "../assets/ws_template/")]
 }
 
 def copy_mapped_files(key, destination, max_workers):
