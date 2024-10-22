@@ -1,4 +1,4 @@
-name: epic_env
+name: epic_env2
 channels:
   - conda-forge
   - defaults

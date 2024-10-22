@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # Environment name
-ENV_NAME="my_project_env"
+ENV_NAME="epic_env2"
 ENV_YML="environment.yml"
 ANACONDA_INSTALLER="Anaconda3-latest-Linux-x86_64.sh"
 ANACONDA_URL="https://repo.anaconda.com/archive/$ANACONDA_INSTALLER"
+GITHUB_PACKAGE_URL="git+https://github.com/smarsGroup/geo-epic.git"
 
 # Function to check if conda is installed
 function check_conda_installed {
@@ -48,13 +49,8 @@ function check_env_exists {
 
 # Function to create the environment from environment.yml
 function create_env {
-    if [[ -f "$ENV_YML" ]]; then
-        echo "Creating Conda environment '$ENV_NAME' from '$ENV_YML'..."
-        conda env create -f "$ENV_YML"
-    else
-        echo "Environment file '$ENV_YML' not found. Please ensure the file exists."
-        exit 1
-    fi
+    echo "Creating Conda environment '$ENV_NAME' ..."
+    conda env create -f https://raw.githubusercontent.com/smarsGroup/geo-epic/master/environment.yml
 }
 
 # Main script
@@ -64,9 +60,17 @@ check_conda_installed
 # 2. Check if the environment exists, if not create it
 if ! check_env_exists; then
     create_env
+else
+    # If environment exists, install the GitHub package via pip
+    echo "Updaing geo_epic package..."
+    conda activate "$ENV_NAME"
+    pip uninstall geo-epic
+    pip install "$GITHUB_PACKAGE_URL"
+    conda deactivate
 fi
 
 # 3. Activate the environment
 echo "Activating environment '$ENV_NAME'..."
 conda activate "$ENV_NAME"
+geo_epic init
 echo "Environment '$ENV_NAME' is activated."

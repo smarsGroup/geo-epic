@@ -4,6 +4,9 @@ import sys
 
 # Mapping of modules and functions to their respective relative paths
 script_paths = {
+    "init" : {
+        "init" : "initialize.py"
+    },
     "utility": {
         "crop_csb": "utils/crop_csb.py",
         "gee": "gee/fetch.py"
@@ -38,6 +41,7 @@ default_functions = {
     "soil": "usda",
     "sites": "generate",
     "workspace": "run",
+    "init":"init"
 }
 
 class DispatchError(Exception):
