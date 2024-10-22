@@ -14,23 +14,23 @@ def run_command(command):
     else:
         return subprocess.run(command, check=True)
 
-try:
-    import osgeo
-    print('GDAL already installed')
-except:
-    print('Installing GDAL...')
-    run_command('conda install -c conda-forge gdal --no-update-deps')
+# try:
+#     import osgeo
+#     print('GDAL already installed')
+# except:
+#     print('Installing GDAL...')
+#     run_command('conda install -c conda-forge gdal --no-update-deps')
 
-try:
-    # Check if Redis is installed
-    if is_windows:
-        run_command('redis-cli --version')
-    else:
-        run_command(["redis-server", "--version"])
-    print("Redis is already installed.")
-except:
-    print("Installing Redis...")
-    run_command(['conda', 'install', '-c', 'conda-forge', 'redis'])
+# try:
+#     # Check if Redis is installed
+#     if is_windows:
+#         run_command('redis-cli --version')
+#     else:
+#         run_command(["redis-server", "--version"])
+#     print("Redis is already installed.")
+# except:
+#     print("Installing Redis...")
+#     run_command(['conda', 'install', '-c', 'conda-forge', 'redis'])
 
 # Define metadata directory in the user's home folder
 home_dir = os.path.expanduser("~")
@@ -58,7 +58,7 @@ def read_requirements():
     with open('requirements.txt', 'r') as file:
         return file.readlines()
 
-run_command('pip install --no-binary :all: ruamel.yaml==0.16.2')
+# run_command('pip install --no-binary :all: ruamel.yaml==0.16.2')
 
 # Setup function
 setup(

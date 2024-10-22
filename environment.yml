@@ -1,0 +1,9 @@
+name: geo_epic_win
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - gdal=3.7
+  - pip:
+    - git+https://github.com/smarsGroup/geo-epic.git
