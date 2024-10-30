@@ -11,7 +11,6 @@ from geoEpic.gee.initialize import ee_Initialize
 project_name = ee_Initialize()
 
 pool = WorkerPool(f'gee_global_lock_{project_name}')
-# pool.open(40)
 
 def extract_features(collection, aoi, date_range, resolution):
     # pool = WorkerPool(f'gee_global_lock_{project_name}')

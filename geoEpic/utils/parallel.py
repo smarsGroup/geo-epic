@@ -1,6 +1,7 @@
 import signal
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+import os
 
 def _run_with_timeout(func, timeout, *args, **kwargs):
     """
@@ -94,3 +95,14 @@ def parallel_executor(func, args, method='Process', max_workers=10, return_value
             if bar: pbar.close()
     
     return results, failed_indices
+
+def _delete_file(file_path):
+    try:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    except Exception as e:
+        print(f"Error occurred while deleting file: {e}")
+            
+def delete_folder_files_in_parallel(folder_path,max_workers=20):
+    file_list = [os.path.join(folder_path,f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    parallel_executor(_delete_file, file_list, method='Process', max_workers=max_workers, return_value=False, bar=True, timeout=10)

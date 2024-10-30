@@ -13,6 +13,11 @@ from geoEpic.weather.main import DailyWeather
 from geoEpic.utils import parallel_executor
 from geoEpic.utils import raster_to_dataframe
 from geoEpic.dispatcher import dispatch
+from geoEpic.utils import GeoInterface
+from geoEpic.utils.run_model_util import create_run_info
+
+
+
 # Parse command line arguments
 parser = argparse.ArgumentParser(description="Downloads daily weather data")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -38,7 +43,7 @@ print('Processing shape file')
 # Define date range from command-line arguments
 # dates = pd.date_range(start = start_date, end = end_date, freq = 'M')
 
-print('curr', os.getcwd())
+print('workspace directory : ', os.getcwd())
 
 if aoi.endswith('.shp'):
     gdf = gpd.read_file(aoi)
@@ -113,21 +118,22 @@ cmids_ls = cmids.to_dict('records')
 
 # test for one field_id
 
-create_dly(cmids_ls[0])
-parallel_executor(create_dly, cmids_ls[1:], max_workers = max_workers)
+if( len(cmids_ls)>0 ):
+    create_dly(cmids_ls[0])
+    parallel_executor(create_dly, cmids_ls[1:], max_workers = max_workers)
 
-# # Determine the latitude and longitude range based on the provided arguments
-# if args.shapefile:
-#     # Load the shapefile and get the bounds
-#     gdf = gpd.read_file(args.shapefile)
-#     bounds = gdf.total_bounds
-#     lat_min, lon_min, lat_max, lon_max = bounds[1], bounds[0], bounds[3], bounds[2]
-# elif args.state_name:
-#     # # Load a shapefile with state boundaries (you need to provide this)
-#     # gdf = gpd.read_file('path_to_your_states_shapefile.shp')
-#     # # Get the bounds of the specified state
-#     # state = gdf[gdf['STATE_NAME'] == args.state_name]
-#     # bounds = state.total_bounds
-#     # lat_min, lon_min, lat_max, lon_max = bounds[1], bounds[0], bounds[3], bounds[2]
 
-# # Rest of your code...
+lookup = GeoInterface('./climate_grid.tif')
+
+def get_clim_id(lat, lon):
+    return int(lookup.lookup(lat, lon)['band_1'])
+
+info_df_loc = config['run_info']
+if not os.path.exists(info_df_loc):
+    create_run_info(config['Area_of_Interest'],info_df_loc)
+run_info_df = pd.read_csv(info_df_loc)
+
+# Apply the function to each row and store the result in a new column
+run_info_df['dly'] = run_info_df.apply(lambda row: get_clim_id(row['lat'], row['lon']), axis=1)
+
+run_info_df.to_csv(info_df_loc,index=False)

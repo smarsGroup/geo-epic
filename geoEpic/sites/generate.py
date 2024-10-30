@@ -94,8 +94,11 @@ def write_site(row):
         # Write the modified template to the new file
         f.writelines(template)
 
+existing_sites = [int(f.split('.')[0]) for f in os.listdir(out_dir)]
+info = info[~info['SiteID'].isin(existing_sites)]
+
 info_ls = info.to_dict('records')
 # print(info_ls)
 # write_site(info_ls[0])
-
-parallel_executor(write_site, info_ls, max_workers = 80)
+if( len(info_ls)>0 ):
+    parallel_executor(write_site, info_ls, max_workers = 80)

@@ -13,7 +13,7 @@ script_paths = {
     },
     "weather": {
         "gee": "weather/gee.py",
-        "windspeed": "weather/nldas_ws.py",
+        "windspeed": "weather/nldas_ws_gee.py",
         "daymet": "weather/download_daymet.py",
         "download_daily": "weather/download_daily.py",
         "daily2monthly": "weather/daily2monthly.py"

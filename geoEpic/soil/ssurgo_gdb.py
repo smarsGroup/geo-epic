@@ -4,8 +4,13 @@ import pandas as pd
 from tqdm import tqdm
 from osgeo import ogr
 import argparse
+import geopandas as gpd
 from geoEpic.utils import read_gdb_layer, parallel_executor
 from geoEpic.io import ConfigParser 
+from geoEpic.soil import get_ssurgo_mukeys 
+from geoEpic.utils.run_model_util import create_run_info
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 parser = argparse.ArgumentParser(description="soil file creation script")
 parser.add_argument("-c", "--config", default= "./config.yml", help="Path to the configuration file")
@@ -49,17 +54,12 @@ mapunit = read_gdb_layer(gdb_data, 'mapunit', columns, names)
 mapunit = mapunit.fillna(0)
 mapunit.to_csv(os.path.dirname(gdb_path) + f'/{region}_mapunit.csv', index = False)
 
-# chorizon = pd.read_csv(f'{region}_chorizon.csv')
-# component = pd.read_csv(f'{region}_component.csv')
-# mapunit = pd.read_csv(f'{region}_mapunit.csv')
-
 idx = component.groupby('mukey')['comppct_r'].transform('max') == component['comppct_r']
 soil = pd.merge(component[idx], mapunit, on = 'mukey', how = 'left')
 soil['albedo'] = soil['albedodry1'] * 0.625
 
-# print(soil.columns)
 slopelen_1 = soil[['mukey', 'slopelen_1']]
-slopelen_1.to_csv(os.path.dirname(gdb_path) + f'/{region}_slopelen.csv', index = False)
+slopelen_1.to_csv(config['site']['slope_length'], index = False)
 
 soil = soil[['mukey', 'compname', 'hydgrp', 'cokey', 'albedo', 'comppct_r', 'MapUnitsym']]
 soil['mukey'] = soil['mukey'].astype(int)
@@ -98,6 +98,20 @@ soil_orig = soil.copy()
 soil = soil[soil['mukey'].isin(mukeys_in_soil_layer)]
 soil = soil.sort_values(by = ['mukey'])
 
+#filter soil based on shape file
+
+aoi_gdf = gpd.read_file(config['Area_of_Interest'])
+aoi_gdf['centroid'] = aoi_gdf.geometry.centroid
+aoi_gdf['lon'] = aoi_gdf['centroid'].x
+aoi_gdf['lat'] = aoi_gdf['centroid'].y
+
+# print(len(soil))
+# If you want to get them in the same format as final_gdf[['lon', 'lat']].values
+coords = aoi_gdf[['lon', 'lat']].values
+aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map']) 
+
+soil = soil[soil['mukey'].isin(aoi_mukeys)]
+
 print("\nwriting soil files")
 
 if output_path is None:
@@ -106,6 +120,10 @@ else:
     outdir = output_path
     
 os.makedirs(outdir, exist_ok=True)
+
+# filter soil mukey only which is not present
+existing_mukeys = [int(f.split('.')[0]) for f in os.listdir(outdir)]
+soil = soil[~soil['mukey'].isin(existing_mukeys)]
 
 # Read template file
 with open(f'{os.path.dirname(__file__)}/template.sol', 'r') as file:
@@ -137,4 +155,13 @@ def write_soil(row):
         file.writelines(template)
         
 soil_ls = soil.to_dict('records')
-parallel_executor(write_soil, soil_ls, max_workers = 80)
+if( len(soil_ls)>0 ):
+    parallel_executor(write_soil, soil_ls, max_workers = 80)
+
+#write soil column in run_info df
+info_df_loc = config['run_info']
+if not os.path.exists(info_df_loc):
+    create_run_info(config['Area_of_Interest'],info_df_loc)
+run_info_df = pd.read_csv(info_df_loc)
+run_info_df['soil'] = aoi_mukeys
+run_info_df.to_csv(info_df_loc,index=False)

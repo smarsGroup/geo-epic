@@ -11,15 +11,19 @@ class DailyWeather:
         self.end_date = end_date
         self.offline = offline
         if not offline:
-            self.lookup = GeoInterface(path + '/nldas_grid.tif')
+            self.lookup = GeoInterface(path + '/nldas_grid.csv')
         else:
             self.lookup = GeoInterface(path + '/climate_grid.tif')
 
     def get(self, lat, lon):
         if not self.offline:
             # nldas_id = int(self.lookup.lookup(lat, lon))
+            # nldas_id = int(self.lookup.lookup(lat, lon)['band_1'].item())
             
-            nldas_id = int(self.lookup.lookup(lat, lon)['band_1'].item())
+            nldas_pixel = self.lookup.lookup(lat, lon)
+            nldas_lat = int(nldas_pixel['lat']*100)
+            nldas_lon = int(nldas_pixel['lon']*100)
+            nldas_id = f'{nldas_lat}a{nldas_lon}'
             data = get_daymet_data(lat, lon, self.start_date, self.end_date)
             data['date'] = pd.to_datetime(data[['year', 'month', 'day']])
             ws = pd.read_csv(self.path + f'/NLDAS_csv/{nldas_id}.csv',header=None)

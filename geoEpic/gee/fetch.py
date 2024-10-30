@@ -32,36 +32,33 @@ def fetch_list(config_file, input_data, output_dir):
         output_dir (str): Directory or file path where the output should be saved.
         raw (bool): Whether to save the results as raw CSV or .SOL file.
     """
-
+    locations = None
     if input_data.endswith('.csv'):
         locations = pd.read_csv(input_data)
-        if 'SiteID' in locations.columns:
-            locations['name'] = locations['SiteID']
-        elif 'FieldID' in locations.columns:
-            locations['name'] = locations['FieldID']
-        else:
-            locations['name'] = list(range(len(locations)))
-        locations['out'] = output_dir
-        locations['config_file'] = config_file
         locations['geometry'] = locations.apply(lambda x: [[x['lon'], x['lat'] ]], axis = 1)
-        locations_ls = locations.to_dict('records')
-        parallel_executor(fetch_data_wrapper, locations_ls, max_workers=40)
-
     elif input_data.endswith('.shp'):
-        shapefile = gpd.read_file(input_data)
-        if 'SiteID' in shapefile.columns:
-            shapefile['name'] = shapefile['SiteID']
-        elif 'FieldID' in shapefile.columns:
-            shapefile['name'] = shapefile['FieldID']
-        else:
-            shapefile['name'] = list(range(len(shapefile)))
-        shapefile['out'] = output_dir
-        shapefile['config_file'] = config_file
-        shapefile_ls = shapefile.to_dict('records')
-        parallel_executor(fetch_data_wrapper, shapefile_ls, max_workers=40)
-    
+        locations = gpd.read_file(input_data)
     else:
         print('Input file type not Supported')
+    
+    if 'SiteID' in locations.columns:
+        locations['name'] = locations['SiteID']
+    elif 'FieldID' in locations.columns:
+        locations['name'] = locations['FieldID']
+    else:
+        locations['name'] = list(range(len(locations)))
+        if input_data.endswith('.csv'):
+            locations.to_csv(input_data,index=False)
+        elif input_data.endswith('.shp'):
+            locations.to_file(input_data)
+    locations['out'] = output_dir
+    locations['config_file'] = config_file
+    locations_ls = locations.to_dict('records')
+
+    existing_field_ids = [int(f.split('.')[0]) for f in os.listdir(output_dir)]
+    filtered_ls = [row for row in locations_ls if row['name'] not in existing_field_ids]
+
+    parallel_executor(fetch_data_wrapper, filtered_ls, max_workers=40)
         
 def main():
     parser = argparse.ArgumentParser(description="Fetch and output data from GEE")
