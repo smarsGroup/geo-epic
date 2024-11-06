@@ -1,0 +1,15 @@
+# Global parameters
+global_scope:
+  time_range: ['2005-01-01', '2020-12-31']
+  variables: ['cdl_code']  
+  resolution: 10
+
+
+
+# Specify Earth Engine collections and their respective variables
+collections:
+  cdl:
+    collection: USDA/NASS/CDL
+    variables:
+      cdl_code: b('cropland')
+  

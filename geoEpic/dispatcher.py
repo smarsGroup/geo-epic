@@ -9,7 +9,8 @@ script_paths = {
     },
     "utility": {
         "crop_csb": "utils/crop_csb.py",
-        "gee": "gee/fetch.py"
+        "gee": "gee/fetch.py",
+        "generate_opc":"opc/generate_opc.py"
     },
     "weather": {
         "gee": "weather/gee.py",
