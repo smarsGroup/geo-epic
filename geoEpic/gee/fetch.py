@@ -56,7 +56,7 @@ def fetch_list(config_file, input_data, output_dir):
     locations_ls = locations.to_dict('records')
 
     existing_field_ids = [int(f.split('.')[0]) for f in os.listdir(output_dir)]
-    filtered_ls = [row for row in locations_ls if row['name'] not in existing_field_ids]
+    filtered_ls = [row for row in locations_ls if int(row['name']) not in existing_field_ids]
 
     parallel_executor(fetch_data_wrapper, filtered_ls, max_workers=40)
         
