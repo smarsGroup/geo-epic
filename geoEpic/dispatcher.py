@@ -10,10 +10,11 @@ script_paths = {
     "utility": {
         "crop_csb": "utils/crop_csb.py",
         "gee": "gee/fetch.py",
+        "change_ee_project":"gee/change_project.py",
         "generate_opc":"opc/generate_opc.py"
     },
     "weather": {
-        "gee": "weather/gee.py",
+        "gee_w": "weather/gee.py",
         "windspeed": "weather/nldas_ws_gee.py",
         "daymet": "weather/download_daymet.py",
         "download_daily": "weather/download_daily.py",

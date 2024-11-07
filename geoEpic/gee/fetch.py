@@ -13,13 +13,12 @@ def fetch_data(config_file, location, output_path):
     df.to_csv(f'{output_path}', index = False)
 
 def fetch_data_wrapper(row):
-
     name = row['name']
     output_dir = row['out']
     if os.path.exists(f'{output_dir}/{name}.csv'):
         return
     collection = CompositeCollection(row['config_file'])
-    df = collection. extract(row['geometry'])
+    df = collection.extract(row['geometry'])
     df.to_csv(f'{output_dir}/{name}.csv', index = False)
         
     

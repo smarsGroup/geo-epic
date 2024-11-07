@@ -8,39 +8,44 @@ from geoEpic.utils.workerpool import WorkerPool
 import ee
 from geoEpic.gee.initialize import ee_Initialize
 
-project_name = ee_Initialize()
 
-pool = WorkerPool(f'gee_global_lock_{project_name}')
-
-def extract_features(collection, aoi, date_range, resolution):
-    # pool = WorkerPool(f'gee_global_lock_{project_name}')
+class ExtractFeatures:
     
-    def map_function(image):
-        # Function to reduce image region and extract data
-        date = image.date().format()
-        reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
-        reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
-        return ee.Feature(None, reduction).set('Date', date)
+    def __init__(self, pool_name):
+        """Static property getter."""
+        self.pool = pool_name
     
-    worker = pool.acquire()
+    def extract_features(self,collection, aoi, date_range, resolution):
+        
+        # name, collection, date_range = args
+        
+        def map_function(image):
+            # Function to reduce image region and extract data
+            date = image.date().format()
+            reducer = ee.Reducer.mode() if aoi.getInfo()['type'] != "Point" else ee.Reducer.first()
+            reduction = image.reduceRegion(reducer=reducer, geometry=aoi, scale=resolution, maxPixels=1e9)
+            return ee.Feature(None, reduction).set('Date', date)
+        
+        pool = self.pool
+        worker = pool.acquire()
 
-    try:
-        filtered_collection = collection.filterBounds(aoi)
-        filtered_collection = filtered_collection.filterDate(*date_range)
-        daily_data = filtered_collection.map(map_function)
-        df = ee.data.computeFeatures({
-                'expression': daily_data,
-                'fileFormat': 'PANDAS_DATAFRAME'
-            })
-    finally: 
-        pool.release(worker)
-        # pass
+        try:
+            filtered_collection = collection.filterBounds(aoi)
+            filtered_collection = filtered_collection.filterDate(*date_range)
+            daily_data = filtered_collection.map(map_function)
+            df = ee.data.computeFeatures({
+                    'expression': daily_data,
+                    'fileFormat': 'PANDAS_DATAFRAME'
+                })
+        finally: 
+            pool.release(worker)
+            # pass
 
-    if not df.empty:
-        df['Date'] = pd.to_datetime(df['Date']).dt.date
-        if 'geo' in df.columns: df = df.drop(columns=['geo'])
-        df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
-    return df
+        if not df.empty:
+            df['Date'] = pd.to_datetime(df['Date']).dt.date
+            if 'geo' in df.columns: df = df.drop(columns=['geo'])
+            df = df.dropna(how='all', subset=[col for col in df.columns if col != 'Date'])
+        return df
 
 def apply_formula(image, var, formula, vars = None):
     """
@@ -70,6 +75,12 @@ class CompositeCollection:
     """
 
     def __init__(self, yaml_file, start_date = None, end_date = None):
+        
+        project_name = ee_Initialize()
+        pool = WorkerPool(f'gee_global_lock_{project_name}')
+        self.extract_obj = ExtractFeatures(pool)
+        # ExtractFeatures.set_pool(pool)
+        
         # Initialize the CompositeCollection object
         self.global_scope = None
         with open(yaml_file, 'r') as file:
@@ -86,6 +97,7 @@ class CompositeCollection:
         if end_date:
             self.global_scope['time_range'][1] = end_date
         self._initialize_collections()
+        
 
     def _initialize_collections(self):
         # Initialize collections based on the configuration
@@ -171,7 +183,7 @@ class CompositeCollection:
         
         def extract_features_wrapper(args):
             name, collection, date_range = args
-            return extract_features(collection, aoi, date_range, self.resolution)
+            return self.extract_obj.extract_features(collection, aoi, date_range, self.resolution)
         
         with ThreadPoolExecutor(max_workers=10) as executor:
             results = list(executor.map(extract_features_wrapper, self.args))
@@ -230,6 +242,9 @@ class CompositeCollection:
 class TimeSeries:
 
     def __init__(self, collection, vars, date_range = None):
+        project_name = ee_Initialize()
+        pool = WorkerPool(f'gee_global_lock_{project_name}')
+        self.extract_obj = ExtractFeatures(pool)
         self.collection = collection.select(vars)
         self.vars = vars
         self.date_range = date_range
@@ -254,7 +269,7 @@ class TimeSeries:
 
         if date_range is None:
             date_range = self.date_range
-        df = extract_features(self.collection, aoi, date_range, resolution)
+        df = self.extract_obj.extract_features(self.collection, aoi, date_range, resolution)
         return df
 
 
