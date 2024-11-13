@@ -34,7 +34,8 @@ script_paths = {
         "new": "workspace/create_ws.py",
         "copy": "workspace/parallel_copy.py",
         "post_process": "workspace/post_process.py",
-        "visualize": "workspace/visualize.py"
+        "visualize": "workspace/visualize.py",
+        "validate" : "workspace/validate.py"
     },
 }
 
