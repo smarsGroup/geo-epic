@@ -15,6 +15,7 @@ from geoEpic.utils import raster_to_dataframe
 from geoEpic.dispatcher import dispatch
 from geoEpic.utils import GeoInterface
 from geoEpic.utils.run_model_util import create_run_info
+import sys
 
 
 
@@ -58,29 +59,29 @@ elif aoi.endswith('.csv'):
 os.makedirs(working_dir, exist_ok = True)
 os.chdir(working_dir)
 
-
 res_value = 0.00901  # 1 km resolution in degree
 
 lon = np.arange(lon_min, lon_max, res_value)
 lat = np.arange(lat_min, lat_max, res_value)
 lon, lat = np.meshgrid(lon, lat)
 
-# Create a DataArray from the grid
-grid = np.arange(lat.size).reshape(lat.shape)
-# grid = int(region_code)*1e7 + grid
+# Create a DataArray from the grid and save it in climate_grid.tif
+if not os.path.exists('./climate_grid.tif'):
+    grid = np.arange(lat.size).reshape(lat.shape)
+    
+    data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
 
-data_set = xr.DataArray(grid, coords=[('y', lat[:, 0]), ('x', lon[0, :])])
+    # Mask the DataArray using Nebraska's shape
+    if aoi.endswith('.shp'):
+        mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
+                                        transform=data_set.rio.transform(),
+                                        invert=True, out_shape=data_set.shape)
+        data_set = data_set.where(mask)
+    # Save the DataArray as a GeoTIFF
+    data_set = data_set.rio.write_crs("EPSG:4326")
+    data_set.rio.to_raster("./climate_grid.tif")
 
-# Mask the DataArray using Nebraska's shape
-if aoi.endswith('.shp'):
-    mask = rasterio.features.geometry_mask([geom for geom in gdf.geometry],
-                                    transform=data_set.rio.transform(),
-                                    invert=True, out_shape=data_set.shape)
-    data_set = data_set.where(mask)
-# Save the DataArray as a GeoTIFF
-data_set = data_set.rio.write_crs("EPSG:4326")
-data_set.rio.to_raster("./climate_grid.tif")
-
+# if NLDAS_csv folder does not exist, download the wind speed data
 if not os.path.exists('./NLDAS_csv'):
     # dispatch('weather', 'windspeed', f'-s {start_date} -e {end_date} \
     #                 -b {lat_min} {lat_max} {lon_min} {lon_max} -o .', True)
@@ -91,38 +92,39 @@ daily_weather = DailyWeather('.', start_date, end_date)
 os.makedirs('./Daily', exist_ok = True)
 os.makedirs('./Monthly', exist_ok = True)
 
+#create dly file
 def create_dly(row):
-    _, lon, lat, daymet_id = row.values()
+    lon, lat, daymet_id = row.values()
     file_path = os.path.join('./Daily/', f'{int(daymet_id)}.DLY')
     if not os.path.isfile(file_path):
         dly = daily_weather.get(lat, lon)
         dly.save(f'./Daily/{int(daymet_id)}')
         dly.to_monthly(f'./Monthly/{int(daymet_id)}')
 
-cmids = raster_to_dataframe("./climate_grid.tif")
-# nldas_id = sample_raster_nearest('./nldas_grid.tif', cmids[['x', 'y']].values)
-# cmids['nldas_id'] = nldas_id['band_1']
-cmids = cmids.fillna(-1)
-cmids = cmids[cmids['band_1'] != -1]
-cmids.reset_index(inplace = True)
-cmids = cmids.rename(columns={'band_1': 'daymet_id'})
 
-#remove existing daymet ids in output folder from input args
-present_daymet_ids = [int(f.split('.')[0]) for f in os.listdir('./Daily')]
-cmids['daymet_id'] = cmids['daymet_id'].astype(int)
-cmids = cmids[~cmids['daymet_id'].isin(present_daymet_ids)]
+'''
+Below commented code creates list of climate ids from the clim_grid.tif raster file
+'''
+# cmids = raster_to_dataframe("./climate_grid.tif")
+# # nldas_id = sample_raster_nearest('./nldas_grid.tif', cmids[['x', 'y']].values)
+# # cmids['nldas_id'] = nldas_id['band_1']
+# cmids = cmids.fillna(-1)
+# cmids = cmids[cmids['band_1'] != -1]
+# cmids.reset_index(inplace = True)
+# cmids = cmids.rename(columns={'band_1': 'daymet_id'})
 
+# #remove existing daymet ids in output folder from input args
+# present_daymet_ids = [int(f.split('.')[0]) for f in os.listdir('./Daily')]
+# cmids['daymet_id'] = cmids['daymet_id'].astype(int)
+# cmids = cmids[~cmids['daymet_id'].isin(present_daymet_ids)]
 
-cmids_ls = cmids.to_dict('records')
-# print(f' input : {cmids_ls[0]}')
-
-# test for one field_id
-
-if( len(cmids_ls)>0 ):
-    create_dly(cmids_ls[0])
-    parallel_executor(create_dly, cmids_ls[1:], max_workers = max_workers)
+# cmids_ls = cmids.to_dict('records')
 
 
+
+'''
+Below code creates info.csv file. and creates list of climate ids from the info.csv file
+'''
 lookup = GeoInterface('./climate_grid.tif')
 
 def get_clim_id(lat, lon):
@@ -133,7 +135,17 @@ if not os.path.exists(info_df_loc):
     create_run_info(config['Area_of_Interest'],info_df_loc)
 run_info_df = pd.read_csv(info_df_loc)
 
-# Apply the function to each row and store the result in a new column
-run_info_df['dly'] = run_info_df.apply(lambda row: get_clim_id(row['lat'], row['lon']), axis=1)
+clim_id_list = []
+for index, row in run_info_df.iterrows():
+    clim_id = get_clim_id(row['lat'], row['lon'])
+    clim_id_list.append({'lon': row['lon'], 'lat': row['lat'],  'band_1': clim_id})
+    run_info_df.at[index, 'dly'] = clim_id
+
+
+#parallel execute to create dly files
+if( len(clim_id_list)>0 ):
+    create_dly(clim_id_list[0])
+    parallel_executor(create_dly, clim_id_list[1:], max_workers = max_workers)
 
 run_info_df.to_csv(info_df_loc,index=False)
+
