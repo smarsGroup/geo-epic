@@ -139,7 +139,8 @@ clim_id_list = []
 for index, row in run_info_df.iterrows():
     clim_id = get_clim_id(row['lat'], row['lon'])
     clim_id_list.append({'lon': row['lon'], 'lat': row['lat'],  'band_1': clim_id})
-    run_info_df.at[index, 'dly'] = clim_id
+    # print(f'Climate ID: {clim_id}')
+    run_info_df.at[index, 'dly'] = int(clim_id)
 
 
 #parallel execute to create dly files
@@ -147,5 +148,6 @@ if( len(clim_id_list)>0 ):
     create_dly(clim_id_list[0])
     parallel_executor(create_dly, clim_id_list[1:], max_workers = max_workers)
 
+run_info_df = run_info_df.astype({'dly': int})
 run_info_df.to_csv(info_df_loc,index=False)
 
