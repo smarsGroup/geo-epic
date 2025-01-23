@@ -5,6 +5,8 @@ from core import *
 from geoEpic.utils import parallel_executor
 import geopandas as gpd
 from time import time
+from geoEpic.gee.initialize import ee_Initialize
+import traceback
 
 
 def fetch_data(config_file, location, output_path):
@@ -54,10 +56,16 @@ def fetch_list(config_file, input_data, output_dir):
     locations['config_file'] = config_file
     locations_ls = locations.to_dict('records')
 
-    existing_field_ids = [int(f.split('.')[0]) for f in os.listdir(output_dir)]
-    filtered_ls = [row for row in locations_ls if int(row['name']) not in existing_field_ids]
-
-    parallel_executor(fetch_data_wrapper, filtered_ls, max_workers=40)
+    locations['name'] = locations['name'].astype(str)
+    existing_field_ids = [f.split('.')[0] for f in os.listdir(output_dir)]
+    filtered_ls = [row for row in locations_ls if row['name'] not in existing_field_ids]
+    
+    ee_Initialize()
+    if len(filtered_ls) == 0:
+        print("All data already fetched")
+        return
+    fetch_data_wrapper(filtered_ls[0])
+    parallel_executor(fetch_data_wrapper, filtered_ls[1:], max_workers=40)
         
 def main():
     parser = argparse.ArgumentParser(description="Fetch and output data from GEE")
@@ -76,6 +84,7 @@ def main():
             fetch_list(args.config_file, args.fetch[0], args.output_path)
     except Exception as e:
         print(e)
+        traceback.print_exc()
         parser.print_help()
 
 
