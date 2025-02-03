@@ -1,6 +1,7 @@
 import os
 from geoEpic.weather import DailyWeather
 from geoEpic.io import DLY, SIT
+import os
 
 class Site:
     """
@@ -78,7 +79,12 @@ class Site:
             sol_path = os.path.join(config['soil']['files_dir'], f"{site_info['soil']}{sol_extension}")
 
         sit_path = os.path.join(config['site']['dir'], f"{site_info['SiteID']}.SIT")
-
+        # Check if a file with .sit extension exists
+        if not os.path.exists(sit_path):
+            sit_path_lower = sit_path[:-4] + '.sit'
+            if os.path.exists(sit_path_lower):
+                sit_path = sit_path_lower
+                
         instance = cls(
             opc=opc_path,
             dly=dly_path,
@@ -108,3 +114,20 @@ class Site:
             return DLY.load(self.dly_path)
         else:
             raise FileNotFoundError(f"The DLY file at {self.dly_path} does not exist.")
+    
+    def validate(self):
+        """
+        Validate the Site instance by checking if all necessary files are present.
+
+        Returns:
+            bool: True if all necessary files are present, False otherwise.
+        """
+        
+        if not os.path.exists(self.sit_path):
+            return False, f"Site file does not exist at {self.sit_path} or with .sit extension"
+            
+        try:
+            site = SIT.load(self.sit_path)
+            return site.validate()  # Already returns boolean, message
+        except Exception as e:
+            return False, f"Failed to validate site: {str(e)}"

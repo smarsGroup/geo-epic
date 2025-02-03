@@ -172,3 +172,34 @@ class SIT:
             f.writelines(self.template)
 
         # print(f"File written to: {output_file_path}")
+    
+    def validate(self):
+        """
+        Validates the site information.
+        This method checks if the site information provided in the `site_info` dictionary
+        meets the specified criteria for latitude, longitude, elevation, slope steepness,
+        and slope length.
+        Returns:
+            tuple: A tuple containing a boolean and a string. The boolean indicates whether
+                   the validation was successful (True) or not (False). The string provides
+                   a message describing the result of the validation.
+        Validation Criteria:
+            - Latitude should be between -90 and 90.
+            - Longitude should be between -180 and 180.
+            - Elevation should be between -200 and 8000.
+            - Slope steepness should be between 0 and 1.
+            - Slope length should be between 0 and 90.
+        """
+        
+        if not (-90 <= self.site_info["lat"] <= 90):
+            return False, "Latitude should be between -90 and 90."
+        if not (-180 <= self.site_info["lon"] <= 180):
+            return False, "Longitude should be between -180 and 180."
+        if not (-200 <= self.site_info["elevation"] <= 8000):
+            return False, "Elevation should be between -200 and 8000."
+        if not (0 <= self.site_info["slope_steep"] <= 1):
+            return False, "Slope steepness should be between 0 and 1."
+        if not (0 <= self.site_info["slope_length"] <= 90):
+            return False, "Slope length should be between 0 and 90."
+        return True, ""
+        
