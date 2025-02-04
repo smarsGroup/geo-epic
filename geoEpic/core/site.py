@@ -115,7 +115,7 @@ class Site:
         else:
             raise FileNotFoundError(f"The DLY file at {self.dly_path} does not exist.")
     
-    def validate(self):
+    def validate(self,start_year,duration):
         """
         Validate the Site instance by checking if all necessary files are present.
 
@@ -123,11 +123,31 @@ class Site:
             bool: True if all necessary files are present, False otherwise.
         """
         
+        end_year = start_year+duration-1
+        
         if not os.path.exists(self.sit_path):
             return False, f"Site file does not exist at {self.sit_path} or with .sit extension"
-            
+        
+        if not os.path.exists(self.opc_path):
+            return False, f"OPC file does not exist at {self.opc_path}"
+        
+        if not os.path.exists(self.dly_path):
+            return False, f"DLY file does not exist at {self.dly_path}"
+        
+        if not os.path.exists(self.sol_path):
+            return False, f"SOL file does not exist at {self.sol_path}"
+        
         try:
             site = SIT.load(self.sit_path)
-            return site.validate()  # Already returns boolean, message
+            is_valid,message = site.validate()  # Already returns boolean, message
+            if not is_valid:
+                return False, message
+            
+            dly = DLY.load(self.dly_path)
+            is_valid,message = dly.validate(start_year, end_year)  # Already returns boolean, message
+            if not is_valid:
+                return False, message
+            
+            return True, ""
         except Exception as e:
             return False, f"Failed to validate site: {str(e)}"

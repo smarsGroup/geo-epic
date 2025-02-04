@@ -16,7 +16,7 @@ class DLY(pd.DataFrame):
         data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
         return cls(data)
 
-    def validate(self, start_year, end_year):
+    def validate(self, start_year=None, end_year=None):
         """
         Validate the DataFrame to ensure it contains a continuous range of dates 
         between start_year and end_year, without duplicates.
@@ -36,10 +36,9 @@ class DLY(pd.DataFrame):
         # Check for missing dates
         missing_dates = merged_df[merged_df.isnull().any(axis=1)][['year', 'month', 'day']]
         if not missing_dates.empty:
-            print("Missing rows for the following dates:")
-            print(missing_dates)
-            return False
-        return True
+            message = f"Missing rows for the following dates: {missing_dates}"
+            return False, message
+        return True, ""
 
     def save(self, path):
         """

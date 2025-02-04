@@ -141,7 +141,6 @@ class Workspace:
         return self.data_logger.get(func)
     
     def validate_site(self,site_or_info):
-        print(site_or_info)
         if isinstance(site_or_info, Site):
             site = site_or_info
         elif isinstance(site_or_info, dict):
@@ -149,10 +148,10 @@ class Workspace:
         else:
             raise ValueError("Input must be a Site object or a dictionary containing site information.")
         
-        is_valid, message = site.validate()
-        print(is_valid)
-        print(message)
-        self.data_logger.log_dict('validate', {'SiteID': site.site_id, is_valid: is_valid, message: message})
+        start_year = self.config["start_year"]
+        duration = self.config["duration"]
+        is_valid, message = site.validate(start_year,duration)
+        self.data_logger.log_dict('validate', {'SiteID': site.site_id, 'is_valid': is_valid, 'message': message})
         
         
     def validate(self, select_str = None):
@@ -169,8 +168,6 @@ class Workspace:
         info = filter_dataframe(pd.read_csv(self.run_info), select_str)
         info_ls = info.to_dict('records')
         
-        print(info)
-        print(self.run_info)
         parallel_executor(
             self.validate_site, 
             info_ls, 
