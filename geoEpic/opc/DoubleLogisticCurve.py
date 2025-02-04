@@ -56,7 +56,7 @@ class DoubleLogisticCurve:
         doy = np.arange(365)
         diff3 = self.derivative(doy, 3)
         peaks, _ = signal.find_peaks(diff3, height = 0)
-        # print()
+        
         emergence = peaks[0]
         peaks, _ = signal.find_peaks(-diff3, height = 0)
         harvest = peaks[-1]
