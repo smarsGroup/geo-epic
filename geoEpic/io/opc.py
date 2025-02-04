@@ -272,8 +272,16 @@ class OPC(pd.DataFrame):
             plantation_date = plantation_dates[crop_code]['date']
             plantation_idx = plantation_dates[crop_code]['index']
             
+            killer_code_indices = self[(self['Yr'] == new_plant_date.year) & (self['CODE'] == 41)].index
+ 
             pre_planting_ops = self[(self['Yr'] == new_plant_date.year) & (self['CRP'] == crop_code) & (self.index < plantation_idx)]
             
+            killer_code_index = killer_code_indices[killer_code_indices < plantation_idx].max()
+            
+            if not pd.isna(killer_code_index):  # Ensure a valid killer code index was found
+                # Filter pre_planting_ops to include only rows after killer_code_index
+                pre_planting_ops = pre_planting_ops[pre_planting_ops.index > killer_code_index]
+                
             for idx, row in pre_planting_ops.iterrows():
                 month = int(self.at[idx, 'Mn'])
                 day = int(self.at[idx, 'Dy'])
@@ -296,7 +304,16 @@ class OPC(pd.DataFrame):
             harvest_date = harvest_dates[crop_code]['date']
             harvest_idx = harvest_dates[crop_code]['index']
             
+            killer_code_indices = self[(self['Yr'] == new_harvest_date.year) & (self['CODE'] == 41)].index
+ 
             post_harvest_ops = self[(self['Yr'] == new_harvest_date.year) & (self['CRP'] == crop_code) & (self.index > harvest_idx)]
+
+            killer_code_index = killer_code_indices[killer_code_indices > harvest_idx].min()
+            
+            if not pd.isna(killer_code_index):  # Ensure a valid killer code index was found
+                # Filter pre_planting_ops to include only rows after killer_code_index
+                post_harvest_ops = post_harvest_ops[post_harvest_ops.index <= killer_code_index]
+            
             
             for idx, row in post_harvest_ops.iterrows():
                 month = int(self.at[idx, 'Mn'])
@@ -434,14 +451,18 @@ class OPC(pd.DataFrame):
             if plantation_dates:
                 crop_code = next(iter(plantation_dates))
             else:
-                raise ValueError(f"No crops found for year {new_planting_date.year}")
+                print(f"No crops found for year {new_planting_date.year}")
+                return
+                # raise ValueError(f"No crops found for year {new_planting_date.year}")
         elif crop_code not in plantation_dates:
             return
         
         harvest_dates = self.get_harvest_date(new_harvest_date.year, crop_code)
 
         if not harvest_dates:
-            raise ValueError(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
+            print(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
+            return
+            # raise ValueError(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
 
         plantation_idx = plantation_dates[crop_code]['index']
         harvest_idx = harvest_dates[crop_code]['index']
