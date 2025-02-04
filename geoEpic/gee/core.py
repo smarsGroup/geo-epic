@@ -177,7 +177,8 @@ class CompositeCollection:
         if isinstance(aoi_coords, (Polygon, MultiPolygon)):
             aoi_coords = aoi_coords.exterior.coords[:]
         if len(aoi_coords) == 1:
-            aoi = ee.Geometry.Point(aoi_coords[0])
+            lat, lon = aoi_coords[0]
+            aoi = ee.Geometry.Point([lat, lon]).buffer(90).bounds()
         else:
             aoi = ee.Geometry.Polygon(aoi_coords)
         
