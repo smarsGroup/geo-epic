@@ -74,6 +74,24 @@ class CompositeCollection:
             Extracts temporal data for a given AOI and returns it as a pandas DataFrame.
     """
 
+    def validate_yaml(self):
+        # Validate the YAML configuration
+        required_keys = ['global_scope', 'collections', 'derived_variables']
+        for key in required_keys:
+            if key not in self.config:
+                raise ValueError(f"Missing required key in YAML configuration: {key}")
+        
+        global_scope_keys = ['time_range', 'variables', 'resolution']
+        for key in global_scope_keys:
+            if key not in self.config['global_scope']:
+                raise ValueError(f"Missing required key in global_scope: {key}")
+        
+        for collection_name, collection_config in self.config['collections'].items():
+            if 'collection' not in collection_config:
+                raise ValueError(f"Missing 'collection' key in collection: {collection_name}")
+            if 'variables' not in collection_config:
+                raise ValueError(f"Missing 'variables' key in collection: {collection_name}")
+        
     def __init__(self, yaml_file, start_date = None, end_date = None):
         
         project_name = ee_Initialize()
@@ -85,6 +103,8 @@ class CompositeCollection:
         self.global_scope = None
         with open(yaml_file, 'r') as file:
             self.config = YAML().load(file)
+        self.validate_yaml()
+        
         self.global_scope = self.config.get('global_scope')
         self.collections_config = self.config.get('collections')
         self.collections = {}

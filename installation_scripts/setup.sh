@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Environment name
-ENV_NAME="epic_env2"
+ENV_NAME="epic_env"
 ENV_YML="environment.yml"
 ANACONDA_INSTALLER="Anaconda3-latest-Linux-x86_64.sh"
 ANACONDA_URL="https://repo.anaconda.com/archive/$ANACONDA_INSTALLER"
