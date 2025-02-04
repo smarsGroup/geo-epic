@@ -139,6 +139,53 @@ class Workspace:
             pandas.DataFrame: DataFrame containing the logs for the specified function.
         """
         return self.data_logger.get(func)
+    
+    def validate_site(self,site_or_info):
+        print(site_or_info)
+        if isinstance(site_or_info, Site):
+            site = site_or_info
+        elif isinstance(site_or_info, dict):
+            site = Site.from_config(self.config, **site_or_info)
+        else:
+            raise ValueError("Input must be a Site object or a dictionary containing site information.")
+        
+        is_valid, message = site.validate()
+        print(is_valid)
+        print(message)
+        self.data_logger.log_dict('validate', {'SiteID': site.site_id, is_valid: is_valid, message: message})
+        
+        
+    def validate(self, select_str = None):
+        """
+        Decorator to validate the input site and return a boolean.
+
+        Args:
+            func (callable): The function to be decorated.
+
+        Returns:
+            callable: The decorated function that validates the input site.
+        """
+        select_str = select_str or self.config["select"]
+        info = filter_dataframe(pd.read_csv(self.run_info), select_str)
+        info_ls = info.to_dict('records')
+        
+        print(info)
+        print(self.run_info)
+        parallel_executor(
+            self.validate_site, 
+            info_ls, 
+            method='Process',
+            max_workers=self.config["num_of_workers"],
+            timeout=self.config["timeout"],
+            bar=True
+        )
+        
+        validation_result = self.data_logger.get('validate')
+        
+        return validation_result
+        
+        
+        
 
     def run_simulation(self, site_or_info):
         """
