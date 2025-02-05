@@ -1,6 +1,6 @@
 import os
 from geoEpic.weather import DailyWeather
-from geoEpic.io import DLY, SIT
+from geoEpic.io import DLY, SIT, OPC
 import os
 
 class Site:
@@ -139,14 +139,19 @@ class Site:
         
         try:
             site = SIT.load(self.sit_path)
-            is_valid,message = site.validate()  # Already returns boolean, message
+            is_valid,message = site.validate()
             if not is_valid:
-                return False, message
+                return False, "Site: "+message
             
             dly = DLY.load(self.dly_path)
-            is_valid,message = dly.validate(start_year, end_year)  # Already returns boolean, message
+            is_valid,message = dly.validate(start_year, end_year)
             if not is_valid:
-                return False, message
+                return False, "DLY: "+message
+
+            opc = OPC.load(self.opc_path)
+            is_valid,message = opc.validate(duration) 
+            if not is_valid:
+                return False, "OPC: "+message
             
             return True, ""
         except Exception as e:

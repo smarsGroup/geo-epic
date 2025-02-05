@@ -259,6 +259,37 @@ class OPC(pd.DataFrame):
         
         return result
     
+    def validate(self,duration):
+        """
+        Validate the OPC data to ensure it contains a continuous range of dates without duplicates.
+
+        Parameters:
+        duration (int): Duration of the simulation in years.
+
+        Returns:
+        bool: True if the data is valid, False otherwise.
+        str: Error message if the data is invalid.
+        """
+        # Check if 'Yr' column contains a continuous range from 1 to duration
+        years = self['Yid'].unique()
+        # print(np.array_equal(years, np.arange(1, duration)))
+        missing_years = set(range(1, duration + 1)) - set(years)
+        if missing_years:
+            return False, f"Missing the following years: {sorted(missing_years)}."
+            # Check if 'date' column is always increasing
+        if not self['date'].is_monotonic_increasing:
+            return False, "The date is not always increasing."
+        
+        # Check if each year has at least one plantation code and one harvest code
+        for year in range(1, duration + 1):
+            year_data = self[self['Yid'] == year]
+            if any(year_data['CRP'] == 9):
+                continue
+            if not any(year_data['CODE'].isin(self.plantation_codes)) and not any(year_data['CODE'].isin(self.harvest_codes)):
+                return False, f"Year {year} does not contain any plantation or harvest codes"
+        
+        return True, ""
+    
     def _adjust_pre_planting_operations(self, new_plant_date, crop_code):
         """
         Adjust dates for operations before planting for a specific year based on their index.

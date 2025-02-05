@@ -19,7 +19,7 @@ class DLY(pd.DataFrame):
     def validate(self, start_year=None, end_year=None):
         """
         Validate the DataFrame to ensure it contains a continuous range of dates 
-        between start_year and end_year, without duplicates.
+        between start_year and end_year, without duplicates and within valid ranges.
         """
         # Create the full date range
         date_range = pd.date_range(start=f'{start_year}-01-01', end=f'{end_year}-12-31', freq='D')
@@ -28,6 +28,17 @@ class DLY(pd.DataFrame):
             'month': date_range.month,
             'day': date_range.day
         })
+        
+        valid_ranges = {
+            'month': (1, 12),
+            'day': (1, 31),
+            'srad': (0.01, 900),
+            'tmin': (-50, 100),
+            'tmax': (-50, 100),
+            'prcp': (0, 900),
+            'rh': (0, 1),
+            'ws': (0, 900)
+        }
 
         # Remove duplicate rows from the DataFrame
         self.drop_duplicates(subset=['year', 'month', 'day'], inplace=True)
@@ -38,6 +49,14 @@ class DLY(pd.DataFrame):
         if not missing_dates.empty:
             message = f"Missing rows for the following dates: {missing_dates}"
             return False, message
+        
+        # Check for values out of valid ranges
+        for column, (min_val, max_val) in valid_ranges.items():
+            if not merged_df[column].between(min_val, max_val).all():
+                invalid_rows = merged_df[~merged_df[column].between(min_val, max_val)][['year', 'month', 'day', column]]
+                message = f"Values out of range for column '{column}': {invalid_rows}"
+                return False, message
+        
         return True, ""
 
     def save(self, path):
