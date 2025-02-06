@@ -128,7 +128,8 @@ soil = soil[~soil['mukey'].isin(existing_mukeys)]
 # Read template file
 with open(f'{os.path.dirname(__file__)}/template.sol', 'r') as file:
     template_orig = file.readlines()
-padding = ['{:8.3f}'.format(0) for _ in range(23)]
+padding = ['{:8.2f}'.format(0) for _ in range(23)]
+horz = ['       A' for _ in range(23)]
 
 def write_soil(row):
     template = template_orig.copy()
@@ -139,18 +140,22 @@ def write_soil(row):
         
         # Generate first three lines of the file
         template[0] = f"ID: {row['mukey']}\n"
-        template[1] = '{:8.3f}{:8.3f}'.format(row['albedo'], row['hydgrp_conv']) + template[1][16:]
-        template[2] = '{:8.3f}'.format(len_cols + 1) + template[2][8:]
+        template[1] = '{:8.2f}{:8.2f}'.format(row['albedo'], row['hydgrp_conv']) + template[1][16:]
+        template[2] = '{:8.2f}'.format(len_cols + 1) + template[2][8:]
         
         # Generate lines for each row in soil_layer_key dataframe
         vals = (soil_layer_key.iloc[:, 2:21].values).T
         len_rows = len(vals) 
         for i in range(len_rows):
-            template[3 + i] = ''.join([f'{val:8.3f}' for val in vals[i]]) + '\n'
+            template[3 + i] = ''.join([f'{val:8.2f}' for val in vals[i]]) + '\n'
     
         # Fill remaining lines with padding
-        for i in range(len_rows + 3, 45):
+        for i in range(len_rows + 3, 51):
             template[i] = ''.join(padding[:len_cols]) + '\n'
+        
+        # Fill soil horizon to 'A'
+        horz_row_ind = 47
+        template[horz_row_ind] = ''.join(horz[:len_cols]) + '\n'
         
         file.writelines(template)
         
