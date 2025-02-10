@@ -138,20 +138,20 @@ class Site:
             return False, f"SOL file does not exist at {self.sol_path}"
         
         try:
-            site = SIT.load(self.sit_path)
-            is_valid,message = site.validate()
-            if not is_valid:
-                return False, "Site: "+message
-            
             dly = DLY.load(self.dly_path)
             is_valid,message = dly.validate(start_year, end_year)
             if not is_valid:
                 return False, "DLY: "+message
-
+            
             opc = OPC.load(self.opc_path)
             is_valid,message = opc.validate(duration) 
             if not is_valid:
                 return False, "OPC: "+message
+            
+            site = SIT.load(self.sit_path)
+            is_valid,message = site.validate()
+            if not is_valid:
+                return False, "Site: "+message
             
             return True, ""
         except Exception as e:
