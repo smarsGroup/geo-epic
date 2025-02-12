@@ -540,7 +540,7 @@ class OPC(pd.DataFrame):
         combined_opc.header = self.header
         combined_opc.start_year = self.start_year
         combined_opc.name = self.name
-        combined_opc['Yr'] = combined_opc['Yid'].apply(lambda x: start_year + x - 1)
+        combined_opc['Yr'] = combined_opc['Yid'].apply(lambda x: self.start_year + x - 1)
         combined_opc['date'] = pd.to_datetime(combined_opc[['Yr', 'Mn', 'Dy']].rename(
             columns={'Yr': 'year', 'Mn': 'month', 'Dy': 'day'}
         ))
