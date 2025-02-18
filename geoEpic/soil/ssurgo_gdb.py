@@ -173,5 +173,7 @@ info_df_loc = config['run_info']
 if not os.path.exists(info_df_loc):
     create_run_info(config['Area_of_Interest'],info_df_loc)
 run_info_df = pd.read_csv(info_df_loc)
+coords = run_info_df[['lon', 'lat']].values
+aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map']) 
 run_info_df['soil'] = aoi_mukeys
 run_info_df.to_csv(info_df_loc,index=False)
