@@ -100,15 +100,20 @@ soil = soil.sort_values(by = ['mukey'])
 
 #filter soil based on shape file
 
-aoi_gdf = gpd.read_file(config['Area_of_Interest'])
-aoi_gdf['centroid'] = aoi_gdf.geometry.centroid
-aoi_gdf['lon'] = aoi_gdf['centroid'].x
-aoi_gdf['lat'] = aoi_gdf['centroid'].y
+if 'Area_of_Interest' in config and os.path.exists(config['Area_of_Interest']):
+    aoi_gdf = gpd.read_file(config['Area_of_Interest'])
+    aoi_gdf['centroid'] = aoi_gdf.geometry.centroid
+    aoi_gdf['lon'] = aoi_gdf['centroid'].x
+    aoi_gdf['lat'] = aoi_gdf['centroid'].y
+    coords = aoi_gdf[['lon', 'lat']].values
+elif 'run_info' in config and os.path.exists(config['run_info']):
+    run_info_df = pd.read_csv(config['run_info'])
+    coords = run_info_df[['lon', 'lat']].values
+else:
+    print("Either 'run_info' or 'Area_of_Interest' must be present in config.yml.")
+    exit()
 
-# print(len(soil))
-# If you want to get them in the same format as final_gdf[['lon', 'lat']].values
-coords = aoi_gdf[['lon', 'lat']].values
-aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map']) 
+aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map'])
 
 soil = soil[soil['mukey'].isin(aoi_mukeys)]
 
