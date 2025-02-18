@@ -530,8 +530,8 @@ class OPC(pd.DataFrame):
         # Create a copy to avoid modifying the original data
         second_opc_copy = second_opc.copy()
         # Adjust Yid values
-        if second_opc_copy['Yid'].min() != 0:
-            second_opc_copy['Yid'] -= second_opc_copy['Yid'].min() - 1
+        # if second_opc_copy['Yid'].min() != 0:
+        #     second_opc_copy['Yid'] -= second_opc_copy['Yid'].min() - 1
         second_opc_copy['Yid'] += last_yid
         # Combine data
         combined_data = pd.concat([self, second_opc_copy], ignore_index=True)
@@ -540,4 +540,9 @@ class OPC(pd.DataFrame):
         combined_opc.header = self.header
         combined_opc.start_year = self.start_year
         combined_opc.name = self.name
+        combined_opc['Yr'] = combined_opc['Yid'].apply(lambda x: self.start_year + x - 1)
+        combined_opc['date'] = pd.to_datetime(combined_opc[['Yr', 'Mn', 'Dy']].rename(
+            columns={'Yr': 'year', 'Mn': 'month', 'Dy': 'day'}
+        ))
+        
         return combined_opc
