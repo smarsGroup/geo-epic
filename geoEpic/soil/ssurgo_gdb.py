@@ -100,21 +100,20 @@ soil = soil.sort_values(by = ['mukey'])
 
 #filter soil based on shape file
 
-if 'Area_of_Interest' in config and os.path.exists(config['Area_of_Interest']):
+if 'run_info' in config.config_data and os.path.exists(config['run_info']):
+    run_info_df = pd.read_csv(config['run_info'])
+    coords = run_info_df[['lon', 'lat']].values
+elif 'Area_of_Interest' in config.config_data and os.path.exists(config['Area_of_Interest']):
     aoi_gdf = gpd.read_file(config['Area_of_Interest'])
     aoi_gdf['centroid'] = aoi_gdf.geometry.centroid
     aoi_gdf['lon'] = aoi_gdf['centroid'].x
     aoi_gdf['lat'] = aoi_gdf['centroid'].y
     coords = aoi_gdf[['lon', 'lat']].values
-elif 'run_info' in config and os.path.exists(config['run_info']):
-    run_info_df = pd.read_csv(config['run_info'])
-    coords = run_info_df[['lon', 'lat']].values
 else:
     print("Either 'run_info' or 'Area_of_Interest' must be present in config.yml.")
     exit()
-
+    
 aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map'])
-
 soil = soil[soil['mukey'].isin(aoi_mukeys)]
 
 print("\nwriting soil files")
@@ -123,7 +122,7 @@ if output_path is None:
     outdir = os.path.dirname(config['gdb_path']) + '/files'
 else:
     outdir = output_path
-    
+
 os.makedirs(outdir, exist_ok=True)
 
 # filter soil mukey only which is not present
@@ -135,7 +134,6 @@ with open(f'{os.path.dirname(__file__)}/template.sol', 'r') as file:
     template_orig = file.readlines()
 padding = ['{:8.2f}'.format(0) for _ in range(23)]
 horz = ['       A' for _ in range(23)]
-
 def write_soil(row):
     template = template_orig.copy()
     with open(os.path.join(outdir, f"{row['mukey']}.SOL"), 'w+') as file:
@@ -169,11 +167,12 @@ if( len(soil_ls)>0 ):
     parallel_executor(write_soil, soil_ls, max_workers = 80)
 
 #write soil column in run_info df
-info_df_loc = config['run_info']
+
+info_df_loc=os.path.join(config.dir,'info.csv')
+if 'run_info' in config.config_data:
+    info_df_loc = config['run_info']
 if not os.path.exists(info_df_loc):
     create_run_info(config['Area_of_Interest'],info_df_loc)
 run_info_df = pd.read_csv(info_df_loc)
-coords = run_info_df[['lon', 'lat']].values
-aoi_mukeys = get_ssurgo_mukeys(coords, soil_conf['soil_map']) 
 run_info_df['soil'] = aoi_mukeys
 run_info_df.to_csv(info_df_loc,index=False)
