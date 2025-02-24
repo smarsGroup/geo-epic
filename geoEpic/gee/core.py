@@ -110,7 +110,7 @@ class CompositeCollection:
         self.collections = {}
         self.vars = {}
         self.args = []
-        self.resolution = self.global_scope['resolution']
+        self.resolution = self.global_scope.get('resolution', 10)
         # Override the global scope time range with the provided start and end dates
         if start_date:
             self.global_scope['time_range'][0] = start_date
@@ -225,13 +225,14 @@ class CompositeCollection:
         df_merged = df_merged.groupby('Date').mean().reset_index()
         df_merged.sort_values(by='Date', inplace=True)
 
-        try:
+        if 'derived_variables' in self.config:
+            try:
             # Apply derived variables formulas if specified in the configuration
-            derived = self.config.get('derived_variables')
-            for var_name, formula in derived.items():
-                df_merged[var_name] = self._safe_eval(formula, df_merged)
-        except Exception as e:
-            print(e)
+                derived = self.config.get('derived_variables')
+                for var_name, formula in derived.items():
+                    df_merged[var_name] = self._safe_eval(formula, df_merged)
+            except Exception as e:
+                print(e)
         
         # Filter and clean the DataFrame based on the global scope variables
         df_merged = df_merged[['Date'] + self.global_scope['variables']].copy()
