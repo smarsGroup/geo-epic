@@ -17,17 +17,17 @@ def ee_Initialize():
         project_name = config['project']
     else:
         project_name = input("Please enter the GEE project: \n")
-        config = {'project': project_name}
-        with open(CONFIG_FILE, 'w') as file:
-            json.dump(config, file, indent = 4)
+        change_project_name(project_name)
     
     try:
-        ee.Initialize(project=project_name, opt_url='https://earthengine-highvolume.googleapis.com')
-    except Exception as e:
-        print("Authentication required")
         ee.Authenticate()
         ee.Initialize(project=project_name, opt_url='https://earthengine-highvolume.googleapis.com')
-        print(f"Initialized GEE with project: {project_name} ")    
+    except Exception as e:
+        print("Authentication failed. Restarting project name and authentication.")
+        project_name = input("Enter the new GEE project name: \n")
+        change_project_name(project_name)
+        change_authentication()
+        ee.Initialize(project=project_name, opt_url='https://earthengine-highvolume.googleapis.com') 
     
     pool = WorkerPool(f'gee_global_lock_{project_name}')
     if pool.queue_len() is None: pool.open(40)
@@ -42,16 +42,10 @@ def change_project_name(project_name):
     print(f"Changed the project_name to {project_name}")
     
 def change_authentication():
-    config_path = os.path.join(os.path.expanduser("~"), ".config", "earthengine",'credentials')
-    
-    if os.path.exists(config_path):
-        os.remove(config_path)
-        print("Previous Earth Engine credentials cleared.")
-        
+    creds_path = ee.oauth.get_credentials_path()
+    os.remove(creds_path)
     ee.Authenticate()
 
-
-    
 def ee_ReInitialize():
     project_name = input("Enter the new GEE project name: \n")
     config = {'project': project_name}
