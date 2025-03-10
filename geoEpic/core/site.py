@@ -1,6 +1,6 @@
 import os
 from geoEpic.weather import DailyWeather
-from geoEpic.io import DLY, SIT, OPC
+from geoEpic.io import DLY, SIT, OPC, SOL
 import os
 
 class Site:
@@ -147,6 +147,11 @@ class Site:
             is_valid,message = opc.validate(duration) 
             if not is_valid:
                 return False, "OPC: "+message
+
+            soil = SOL.load(self.sol_path)
+            is_valid,message = soil.validate() 
+            if not is_valid:
+                return False, "SOIL: "+message
             
             site = SIT.load(self.sit_path)
             is_valid,message = site.validate()

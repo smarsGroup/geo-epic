@@ -102,7 +102,55 @@ class SOL:
             file.writelines(template_lines)
     
     def validate(self):
-        pass
+        hydgrp_conv = {'A': 1, 'B': 2, 'C': 3, 'D': 4}.get(self.hydgrp, 3)  # Default to 3 if not found
+        if not (0 <= self.albedo <= 1):
+            return False, "Albedo should be between 0 and 1."
+        if hydgrp_conv not in [1, 2, 3, 4]:
+            return False, "Hydrological group should be one of 'A', 'B', 'C', or 'D'."
+        if not (1 <= self.num_layers <= 10):
+            return False, "Number of layers should be between 1 and 10."
+        # Validate each column based on the provided criteria
+        for index, row in self.layers_df.iterrows():
+            if not (0.01 <= row['Layer_depth'] <= 10.0):
+                return False, f"Layer_depth should be between 0.01 and 10.0. Found {row['Layer_depth']} at index {index}."
+            if not (0.5 <= row['Bulk_Density'] <= 2.5):
+                return False, f"Bulk_Density should be between 0.5 and 2.5. Found {row['Bulk_Density']} at index {index}."
+            if row['Wilting_capacity'] != 0 and not (0.01 <= row['Wilting_capacity'] <= 0.5):
+                return False, f"Wilting_capacity should be between 0.01 and 0.5. Found {row['Wilting_capacity']} at index {index}."
+            if not (0.1 <= row['Field_Capacity'] <= 0.9):
+                return False, f"Field_Capacity should be between 0.1 and 0.9. Found {row['Field_Capacity']} at index {index}."
+            if not (1 <= row['Sand_content'] <= 99):
+                return False, f"Sand_content should be between 1 and 99. Found {row['Sand_content']} at index {index}."
+            if not (1 <= row['Silt_content'] <= 99):
+                return False, f"Silt_content should be between 1 and 99. Found {row['Silt_content']} at index {index}."
+            if row['N_concen'] != 0 and not (100 <= row['N_concen'] <= 5000):
+                return False, f"N_concen should be between 100 and 5000. Found {row['N_concen']} at index {index}."
+            if not (3 <= row['pH'] <= 9):
+                return False, f"pH should be between 3 and 9. Found {row['pH']} at index {index}."
+            if row['Sum_Bases'] != 0 and not (0 <= row['Sum_Bases'] <= 150):
+                return False, f"Sum_Bases should be between 0 and 150. Found {row['Sum_Bases']} at index {index}."
+            if row['Organic_Carbon'] != 0 and not (0.1 <= row['Organic_Carbon'] <= 10):
+                return False, f"Organic_Carbon should be between 0.1 and 10. Found {row['Organic_Carbon']} at index {index}."
+            if row['Calcium_Carbonate'] != 0 and not (0 <= row['Calcium_Carbonate'] <= 99):
+                return False, f"Calcium_Carbonate should be between 0 and 99. Found {row['Calcium_Carbonate']} at index {index}."
+            if row['Cation_exchange'] != 0 and not (0 <= row['Cation_exchange'] <= 150):
+                return False, f"Cation_exchange should be between 0 and 150. Found {row['Cation_exchange']} at index {index}."
+            if row['Course_Fragment'] != 0 and not (0 <= row['Course_Fragment'] <= 99):
+                return False, f"Course_Fragment should be between 0 and 99. Found {row['Course_Fragment']} at index {index}."
+            if row['cnds'] != 0 and not (0.01 <= row['cnds'] <= 500):
+                return False, f"cnds should be between 0.01 and 500. Found {row['cnds']} at index {index}."
+            if row['pkrz'] != 0 and not (0 <= row['pkrz'] <= 20):
+                return False, f"pkrz should be between 0 and 20. Found {row['pkrz']} at index {index}."
+            if row['rsd'] != 0 and not (0 <= row['rsd'] <= 20):
+                return False, f"rsd should be between 0 and 20. Found {row['rsd']} at index {index}."
+            if row['Bulk_density_dry'] != 0 and not (0 <= row['Bulk_density_dry'] <= 2.0):
+                return False, f"Bulk_density_dry should be between 0 and 2.0. Found {row['Bulk_density_dry']} at index {index}."
+            if not (0 <= row['psp'] <= 0.9):
+                return False, f"psp should be between 0 and 0.9. Found {row['psp']} at index {index}."
+            if row['Saturated_conductivity'] != 0 and not (0.00001 <= row['Saturated_conductivity'] <= 100):
+                return False, f"Saturated_conductivity should be between 0.00001 and 100. Found {row['Saturated_conductivity']} at index {index}." 
+
+        return True, ""
         
     @classmethod
     def load(cls, filepath):
