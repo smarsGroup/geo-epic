@@ -20,48 +20,54 @@ crop_data = args.crop_data
 template_path = args.template
 out_path = args.output
 
-crop_data_df = pd.read_csv(crop_data)
-
+# -------------------------------------------
+# Validate CSV: Rename 'cdl_code' or 'epic_code' -> 'crop_code'
+# -------------------------------------------
 def validate_csv(file_path):
     try:
-        # Read the CSV file
+        # Read CSV file
         df = pd.read_csv(file_path)
 
-        # Check if all required columns are present
-        required_columns = ['crop_code', 'planting_date', 'harvest_date', 'year']
-        if not all(col in df.columns for col in required_columns):
-            return False, "Missing one or more required columns"
+        # Rename columns if needed
+        if 'cdl_code' in df.columns:
+            df.rename(columns={'cdl_code': 'crop_code'}, inplace=True)
+        elif 'epic_code' in df.columns:
+            df.rename(columns={'epic_code': 'crop_code'}, inplace=True)
 
-        # Validate crop_code (should be int)
+        # Check required columns: crop_code and year must be present.
+        required_columns = ['crop_code', 'year']
+        for col in required_columns:
+            if col not in df.columns:
+                return False, f"Missing required column: {col}"
+
+        # Validate crop_code and year (should be integer)
         if not pd.api.types.is_integer_dtype(df['crop_code']):
             return False, "crop_code column should contain integers"
-
-        # Validate year (should be int)
         if not pd.api.types.is_integer_dtype(df['year']):
             return False, "year column should contain integers"
 
-        # Validate date formats
+        # Optional: Validate date formats if planting_date and harvest_date exist
         date_columns = ['planting_date', 'harvest_date']
         for col in date_columns:
-            try:
-                pd.to_datetime(df[col], format='%Y-%m-%d')
-            except ValueError:
-                return False, f"{col} should be in yyyy-mm-dd format"
-
-        return True, "CSV file is valid"
+            if col in df.columns:
+                try:
+                    pd.to_datetime(df[col], format='%Y-%m-%d')
+                except Exception as e:
+                    return False, f"Column {col} should be in yyyy-mm-dd format"
+        
+        return True, "CSV file is valid", df
 
     except Exception as e:
-        return False, f"An error occurred: {str(e)}"
+        return False, f"An error occurred: {str(e)}", None
 
-try:
-    is_valid, message = validate_csv(crop_data)
-    if not is_valid:
-        print(f"crop_data is not valid: {message}")
-        sys.exit()
-except Exception as e:
-    print(f'Crop Data is invalid : {e}')
+is_valid, message, crop_data_df = validate_csv(crop_data)
+if not is_valid:
+    print(f"crop_data is not valid: {message}")
     sys.exit()
 
+# -------------------------------------------
+# Validate Template Folder: Rename columns if necessary
+# -------------------------------------------
 def validate_template_folder(template_path):
     # Check if Mapping file exists
     mapping_file = os.path.join(template_path, 'Mapping')
@@ -71,11 +77,17 @@ def validate_template_folder(template_path):
     # Validate Mapping file contents
     try:
         df = pd.read_csv(mapping_file)
+        # Rename if necessary
+        if 'cdl_code' in df.columns:
+            df.rename(columns={'cdl_code': 'crop_code'}, inplace=True)
+        elif 'epic_code' in df.columns:
+            df.rename(columns={'epic_code': 'crop_code'}, inplace=True)
+        
         required_columns = ['crop_code', 'template_code']
-        if not all(col in df.columns for col in required_columns):
-            return False, "Mapping file is missing one or more required columns"
+        for col in required_columns:
+            if col not in df.columns:
+                return False, f"Mapping file is missing required column: {col}"
 
-        # Check if crop_code is integer
         if not pd.api.types.is_integer_dtype(df['crop_code']):
             return False, "crop_code column in Mapping file should contain integers"
 
@@ -89,37 +101,41 @@ def validate_template_folder(template_path):
 
     return True, "Template folder validation successful"
 
-try:
-    is_valid, message = validate_template_folder(template_path)
-    if not is_valid:
-        print(f"Template folder not valid: {message}")
-        sys.exit()
-except Exception as e:
-    print(f'Template folder not valid: {e}')
+is_valid, message = validate_template_folder(template_path)
+if not is_valid:
+    print(f"Template folder not valid: {message}")
     sys.exit()
 
+# -------------------------------------------
+# Get crop_code to template mapper
+# -------------------------------------------
 def get_crop_code_template_mapper(template_path):
     mapping_file_path = os.path.join(template_path, 'Mapping')
-    # Assuming the mapping file header is already present with proper column names
     df = pd.read_csv(mapping_file_path)
-    crop_code_mapper = dict(zip(df['crop_code'].astype(int), df['template_code']))
-    return crop_code_mapper
+    # Rename if necessary
+    if 'cdl_code' in df.columns:
+        df.rename(columns={'cdl_code': 'crop_code'}, inplace=True)
+    elif 'epic_code' in df.columns:
+        df.rename(columns={'epic_code': 'crop_code'}, inplace=True)
+    mapper = dict(zip(df['crop_code'].astype(int), df['template_code']))
+    return mapper
 
 crop_code_mapper = get_crop_code_template_mapper(template_path)
 
+# -------------------------------------------
+# Build crop_info_list from CSV
+# -------------------------------------------
 crop_info_list = []
-
 start_year = crop_data_df['year'].min()
 end_year = crop_data_df['year'].max()
 
-# Build crop_info_list using crop_code (renamed from epic_code)
 for year in range(start_year, end_year + 1):
     year_data = crop_data_df[crop_data_df['year'] == year]
-    
     if not year_data.empty:
         crop_code = year_data.iloc[0]['crop_code']
-        planting_date = year_data.iloc[0]['planting_date']
-        harvest_date = year_data.iloc[0]['harvest_date']
+        # Use get() to allow absence of planting_date/harvest_date
+        planting_date = year_data.iloc[0].get('planting_date', None)
+        harvest_date = year_data.iloc[0].get('harvest_date', None)
         template_code = crop_code_mapper.get(crop_code, 'FALLOW')
         crop_info_list.append({
             'template_code': template_code,
@@ -137,20 +153,31 @@ for year in range(start_year, end_year + 1):
             'year': year
         })
 
+# -------------------------------------------
+# Load OPC files and update crop season if dates are available
+# -------------------------------------------
 res_opc_file = None
 for crop_info in crop_info_list:
     template_code = crop_info['template_code']
     crop_code = crop_info['crop_code']
     
-    # Only attempt to parse dates if they are not empty
-    if pd.notnull(crop_info['planting_date']) and pd.notnull(crop_info['harvest_date']):
-        planting_date = datetime.strptime(crop_info['planting_date'], '%Y-%m-%d')
-        harvest_date = datetime.strptime(crop_info['harvest_date'], '%Y-%m-%d')
+    # Try to parse dates if they are present and non-null
+    if crop_info.get('planting_date') is not None and pd.notnull(crop_info.get('planting_date')):
+        try:
+            planting_date = datetime.strptime(crop_info['planting_date'], '%Y-%m-%d')
+        except Exception as e:
+            planting_date = None
     else:
         planting_date = None
+
+    if crop_info.get('harvest_date') is not None and pd.notnull(crop_info.get('harvest_date')):
+        try:
+            harvest_date = datetime.strptime(crop_info['harvest_date'], '%Y-%m-%d')
+        except Exception as e:
+            harvest_date = None
+    else:
         harvest_date = None
 
-    # Use the provided year from crop_info; if not available, default to current year.
     year_val = crop_info.get('year', datetime.now().year)
     
     if res_opc_file is None:
