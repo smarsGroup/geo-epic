@@ -10,15 +10,20 @@ import argparse
 import sys
 
 parser = argparse.ArgumentParser(description="soil file creation script")
-parser.add_argument("-c", "--crop_data", default= "./crop_data.csv", help="Path to the crop data file")
+parser.add_argument("-c", "--crop_data", default= "./crop_data.csv", help="Path to the year-wise crop data file")
 parser.add_argument("-t", "--template", default= "./crop_templates", help="Path to the crop template folder")
 parser.add_argument("-o", "--output", default= "./files", help="Path to the output folder")
 
 args = parser.parse_args()
-
 crop_data = args.crop_data
 template_path = args.template
 out_path = args.output
+file_name = os.path.splitext(os.path.basename(crop_data))[0] + '.OPC'
+if not os.path.isdir(out_path):
+    file_name = os.path.basename(out_path)
+    if not file_name.endswith('.OPC'):
+        file_name = os.path.splitext(file_name)[0] + '.OPC'
+    out_path = os.path.dirname(out_path)
 
 # -------------------------------------------
 # Validate CSV: Rename 'cdl_code' or 'epic_code' -> 'crop_code'
@@ -70,7 +75,7 @@ if not is_valid:
 # -------------------------------------------
 def validate_template_folder(template_path):
     # Check if Mapping file exists
-    mapping_file = os.path.join(template_path, 'Mapping')
+    mapping_file = os.path.join(template_path, 'MAPPING')
     if not os.path.isfile(mapping_file):
         return False, "Mapping file not found in the template folder"
 
@@ -83,7 +88,7 @@ def validate_template_folder(template_path):
         elif 'epic_code' in df.columns:
             df.rename(columns={'epic_code': 'crop_code'}, inplace=True)
         
-        required_columns = ['crop_code', 'template_code']
+        required_columns = ['crop_code', 'name']
         for col in required_columns:
             if col not in df.columns:
                 return False, f"Mapping file is missing required column: {col}"
@@ -110,14 +115,14 @@ if not is_valid:
 # Get crop_code to template mapper
 # -------------------------------------------
 def get_crop_code_template_mapper(template_path):
-    mapping_file_path = os.path.join(template_path, 'Mapping')
+    mapping_file_path = os.path.join(template_path, 'MAPPING')
     df = pd.read_csv(mapping_file_path)
     # Rename if necessary
     if 'cdl_code' in df.columns:
         df.rename(columns={'cdl_code': 'crop_code'}, inplace=True)
     elif 'epic_code' in df.columns:
         df.rename(columns={'epic_code': 'crop_code'}, inplace=True)
-    mapper = dict(zip(df['crop_code'].astype(int), df['template_code']))
+    mapper = dict(zip(df['crop_code'].astype(int), df['name']))
     return mapper
 
 crop_code_mapper = get_crop_code_template_mapper(template_path)
@@ -138,7 +143,7 @@ for year in range(start_year, end_year + 1):
         harvest_date = year_data.iloc[0].get('harvest_date', None)
         template_code = crop_code_mapper.get(crop_code, 'FALLOW')
         crop_info_list.append({
-            'template_code': template_code,
+            'name': template_code,
             'crop_code': crop_code,
             'planting_date': planting_date,
             'harvest_date': harvest_date,
@@ -146,7 +151,7 @@ for year in range(start_year, end_year + 1):
         })
     else:
         crop_info_list.append({
-            'template_code': 'FALLOW',
+            'name': 'FALLOW',
             'crop_code': None,
             'planting_date': None,
             'harvest_date': None,
@@ -158,9 +163,11 @@ for year in range(start_year, end_year + 1):
 # -------------------------------------------
 res_opc_file = None
 for crop_info in crop_info_list:
-    template_code = crop_info['template_code']
+    name = crop_info['name']
     crop_code = crop_info['crop_code']
-    
+    year_val = crop_info.get('year', datetime.now().year)
+    # print(name, crop_code, year_val)
+
     # Try to parse dates if they are present and non-null
     if crop_info.get('planting_date') is not None and pd.notnull(crop_info.get('planting_date')):
         try:
@@ -178,12 +185,13 @@ for crop_info in crop_info_list:
     else:
         harvest_date = None
 
-    year_val = crop_info.get('year', datetime.now().year)
+    # print(res_opc_file)
     
     if res_opc_file is None:
-        res_opc_file = OPC.load(os.path.join(template_path, f'{template_code}.OPC'), year_val)
+        res_opc_file = OPC.load(os.path.join(template_path, f'{name}.OPC'), year_val)
+        res_opc_file.name = file_name
     else:
-        template_opc = OPC.load(os.path.join(template_path, f'{template_code}.OPC'), year_val)
+        template_opc = OPC.load(os.path.join(template_path, f'{name}.OPC'), year_val)
         res_opc_file = res_opc_file.append(template_opc)
         
     # Only edit crop season if both planting_date and harvest_date are provided
