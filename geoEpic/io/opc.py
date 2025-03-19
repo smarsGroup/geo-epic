@@ -4,7 +4,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from geoEpic.io import DLY
 
-
 class OPC(pd.DataFrame):
     _metadata = ['header', 'name', 'prms', 'start_year']
 
@@ -12,6 +11,8 @@ class OPC(pd.DataFrame):
     plantation_codes = [2, 3, 4]
     harvest_codes = [650]
     fertilizer_code = 71
+    winter_crop_codes = [10]
+    fallow_code = 9
 
     @classmethod
     def load(cls, path, start_year=None):
@@ -77,23 +78,127 @@ class OPC(pd.DataFrame):
             fmt = '%3d%3d%3d%5d%5d%5d%5d%8.3f%8.2f%8.2f%8.3f%8.2f%8.2f%8.2f%8.2f'
             np.savetxt(ofile, final_data[columns].values, fmt=fmt)
 
-    def auto_irrigation(self, on=True):
+    @property
+    def LUN(self):
         """
-        Set or unset auto-irrigation in the OPC file header.
+        Get the land use number from the OPC file header.
 
-        This method modifies the second line of the header to enable or disable
-        auto-irrigation based on the input parameter.
+        Returns:
+            int: The land use number from the first 4 characters of header line 2
+        """
+        lun_value = int(self.header[1][:4].strip())
+        return lun_value
+
+    @LUN.setter
+    def LUN(self, value):
+        """
+        Set the land use number in the OPC file header.
 
         Parameters:
-        on (bool): If True, sets auto-irrigation to 72 (enabled).
-                   If False, sets auto-irrigation to 0 (disabled).
-                   Defaults to True.
+            value (int): The land use number to set in the first 4 characters of header line 2
         """
-        luc, _ = self.header[1][:4], self.header[1][4:]
-        if on:
-            self.header[1] = luc + '  72' + '\n'
-        else: 
-            self.header[1] = luc + '   0' + '\n'
+        iaui = self.header[1][4:].strip()
+        self.header[1] = f'{value:4d}' + iaui + '\n'
+
+    @property
+    def IAUI(self):
+        """
+        Get the auto-irrigation implement ID from the OPC file header.
+
+        Returns:
+            bool: True if auto-irrigation is enabled (72), False if disabled (0)
+        """
+        iaui_value = int(self.header[1][4:].strip())
+        return iaui_value
+
+    @IAUI.setter 
+    def IAUI(self, value):
+        """
+        Set auto-irrigation in the OPC file header.
+
+        Parameters:
+            value (int): The auto-irrigation implement ID to set in the header.
+                        Common values are 72 (enabled) and 0 (disabled).
+        """
+        luc = self.header[1][:4]
+        self.header[1] = luc + f'{value:4d}' + '\n'
+        
+    def update(self, operation):
+        """
+        Add or update an operation in the OPC file.
+
+        Parameters:
+            operation (dict): Dictionary containing operation details with keys:
+                - opID: Operation ID (required)
+                - cropID: Crop ID (required)
+                - date: Operation date as string 'YYYY-MM-DD' (required)
+                - XMTU/LYR/pestID/fertID: Machine type/years/pesticide ID/fertilizer ID (optional, default 0)
+                - OPV1-OPV8: Additional operation values (optional, default 0)
+        """
+        # Parse the date
+        date = pd.to_datetime(operation['date'])
+        year = date.year - self.start_year + 1
+        
+        # Create new row with operation details and defaults
+        new_row = pd.Series({
+            'Yid': year,
+            'Mn': date.month,
+            'Dy': date.day,
+            'CODE': operation['opID'],
+            'TRAC': operation.get('TRAC', 0),
+            'CRP': operation['cropID'],
+            'XMTU': operation.get('XMTU', operation.get('LYR', operation.get('pestID', operation.get('fertID', 0)))),
+            'OPV1': operation.get('OPV1', 0),
+            'OPV2': operation.get('OPV2', 0),
+            'OPV3': operation.get('OPV3', 0),
+            'OPV4': operation.get('OPV4', 0),
+            'OPV5': operation.get('OPV5', 0),
+            'OPV6': operation.get('OPV6', 0),
+            'OPV7': operation.get('OPV7', 0),
+            'OPV8': operation.get('OPV8', 0)
+        })
+
+        # Remove any existing operations on same date if they exist
+        self.remove(opID=operation['opID'], date=operation['date'])
+        # Add new operation
+        self.loc[len(self)] = new_row
+        # Sort by date
+        self.sort_values(['Yid', 'Mn', 'Dy'], inplace=True)
+        self.reset_index(drop=True, inplace=True)
+
+    def remove(self, opID=None, date=None, cropID=None, XMTU=None, fertID=None, year=None):
+        """
+        Remove operation(s) from the OPC file that match all provided criteria.
+
+        Parameters:
+            opID (int, optional): Operation ID to match
+            date (str, optional): Date to match in format 'YYYY-MM-DD'
+            cropID (int, optional): Crop ID to match
+            XMTU/LYR/pestID/fertID (int, optional): Machine type/layer/pesticide ID/fertilizer ID to match
+            year (int, optional): Year to match
+        """
+        mask = pd.Series([True] * len(self))
+        
+        if date is not None:
+            date = pd.to_datetime(date)
+            mask &= (self['Yid'] == date.year - self.start_year + 1)
+            mask &= (self['Mn'] == date.month)
+            mask &= (self['Dy'] == date.day)
+        
+        if year is not None:
+            mask &= (self['Yr'] == year)
+            
+        if opID is not None:
+            mask &= (self['CODE'] == opID)
+        if cropID is not None:
+            mask &= (self['CRP'] == cropID)
+        if XMTU is not None:
+            mask &= (self['XMTU'] == XMTU)
+        elif fertID is not None:  # Only check fertID if XMTU not provided
+            mask &= (self['XMTU'] == fertID)
+            
+        self.drop(self[mask].index, inplace=True)
+        self.reset_index(drop=True, inplace=True)
 
     def edit_fertilizer_rate(self, rate, year=2020, month=None, day=None):
         """
@@ -113,8 +218,6 @@ class OPC(pd.DataFrame):
         if not matching_rows.empty:
             last_index = matching_rows.index[-1]
             self.at[last_index, 'OPV1'] = 0.2 if rate == 0 else rate
-
-
 
     def update_phu(self, dly, cropcom):
         """
@@ -259,37 +362,6 @@ class OPC(pd.DataFrame):
         
         return result
     
-    def validate(self,duration):
-        """
-        Validate the OPC data to ensure it contains a continuous range of dates without duplicates.
-
-        Parameters:
-        duration (int): Duration of the simulation in years.
-
-        Returns:
-        bool: True if the data is valid, False otherwise.
-        str: Error message if the data is invalid.
-        """
-        # Check if 'Yr' column contains a continuous range from 1 to duration
-        years = self['Yid'].unique()
-        # print(np.array_equal(years, np.arange(1, duration)))
-        missing_years = set(range(1, duration + 1)) - set(years)
-        if missing_years:
-            return False, f"Missing the following years: {sorted(missing_years)}."
-            # Check if 'date' column is always increasing
-        if not self['date'].is_monotonic_increasing:
-            return False, "The date is not always increasing."
-        
-        # Check if each year has at least one plantation code and one harvest code
-        for year in range(1, duration + 1):
-            year_data = self[self['Yid'] == year]
-            if any(year_data['CRP'] == 9):
-                continue
-            if not any(year_data['CODE'].isin(self.plantation_codes)) and not any(year_data['CODE'].isin(self.harvest_codes)):
-                return False, f"Year {year} does not contain any plantation or harvest codes"
-        
-        return True, ""
-    
     def _adjust_pre_planting_operations(self, new_plant_date, crop_code):
         """
         Adjust dates for operations before planting for a specific year based on their index.
@@ -299,28 +371,28 @@ class OPC(pd.DataFrame):
         crop_code (int): Crop code.
         """
         plantation_dates = self.get_plantation_date(new_plant_date.year, crop_code)
-        if crop_code in plantation_dates:
-            plantation_date = plantation_dates[crop_code]['date']
-            plantation_idx = plantation_dates[crop_code]['index']
-            
-            killer_code_indices = self[(self['Yr'] == new_plant_date.year) & (self['CODE'] == 41)].index
- 
-            pre_planting_ops = self[(self['Yr'] == new_plant_date.year) & (self['CRP'] == crop_code) & (self.index < plantation_idx)]
-            
-            killer_code_index = killer_code_indices[killer_code_indices < plantation_idx].max()
-            
-            if not pd.isna(killer_code_index):  # Ensure a valid killer code index was found
-                # Filter pre_planting_ops to include only rows after killer_code_index
-                pre_planting_ops = pre_planting_ops[pre_planting_ops.index > killer_code_index]
-                
-            for idx, row in pre_planting_ops.iterrows():
-                month = int(self.at[idx, 'Mn'])
-                day = int(self.at[idx, 'Dy'])
-                cur_opr_date = datetime(new_plant_date.year, month, day)
-                offset = plantation_date - cur_opr_date
-                adjusted_date = new_plant_date - timedelta(days=offset.days)
-                self.at[idx, 'Mn'] = adjusted_date.month
-                self.at[idx, 'Dy'] = adjusted_date.day
+        if crop_code not in plantation_dates: return
+        old_plant_date = plantation_dates[crop_code]['date']
+        plantation_idx = plantation_dates[crop_code]['index']
+        lower_bound = new_plant_date - timedelta(days=14)
+        
+        operations_mask = (self['Yr'] == new_plant_date.year) & (self['CRP'] == crop_code)
+        operations = self.loc[operations_mask]
+        candidate_operations = operations[(operations['date'] <= old_plant_date) & (operations['date'] >= lower_bound)].copy()
+        if candidate_operations.empty: return
+
+        # Compute and scale offsets so max offset maps to 14 days
+        candidate_operations['original_offset'] = (old_plant_date - candidate_operations['date']).dt.days
+        maximum_offset = candidate_operations['original_offset'].max() or 1
+        if maximum_offset > 14:
+            candidate_operations['scaled_offset'] = (candidate_operations['original_offset'] / maximum_offset * 14).ceil().astype(int)
+        else:
+            candidate_operations['scaled_offset'] = candidate_operations['original_offset'].astype(int)
+        candidate_operations['new_date'] = new_plant_date - pd.to_timedelta(candidate_operations['scaled_offset'], unit='D')
+        
+        self.loc[candidate_operations.index, 'date'] = candidate_operations['new_date']
+        self.loc[candidate_operations.index, 'Mn'] = candidate_operations['new_date'].dt.month
+        self.loc[candidate_operations.index, 'Dy'] = candidate_operations['new_date'].dt.day
         
     def _adjust_post_harvesting_operations(self, new_harvest_date, crop_code):
         """
@@ -330,30 +402,31 @@ class OPC(pd.DataFrame):
         year_id (int): Year identifier.
         crop_code (int): Crop code.
         """
-        harvest_dates = self.get_harvest_date(new_harvest_date.year, crop_code)
-        if crop_code in harvest_dates:
-            harvest_date = harvest_dates[crop_code]['date']
-            harvest_idx = harvest_dates[crop_code]['index']
-            
-            killer_code_indices = self[(self['Yr'] == new_harvest_date.year) & (self['CODE'] == 41)].index
- 
-            post_harvest_ops = self[(self['Yr'] == new_harvest_date.year) & (self['CRP'] == crop_code) & (self.index > harvest_idx)]
 
-            killer_code_index = killer_code_indices[killer_code_indices > harvest_idx].min()
-            
-            if not pd.isna(killer_code_index):  # Ensure a valid killer code index was found
-                # Filter pre_planting_ops to include only rows after killer_code_index
-                post_harvest_ops = post_harvest_ops[post_harvest_ops.index <= killer_code_index]
-            
-            
-            for idx, row in post_harvest_ops.iterrows():
-                month = int(self.at[idx, 'Mn'])
-                day = int(self.at[idx, 'Dy'])
-                cur_opr_date = datetime(harvest_date.year, month, day)
-                offset = cur_opr_date - harvest_date
-                adjusted_date = new_harvest_date + timedelta(days=offset.days)
-                self.at[idx, 'Mn'] = adjusted_date.month
-                self.at[idx, 'Dy'] = adjusted_date.day
+        harvest_dates = self.get_harvest_date(new_harvest_date.year, crop_code)
+        if crop_code not in harvest_dates: return
+        old_harvest_date = harvest_dates[crop_code]['date']
+        harvest_index = harvest_dates[crop_code]['index']
+        upper_bound = new_harvest_date + timedelta(days=14)
+        
+        operations_mask = (self['Yr'] == new_harvest_date.year) & (self['CRP'] == crop_code)
+        operations = self.loc[operations_mask]
+        candidate_operations = operations[(operations['date'] >= old_harvest_date) & (operations['date'] <= upper_bound)].copy()
+        if candidate_operations.empty: return
+
+        # Compute and scale offsets so max offset maps to 14 days
+        candidate_operations['original_offset'] = (candidate_operations['date'] - old_harvest_date).dt.days
+        maximum_offset = candidate_operations['original_offset'].max() or 1
+        if maximum_offset > 14:
+            candidate_operations['scaled_offset'] = (candidate_operations['original_offset'] / maximum_offset * 14).ceil().astype(int)
+        else:
+            candidate_operations['scaled_offset'] = candidate_operations['original_offset'].astype(int)
+        candidate_operations['new_date'] = new_harvest_date + pd.to_timedelta(candidate_operations['scaled_offset'], unit='D')
+        
+        self.loc[candidate_operations.index, 'date'] = candidate_operations['new_date']
+        self.loc[candidate_operations.index, 'Mn'] = candidate_operations['new_date'].dt.month
+        self.loc[candidate_operations.index, 'Dy'] = candidate_operations['new_date'].dt.day
+
     
     def _stretch_middle_operations(self, new_planting_date, new_harvest_date, crop_code):
         plantation_dates = self.get_plantation_date(new_planting_date.year, crop_code)
@@ -367,38 +440,48 @@ class OPC(pd.DataFrame):
             
             original_range = (prev_harvest_date - prev_plantation_date).days
             new_range = (new_harvest_date - new_planting_date).days
-            # Process rows between start_index and end_index
-            for idx in range(plantation_idx+1, harvest_idx):
-                if idx in self.index:
-                    row = self.loc[idx]
-                    # Calculate the scale of the current date
-                    year = int(row['Yr'])
-                    row_date = datetime(year, int(row['Mn']),int(row['Dy']))
-                    days_from_start = (row_date - prev_plantation_date).days
-                    scale = days_from_start / original_range
-                    # Calculate the new date
-                    new_days_from_start = int(scale * new_range)
-                    new_date = new_planting_date + timedelta(days=new_days_from_start)
-                    # Update the DataFrame in place
-                    self.at[idx, 'Mn'] = new_date.month
-                    self.at[idx, 'Dy'] = new_date.day
+            
+            # Get all rows between plantation and harvest
+            middle_mask = (self.index > plantation_idx) & (self.index < harvest_idx)
+            middle_operations = self.loc[middle_mask]
+            
+            if not middle_operations.empty:
+                # Calculate scale for each operation
+                days_from_start = (middle_operations['date'] - prev_plantation_date).dt.days
+                scale = days_from_start / original_range
+                # Calculate new dates
+                new_days_from_start = (scale * new_range).astype(int)
+                new_dates = pd.Series([new_planting_date + timedelta(days=int(days)) for days in new_days_from_start], index=middle_operations.index)
+                # Update month and day columns
+                self.loc[middle_mask, 'Mn'] = [date.month for date in new_dates]
+                self.loc[middle_mask, 'Dy'] = [date.day for date in new_dates]
+                self.loc[middle_mask, 'date'] = new_dates
         
 
-    def edit_plantation_date(self, year, month, day, crop_code):
+    def edit_plantation_date(self, date, crop_code):
         """
         Edit the plantation date for a given year and crop.
 
         Parameters:
-        year (int): Year.
-        month (int): Month of plantation.
-        day (int): Day of plantation.
+        date (datetime or str): Date of plantation in datetime object or 'YYYY-MM-DD' string format.
         crop_code (int): Crop code.
         """
+        if isinstance(date, str):
+            new_planting_date = datetime.strptime(date, '%Y-%m-%d')
+        else:
+            new_planting_date = date
+            
+        year = new_planting_date.year
+        month = new_planting_date.month
+        day = new_planting_date.day
+        
         plantation_dates = self.get_plantation_date(year, crop_code)
             
         if crop_code in plantation_dates:
-            harvest_dates = self.get_harvest_date(year, crop_code)
-            new_planting_date = datetime(year,month,day)
+            if crop_code in self.winter_crop_codes:
+                harvest_dates = self.get_harvest_date(year + 1, crop_code)
+            else:
+                harvest_dates = self.get_harvest_date(year, crop_code)
             
             plantation_idx = plantation_dates[crop_code]['index']
             new_harvest_date = harvest_dates[crop_code]['date']
@@ -438,26 +521,35 @@ class OPC(pd.DataFrame):
             mask &= (self['CRP'] == crop_code)
         self.loc[mask, 'OPV1'] = value
 
-    def edit_harvest_date(self, year, month, day, crop_code):
+    def edit_harvest_date(self, date, crop_code):
         """
-        Edit the harvest date for a given year.
+        Edit the harvest date for a given year and crop.
 
         Parameters:
-        year (int): Year.
-        month (int): Month of harvest.
-        day (int): Day of harvest.
-        crop_code (int, optional): Crop code.
+        date (datetime or str): Date of harvest in datetime object or 'YYYY-MM-DD' string format.
+        crop_code (int): Crop code.
         """
-        year_id = year - self.start_year + 1
-        harvest_dates = self.get_harvest_date(year_id, crop_code)
+        if isinstance(date, str):
+            new_harvest_date = datetime.strptime(date, '%Y-%m-%d')
+        else:
+            new_harvest_date = date
+            
+        year = new_harvest_date.year
+        month = new_harvest_date.month
+        day = new_harvest_date.day
         
+        harvest_dates = self.get_harvest_date(year, crop_code)
+            
         if crop_code in harvest_dates:
-            plantation_dates = self.get_plantation_date(year_id, crop_code)
-            new_harvest_date = datetime(year, month, day)
+            if crop_code in self.winter_crop_codes:
+                plantation_dates = self.get_plantation_date(year - 1, crop_code)
+            else:
+                plantation_dates = self.get_plantation_date(year, crop_code)
+            
             harvest_idx = harvest_dates[crop_code]['index']
             new_planting_date = plantation_dates[crop_code]['date']
-            self._stretch_middle_operations(year_id, new_planting_date, new_harvest_date, crop_code)
-            self._adjust_post_harvesting_operations(new_harvest_date, year_id, crop_code)
+            self._stretch_middle_operations(new_planting_date, new_harvest_date, crop_code)
+            self._adjust_post_harvesting_operations(new_harvest_date, crop_code)
             self.loc[harvest_idx, ['Mn', 'Dy']] = [month, day]
             return
             
@@ -482,18 +574,14 @@ class OPC(pd.DataFrame):
             if plantation_dates:
                 crop_code = next(iter(plantation_dates))
             else:
-                print(f"No crops found for year {new_planting_date.year}")
-                return
-                # raise ValueError(f"No crops found for year {new_planting_date.year}")
+                raise ValueError(f"No crops found for year {new_planting_date.year}")
         elif crop_code not in plantation_dates:
             return
         
         harvest_dates = self.get_harvest_date(new_harvest_date.year, crop_code)
 
         if not harvest_dates:
-            print(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
-            return
-            # raise ValueError(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
+            raise ValueError(f"No harvest operations found for crop {crop_code} in year {new_harvest_date.year}")
 
         plantation_idx = plantation_dates[crop_code]['index']
         harvest_idx = harvest_dates[crop_code]['index']
@@ -530,8 +618,8 @@ class OPC(pd.DataFrame):
         # Create a copy to avoid modifying the original data
         second_opc_copy = second_opc.copy()
         # Adjust Yid values
-        # if second_opc_copy['Yid'].min() != 0:
-        #     second_opc_copy['Yid'] -= second_opc_copy['Yid'].min() - 1
+        if second_opc_copy['Yid'].min() != 0:
+            second_opc_copy['Yid'] -= second_opc_copy['Yid'].min() - 1
         second_opc_copy['Yid'] += last_yid
         # Combine data
         combined_data = pd.concat([self, second_opc_copy], ignore_index=True)
@@ -544,5 +632,40 @@ class OPC(pd.DataFrame):
         combined_opc['date'] = pd.to_datetime(combined_opc[['Yr', 'Mn', 'Dy']].rename(
             columns={'Yr': 'year', 'Mn': 'month', 'Dy': 'day'}
         ))
-        
         return combined_opc
+    
+
+    def validate(self, duration=None):
+        """
+        Validate the OPC data to ensure it contains a continuous range of dates without duplicates.
+
+        Parameters:
+        duration (int, optional): Duration of the simulation in years. If None, uses the maximum Yid.
+
+        Returns:
+        bool: True if the data is valid, False otherwise.
+        """
+        # If duration is not provided, use the maximum Yid
+        if duration is None: duration = self['Yid'].max()
+            
+        # Check if 'Yr' column contains a continuous range from 1 to duration
+        years = self['Yid'].unique()
+        missing_years = set(range(1, duration + 1)) - set(years)
+        if missing_years:
+            raise ValueError(f"File {self.name}: Missing the following years: {sorted(missing_years)}.")
+            
+        # Check if 'date' column is always increasing
+        if not self['date'].is_monotonic_increasing:
+            raise ValueError(f"File {self.name}: The date is not always increasing.")
+        
+        # Check if each crop has at least one plantation code and one harvest code
+        crops = self['CRP'].unique()
+        for crop in crops:
+            if crop in self.fallow_codes:  continue
+            crop_data = self[self['CRP'] == crop]
+            if not any(crop_data['CODE'].isin(self.plantation_codes)):
+                raise ValueError(f"File {self.name}: Crop {crop} does not have any plantation codes")
+            if not any(crop_data['CODE'].isin(self.harvest_codes)):
+                raise ValueError(f"File {self.name}: Crop {crop} does not have any harvest codes")
+        
+        return True
