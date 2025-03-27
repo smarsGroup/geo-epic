@@ -142,19 +142,20 @@ class ieParm:
         """
         # Read the first part of the file with two columns of width 8 each
         parm1 = pd.read_fwf(file_name, widths=[8, 8], header=None, nrows=30, skip_blank_lines=False)
-        parm2 = pd.read_fwf(file_name, widths=[8] * 10, header=None, skiprows=30, nrows=13, skip_blank_lines=False)
+        parm2 = pd.read_fwf(file_name, widths=[8] * 10, header=None, skiprows=30, nrows=12, skip_blank_lines=False)
 
         # Flatten parm1 and parm2 data, then concatenate
         parm1_flattened = parm1.values.T.ravel()
         parm2_flattened = parm2.values.flatten()
         self.nan_mask = np.isnan(parm2_flattened)
-        parm2_cleaned = parm2_flattened[~self.nan_mask]  # Remove NaNs
+        parm2_flattened[self.nan_mask] = 0  # Replace NaNs with zeros
+        parm2_cleaned = parm2_flattened  # Use the full array with zeros
 
         # Combine all parts into one DataFrame
         data = np.concatenate([parm1_flattened, parm2_cleaned])
         column_names = ["SCRP1_" + str(i) for i in range(1, 31)] + \
                        ["SCRP2_" + str(i) for i in range(1, 31)] + \
-                       ["PARM" + str(i) for i in range(1, 113)]
+                       ["PARM" + str(i) for i in range(1, 121)]
         df = pd.DataFrame([data], columns=column_names)
         return df
 
