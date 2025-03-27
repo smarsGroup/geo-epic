@@ -39,6 +39,13 @@ def fetch_list(config_file, input_data, output_dir):
         locations['geometry'] = locations.apply(lambda x: [[x['lon'], x['lat'] ]], axis = 1)
     elif input_data.endswith('.shp'):
         locations = gpd.read_file(input_data)
+        # Check if the shapefile is in WGS84 CRS (EPSG:4326) and convert if needed
+        if locations.crs is None:
+            print("Warning: GeoDataFrame has no CRS defined. Assuming WGS84.")
+            locations.crs = "EPSG:4326"
+        elif locations.crs != "EPSG:4326":
+            print(f"Converting from {locations.crs} to WGS84 (EPSG:4326)")
+            locations = locations.to_crs("EPSG:4326")
     else:
         print('Input file type not Supported')
     
@@ -78,7 +85,7 @@ def main():
     try:
         if len(args.fetch) == 2:
             latitude, longitude = map(float, args.fetch)
-            fetch_data(args.config_file, [longitude, latitude ], args.output_path)
+            fetch_data(args.config_file, [longitude, latitude], args.output_path)
             print(f'Data saved in {args.output_path}')
         else:
             fetch_list(args.config_file, args.fetch[0], args.output_path)
