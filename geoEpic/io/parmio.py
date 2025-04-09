@@ -170,10 +170,12 @@ class ieParm:
         
         PARM1_data = PARM1.values.reshape((2, 30)).T
         PARM2_values = PARM2.values.flatten()
-        full_parm2_data = np.empty(self.nan_mask.size)
-        full_parm2_data[:] = np.nan
-        full_parm2_data[~self.nan_mask] = PARM2_values
-        PARM2_data = full_parm2_data.reshape((13, 10))
+        nan_mask = np.isnan(PARM2_values)
+        PARM2_values[nan_mask] = 0  # Replace NaNs with zeros
+        # full_parm2_data = np.empty(self.nan_mask.size)
+        # full_parm2_data[:] = np.nan
+        # full_parm2_data[~self.nan_mask] = PARM2_values
+        PARM2_data = PARM2_values.reshape((12, 10))
         
         s = ''
         for row in PARM2_data:

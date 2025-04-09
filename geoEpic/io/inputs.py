@@ -198,17 +198,27 @@ class SOL:
         
         return cls(soil_id=soil_id, albedo=albedo, hydgrp=hydgrp, num_layers=num_layers, layers_df=layers_df)
     
-    
+   
 class DLY(pd.DataFrame):
     @classmethod
     def load(cls, path):
         """
-        Load data from a DLY file into DataFrame.
+        Load data from a DLY file into DataFrame. If an additional column exists, include it.
         """
         path = str(path)
-        if not path.endswith('.DLY'): path += '.DLY'
-        data = pd.read_fwf(path, widths=[6, 4, 4, 6, 6, 6, 6, 6, 6], header=None)
-        data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']
+        if not path.endswith('.DLY'): 
+            path += '.DLY'
+
+        # Attempt to load with and without the additional column
+        base_widths = [6, 4, 4, 6, 6, 6, 6, 6, 6]  # Original widths
+        extended_widths = base_widths + [6]      # Include extra width for the additional column
+
+        # Attempt to load with the additional column
+        data = pd.read_fwf(path, widths=extended_widths, header=None)
+        data.columns = ['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws', 'co2']
+        if data["co2"].isnull().all():
+            data.drop(columns=["co2"], inplace=True)
+            
         return cls(data)
 
     def validate(self, start_year=None, end_year=None):
@@ -260,11 +270,24 @@ class DLY(pd.DataFrame):
         """
         # Remove duplicate rows from the DataFrame
         self.drop_duplicates(subset=['year', 'month', 'day'], inplace=True)
+
         path = str(path)
-        if not path.endswith('.DLY'): path += '.DLY'
-        with open(path, 'w') as ofile:
+        if not path.endswith('.DLY'): 
+            path += '.DLY'
+
+        # Check if 'new_col' exists
+        if 'co2' in self.columns:
+            # Extended format string for additional column
+            fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
+            values = self[['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws', 'co2']].values
+        else:
+            # Original format string
             fmt = '%6d%4d%4d%6.2f%6.2f%6.2f%6.2f%6.2f%6.2f'
-            np.savetxt(ofile, self.values[:], fmt = fmt)
+            values = self[['year', 'month', 'day', 'srad', 'tmax', 'tmin', 'prcp', 'rh', 'ws']].values
+
+        # Write to file
+        with open(path, 'w') as ofile:
+            np.savetxt(ofile, values, fmt=fmt)
     
     
     def to_monthly(self, path):
